@@ -8,8 +8,10 @@
 # (at your option) any later version.
 
 class Recommender(object):
-    def __init__(self):
-        pass
+    def __init__(self,rMatrix,configuration):
+        self.ratingMatrix = rMatrix
+        self.config = configuration
+
 
     def buildModel(self):
         pass
@@ -20,10 +22,7 @@ class Recommender(object):
     def loadModel(self):
         pass
 
-    def predict(self):
-        pass
-
-    def computeCorr(self):
+    def predict(self,u,i):
         pass
 
     def execute(self):

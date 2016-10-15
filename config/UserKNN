@@ -1,0 +1,9 @@
+dataset.ratings=
+ratings.setup=-columns 0 1 2 -threshold -1
+recommender=UserKNN
+evaluation=cv -k 5 -p on --rand-seed 1 --test-view all
+item.ranking=off -topN -1 -ignore -1
+similarity=PCC
+num.shrinkage=30
+num.neighbors=50
+output.setup=on -dir ../results/
