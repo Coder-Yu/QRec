@@ -7,3 +7,6 @@ class UserKNN(Recommender):
 
     def computeCorr(self):
         pass
+
+    def predict(self,u,i):
+        pass
