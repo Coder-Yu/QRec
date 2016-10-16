@@ -37,3 +37,13 @@ def similarity(x1,x2,sim):
         return euclidean(x1,x2)
     else:
         return cosine(x1, x2)
+
+def normalization(vec,maxVal,minVal):
+    'get the normalized value using min-max normalizaiton'
+    if maxVal > minVal:
+        return (vec-minVal)/(maxVal-minVal)
+    elif maxVal==minVal:
+        return vec/maxVal
+    else:
+        print 'error... maximum value is less than minimum value.'
+

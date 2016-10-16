@@ -32,9 +32,14 @@ class LineConfig(object):
         elif self.line[0] == 'off':
             self.mainOption = False
         for i,item in enumerate(self.line):
-            if item.startswith('-') or item.startswith('--') and not item.isalnum():
+            if (item.startswith('-') or item.startswith('--')) and  not item[1:].isdigit():
+                ind = i+1
+                for j,sub in enumerate(self.line[i+1:]):
+                    if (sub.startswith('-') or sub.startswith('--')) and  not sub[1:].isdigit():
+                        ind = j
+                        break
                 try:
-                    self.options[item] = self.line[i+1]
+                    self.options[item] = ' '.join(self.line[i+1:i+1+ind])
                 except IndexError:
                     self.options[item] = 1
 
@@ -50,4 +55,5 @@ class LineConfig(object):
 
     def contains(self,key):
         return self.options.has_key(key)
+
 

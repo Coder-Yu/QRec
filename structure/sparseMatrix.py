@@ -17,5 +17,7 @@ class SparseMatrix():
     def sCol(self,c):
         'return the sparse column'
         return self.matrix.getcol(c)
+    def toDense(self):
+        return self.matrix.todense()
 
 
