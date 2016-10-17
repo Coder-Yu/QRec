@@ -38,12 +38,15 @@ def similarity(x1,x2,sim):
     else:
         return cosine(x1, x2)
 
-def normalization(vec,maxVal,minVal):
-    'get the normalized value using min-max normalizaiton'
+def normalize(vec,maxVal,minVal):
+    'get the normalized value using min-max normalization'
     if maxVal > minVal:
         return (vec-minVal)/(maxVal-minVal)
     elif maxVal==minVal:
         return vec/maxVal
     else:
         print 'error... maximum value is less than minimum value.'
+        raise ArithmeticError
 
+def denormalize(vec,maxVal,minVal):
+    return minVal+vec*(maxVal-minVal)

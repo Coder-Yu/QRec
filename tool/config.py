@@ -14,7 +14,7 @@ class Config(object):
         path = '../config/'+fileName
         if not os.path.exists(path):
             print 'config file is not found!'
-            exit()
+            raise IOError
         with open(path) as f:
             for line in f:
                 key,value=line.strip().split('=')
