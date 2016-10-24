@@ -1,7 +1,7 @@
-dataset.ratings=../dataset/FilmTrust/ratings.txt
+ratings=../dataset/FilmTrust/ratings.txt
 ratings.setup=-columns 0 1 2 -threshold -1
 recommender=UserKNN
-evaluation=cv -k 5 -p on --rand-seed 1 --test-view all
+evaluation=-testset ../dataset/FilmTrust/ratings.txt -p on --rand-seed 1 --test-view all #-testset
 item.ranking=off -topN -1 -ignore -1
 similarity=PCC
 num.shrinkage=30
