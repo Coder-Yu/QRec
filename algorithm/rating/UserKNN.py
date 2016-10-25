@@ -1,8 +1,9 @@
 from baseclass.recommender import Recommender
 
 class UserKNN(Recommender):
-    def __init__(self,rMatrix,configuration):
-        super(UserKNN, self).__init__(rMatrix,configuration)
+    def __init__(self,conf):
+        super(UserKNN, self).__init__(conf)
+
 
 
     def computeCorr(self):

@@ -8,13 +8,27 @@
 # (at your option) any later version.
 
 class Recommender(object):
-    def __init__(self,rMatrix,configuration):
+    def __init__(self,rMatrix,configuration,data_access):
         self.ratingMatrix = rMatrix
         self.config = configuration
+        self.dao = data_access
+        self.isSaveModel = False
+        self.ranking = False
+        self.isLoadModel = False
+        self.readConfiguration()
 
+    def readConfiguration(self):
+        pass
+
+    def printAlgorConfig(self):
+        "show algorithm's configuration"
+        pass
+
+    def initModel(self):
+        pass
 
     def buildModel(self):
-        pass
+        'build the model (for model-based algorithms )'
 
     def saveModel(self):
         pass
@@ -25,5 +39,29 @@ class Recommender(object):
     def predict(self,u,i):
         pass
 
-    def execute(self):
+    def evalRatings(self):
         pass
+
+    def evalRanking(self):
+        pass
+
+    def execute(self):
+        self.printAlgorConfig()
+        #load model from disk or build model
+        if self.isLoadModel:
+            self.loadModel()
+        else:
+            self.initModel()
+            self.buildModel()
+
+        #preict the ratings or item ranking
+        if self.ranking:
+            self.evalRatings()
+        else:
+            self.evalRanking()
+
+        #save model
+        if self.isSaveModel:
+            self.saveModel()
+
+
