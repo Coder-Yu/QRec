@@ -58,7 +58,7 @@ class Recommender(object):
         #output result
         if self.isOutput:
             outDir = self.output['-dir']
-            fileName = self.config['recommender']+'rating-predictions'+self.foldInfo+'.txt'
+            fileName = self.config['recommender']+'/rating-predictions'+self.foldInfo+'.txt'
             FileIO.writeFile(outDir,fileName,res)
 
 
