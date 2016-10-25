@@ -16,7 +16,7 @@ class ratingDAO(object):
         self.trainingMatrix = None
         self.validationMatrix = None
         self.testSet = None
-        self.rScale = [-100,100]
+        self.rScale = [-9999999,999999]
         if self.evaluation.contains('-testSet'):
             #specify testSet
             self.testSet = self.loadRatings(self.evaluation['-testSet'],True)

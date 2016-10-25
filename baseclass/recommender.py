@@ -6,7 +6,8 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+from data.data import ratingDAO
+from tool.file import FileIO
 class Recommender(object):
     def __init__(self,rMatrix,configuration,data_access):
         self.ratingMatrix = rMatrix
@@ -15,7 +16,12 @@ class Recommender(object):
         self.isSaveModel = False
         self.ranking = False
         self.isLoadModel = False
+        self.output = None
+        self.foldInfo = '[1]'
+        self.isOutput = True
         self.readConfiguration()
+
+
 
     def readConfiguration(self):
         pass
@@ -40,7 +46,21 @@ class Recommender(object):
         pass
 
     def evalRatings(self):
-        pass
+        res = []
+        res.append('userId  itemId  original  prediction')
+        #predict
+        for userId in self.dao.testSet:
+            for item in self.dao.testSet[userId]:
+                originRating = item[0]
+                itemId = item[1]
+                pred = self.predict(userId,itemId)
+                res.append(userId+' '+itemId+' '+originRating+' '+str(pred)+'\n')
+        #output result
+        if self.isOutput:
+            outDir = self.output['-dir']
+            fileName = self.config['recommender']+'rating-predictions'+self.foldInfo+'.txt'
+            FileIO.writeFile(outDir,fileName,res)
+
 
     def evalRanking(self):
         pass
