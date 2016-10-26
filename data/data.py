@@ -19,8 +19,9 @@ class ratingDAO(object):
         self.rScale = [-9999999,999999]
         if self.evaluation.contains('-testSet'):
             #specify testSet
-            self.testSet = self.loadRatings(self.evaluation['-testSet'],True)
             self.trainingMatrix = self.loadRatings(config['ratings'])
+            self.testSet = self.loadRatings(self.evaluation['-testSet'],True)
+
         else: #cross validation and leave-one-out
             self.ratingMatrix = self.loadRatings(config['ratings'])
 
@@ -58,7 +59,7 @@ class ratingDAO(object):
             if not u_i_r.has_key(userId):
                 u_i_r[userId] = []
                 userList.append(userId)
-            u_i_r[userId].append((float(rating),self.item[itemId]))
+            u_i_r[userId].append((float(rating),itemId))
 
         if not bTest:
             #contruct the sparse matrix
@@ -68,7 +69,7 @@ class ratingDAO(object):
             offset = 0
             for uid in userList:
                 uRating = [r[0] for r in u_i_r[uid]]
-                uColunms = [r[1] for r in u_i_r[uid]]
+                uColunms = [self.item[r[1]] for r in u_i_r[uid]]
                 data += uRating
                 indices += uColunms
                 indptr .append(offset)
@@ -85,16 +86,21 @@ class ratingDAO(object):
     def column(self,c):
         return self.trainingMatrix.col(self.item[c])
 
+    def sRow(self,u):
+        return self.trainingMatrix.sRow(self.user[u])
+
+    def sColumn(self,c):
+        return self.trainingMatrix.sCol(self.item[c])
+
+    def rating(self,u,c):
+        return self.trainingMatrix.elem(self.user[u],self.item[c])
+
     def ratingScale(self):
         return (self.rScale[0],self.rScale[1])
 
 
 
-c = Config('../config/UserKNN')
-d = ratingDAO(c)
 
-
-print d.row('1')
 
 
 

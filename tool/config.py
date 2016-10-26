@@ -5,10 +5,17 @@ class Config(object):
         self.readConfiguration(fileName)
 
     def __getitem__(self, item):
+        if not self.contains(item):
+            print 'parameter '+item+' is invalid!'
         return self.config[item]
 
     def getOptions(self,item):
+        if not self.contains(item):
+            print 'parameter '+item+' is invalid!'
         return self.config[item]
+
+    def contains(self,key):
+        return self.config.has_key(key)
 
     def readConfiguration(self,fileName):
         path = '../config/'+fileName
@@ -45,9 +52,13 @@ class LineConfig(object):
 
 
     def __getitem__(self, item):
+        if not self.contains(item):
+            print 'parameter '+item+' is invalid!'
         return self.options[item]
 
     def getOption(self,key):
+        if not self.contains(key):
+            print 'parameter '+key+' is invalid!'
         return self.options[key]
 
     def isMainOn(self):

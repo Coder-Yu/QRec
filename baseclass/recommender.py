@@ -8,13 +8,14 @@
 # (at your option) any later version.
 from data.data import ratingDAO
 from tool.file import FileIO
+from tool.config import Config,LineConfig
+from os.path import abspath
 class Recommender(object):
-    def __init__(self,rMatrix,configuration,data_access):
-        self.ratingMatrix = rMatrix
+    def __init__(self,configuration):
         self.config = configuration
-        self.dao = data_access
+        self.dao = None
         self.isSaveModel = False
-        self.ranking = False
+        self.ranking = None
         self.isLoadModel = False
         self.output = None
         self.foldInfo = '[1]'
@@ -24,11 +25,19 @@ class Recommender(object):
 
 
     def readConfiguration(self):
-        pass
+        self.dao = ratingDAO(self.config)
+        self.output = LineConfig(self.config['output.setup'])
+        self.isOutput = self.output.isMainOn()
+        self.ranking = LineConfig(self.config['item.ranking'])
 
     def printAlgorConfig(self):
         "show algorithm's configuration"
-        pass
+        print 'Algorithm:',self.config['recommender']
+        print 'Ratings dataSet:',abspath(self.config['ratings'])
+        if LineConfig(self.config['evaluation']).contains('-testSet'):
+            print 'Test set:',abspath(LineConfig(self.config['evaluation']).getOption('-testSet'))
+        #print 'Count of the users in training set: ',len()
+        print '='*50
 
     def initModel(self):
         pass
@@ -47,19 +56,20 @@ class Recommender(object):
 
     def evalRatings(self):
         res = []
-        res.append('userId  itemId  original  prediction')
+        res.append('userId  itemId  original  prediction\n')
         #predict
         for userId in self.dao.testSet:
             for item in self.dao.testSet[userId]:
                 originRating = item[0]
                 itemId = item[1]
                 pred = self.predict(userId,itemId)
-                res.append(userId+' '+itemId+' '+originRating+' '+str(pred)+'\n')
+                res.append(userId+' '+itemId+' '+str(originRating)+' '+str(pred)+'\n')
         #output result
         if self.isOutput:
             outDir = self.output['-dir']
-            fileName = self.config['recommender']+'/rating-predictions'+self.foldInfo+'.txt'
+            fileName = self.config['recommender']+'-rating-predictions'+self.foldInfo+'.txt'
             FileIO.writeFile(outDir,fileName,res)
+            print 'The Result has been output to ',abspath(outDir),'.'
 
 
     def evalRanking(self):
@@ -75,10 +85,10 @@ class Recommender(object):
             self.buildModel()
 
         #preict the ratings or item ranking
-        if self.ranking:
-            self.evalRatings()
-        else:
+        if self.ranking.isMainOn():
             self.evalRanking()
+        else:
+            self.evalRatings()
 
         #save model
         if self.isSaveModel:
