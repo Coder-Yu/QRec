@@ -2,14 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="89388339-7691-4446-8795-13b9345d8640" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/algorithm/rating/UserKNN.py" afterPath="$PROJECT_DIR$/algorithm/rating/UserKNN.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/baseclass/recommender.py" afterPath="$PROJECT_DIR$/baseclass/recommender.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/UserKNN" afterPath="$PROJECT_DIR$/config/UserKNN" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/data.py" afterPath="$PROJECT_DIR$/data/data.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/main.py" afterPath="$PROJECT_DIR$/main/main.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/structure/sparseMatrix.py" afterPath="$PROJECT_DIR$/structure/sparseMatrix.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tool/config.py" afterPath="$PROJECT_DIR$/tool/config.py" />
     </list>
     <ignored path="RecQ.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -39,7 +33,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="UserKNN.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="UserKNN.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/algorithm/rating/UserKNN.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="2285">
@@ -47,6 +41,16 @@
               <folding>
                 <element signature="e#0#45#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="56">
+              <caret line="1" column="6" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -80,18 +84,6 @@
               <caret line="83" column="52" selection-start-line="83" selection-start-column="52" selection-end-line="83" selection-end-column="52" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="sparseMatrix.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/structure/sparseMatrix.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="504">
-              <caret line="10" column="36" selection-start-line="10" selection-start-column="36" selection-end-line="10" selection-end-column="36" />
-              <folding>
-                <element signature="e#0#35#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -175,6 +167,7 @@
         <option value="$PROJECT_DIR$/main/main.py" />
         <option value="$PROJECT_DIR$/config/UserKNN" />
         <option value="$PROJECT_DIR$/baseclass/recommender.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -843,13 +836,6 @@
     <entry file="file://$PROJECT_DIR$/main/__init__.py" />
     <entry file="file://$PROJECT_DIR$/../1.py" />
     <entry file="file://$PROJECT_DIR$/evaluation.py" />
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="21">
-          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/qmath/normalization.py" />
     <entry file="file://$PROJECT_DIR$/qmath/metrics.py" />
     <entry file="file://$PROJECT_DIR$/../librec/demo/config/SoRec.conf" />
@@ -1016,6 +1002,14 @@
           <folding>
             <element signature="e#0#45#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="56">
+          <caret line="1" column="6" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
+          <folding />
         </state>
       </provider>
     </entry>
