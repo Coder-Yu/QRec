@@ -2,7 +2,7 @@ import numpy as np
 from structure import sparseMatrix
 from tool.config import Config,LineConfig
 import os.path
-from sklearn.cross_validation import train_test_split
+#from sklearn.cross_validation import train_test_split
 class ratingDAO(object):
     'data access control'
     def __init__(self,config):

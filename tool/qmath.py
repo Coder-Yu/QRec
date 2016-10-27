@@ -2,6 +2,7 @@ from sklearn.metrics.pairwise import pairwise_distances,cosine_similarity
 import numpy as np
 from numpy.linalg import norm
 from scipy.stats.stats import pearsonr
+from math import sqrt
 
 def cosine(x1,x2):
     #find common ratings
@@ -9,7 +10,17 @@ def cosine(x1,x2):
     new_x1 = x1[common]
     new_x2 = x2[common]
     #compute the similarity between two vectors
-    return cosine_similarity(x1,x2)[0][0]
+    # sum = 0
+    # denom = 0
+    # for i in range(len(new_x1)):
+    sum = new_x1.dot(new_x2.transpose())
+    denom = sqrt((new_x1*new_x1).sum()+(new_x2*new_x2).sum())
+    try:
+        return float(sum)/denom
+    except ZeroDivisionError:
+        return 0
+
+    #return cosine_similarity(x1,x2)[0][0]
 
 def l1(x):
     return norm(x,ord=1)
@@ -37,6 +48,7 @@ def similarity(x1,x2,sim):
         return euclidean(x1,x2)
     else:
         return cosine(x1, x2)
+
 
 def normalize(vec,maxVal,minVal):
     'get the normalized value using min-max normalization'

@@ -44,6 +44,7 @@ class Recommender(object):
 
     def buildModel(self):
         'build the model (for model-based algorithms )'
+        pass
 
     def saveModel(self):
         pass
