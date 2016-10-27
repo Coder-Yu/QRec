@@ -1,9 +1,9 @@
-ratings=../dataset/FilmTrust/ratings.txt
+ratings=../dataset/FilmTrust/trainset.txt
 ratings.setup=-columns 0 1 2 -threshold -1
 recommender=UserKNN
-evaluation=-testSet ../dataset/FilmTrust/testset.txt -p on --rand-seed 1 --test-view all #-testset
+evaluation=-testSet ../dataset/FilmTrust/sample-test.txt -p on --rand-seed 1 --test-view all #-testset
 item.ranking=off -topN -1 -ignore -1
 similarity=cos
 num.shrinkage=30
-num.neighbors=10
+num.neighbors=20
 output.setup=on -dir ../results/

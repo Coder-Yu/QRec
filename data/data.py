@@ -2,7 +2,7 @@ import numpy as np
 from structure import sparseMatrix
 from tool.config import Config,LineConfig
 import os.path
-from sklearn.cross_validation import train_test_split
+#from sklearn.cross_validation import train_test_split
 class ratingDAO(object):
     'data access control'
     def __init__(self,config):
@@ -15,12 +15,13 @@ class ratingDAO(object):
         self.ratingMatrix = None
         self.trainingMatrix = None
         self.validationMatrix = None
-        self.testSet = None
+        self.testSet_u = None # used to store the test set by hierarchy user:[item,rating]
+        self.testSet_i = None # used to store the test set by hierarchy item:[user,rating]
         self.rScale = [-9999999,999999]
         if self.evaluation.contains('-testSet'):
             #specify testSet
             self.trainingMatrix = self.loadRatings(config['ratings'])
-            self.testSet = self.loadRatings(self.evaluation['-testSet'],True)
+            self.testSet_u,self.testSet_i = self.loadRatings(self.evaluation['-testSet'],True)
 
         else: #cross validation and leave-one-out
             self.ratingMatrix = self.loadRatings(config['ratings'])
@@ -41,6 +42,7 @@ class ratingDAO(object):
         #split data
         userList= []
         u_i_r = {}
+        i_u_r = {}
         for line in ratings:
             items = line.strip().split(delimiter)
             userId =  items[int(order[0])]
@@ -59,7 +61,10 @@ class ratingDAO(object):
             if not u_i_r.has_key(userId):
                 u_i_r[userId] = []
                 userList.append(userId)
-            u_i_r[userId].append((float(rating),itemId))
+            u_i_r[userId].append([itemId,float(rating)])
+            if not i_u_r.has_key(itemId):
+                i_u_r[itemId] = []
+            i_u_r[itemId].append([userId,float(rating)])
 
         if not bTest:
             #contruct the sparse matrix
@@ -68,8 +73,8 @@ class ratingDAO(object):
             indptr=[]
             offset = 0
             for uid in userList:
-                uRating = [r[0] for r in u_i_r[uid]]
-                uColunms = [self.item[r[1]] for r in u_i_r[uid]]
+                uRating = [r[1] for r in u_i_r[uid]]
+                uColunms = [self.item[r[0]] for r in u_i_r[uid]]
                 data += uRating
                 indices += uColunms
                 indptr .append(offset)
@@ -78,7 +83,7 @@ class ratingDAO(object):
             return sparseMatrix.SparseMatrix(data, indices, indptr)
         else:
             # return testSet
-            return u_i_r
+            return u_i_r,i_u_r
 
     def row(self,u):
         return self.trainingMatrix.row(self.user[u])

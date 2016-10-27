@@ -10,6 +10,8 @@ from data.data import ratingDAO
 from tool.file import FileIO
 from tool.config import Config,LineConfig
 from os.path import abspath
+from time import strftime,localtime,time
+from evaluation.measure import Measure
 class Recommender(object):
     def __init__(self,configuration):
         self.config = configuration
@@ -21,8 +23,6 @@ class Recommender(object):
         self.foldInfo = '[1]'
         self.isOutput = True
         self.readConfiguration()
-
-
 
     def readConfiguration(self):
         self.dao = ratingDAO(self.config)
@@ -44,6 +44,7 @@ class Recommender(object):
 
     def buildModel(self):
         'build the model (for model-based algorithms )'
+        pass
 
     def saveModel(self):
         pass
@@ -55,22 +56,30 @@ class Recommender(object):
         pass
 
     def evalRatings(self):
-        res = []
+        res = [] #used to contain the text of the result
         res.append('userId  itemId  original  prediction\n')
         #predict
-        for userId in self.dao.testSet:
-            for item in self.dao.testSet[userId]:
-                originRating = item[0]
-                itemId = item[1]
+        for userId in self.dao.testSet_u:
+            for ind,item in enumerate(self.dao.testSet_u[userId]):
+                itemId = item[0]
+                originRating = item[1]
                 pred = self.predict(userId,itemId)
+                # add prediction in order to measure
+                self.dao.testSet_u[userId][ind].append(pred)
                 res.append(userId+' '+itemId+' '+str(originRating)+' '+str(pred)+'\n')
-        #output result
+        currentTime = strftime("%Y-%m-%d %H-%M-%S",localtime(time()))
+        #output prediction result
         if self.isOutput:
             outDir = self.output['-dir']
-            fileName = self.config['recommender']+'-rating-predictions'+self.foldInfo+'.txt'
+            fileName = self.config['recommender']+'@'+currentTime+'-rating-predictions'+self.foldInfo+'.txt'
             FileIO.writeFile(outDir,fileName,res)
             print 'The Result has been output to ',abspath(outDir),'.'
-
+        #output evaluation result
+        outDir = self.output['-dir']
+        fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
+        info = []
+        info.append('MAE '+str(Measure.MAE(self.dao.testSet_u)))
+        FileIO.writeFile(outDir, fileName, info)
 
     def evalRanking(self):
         pass
@@ -79,12 +88,16 @@ class Recommender(object):
         self.printAlgorConfig()
         #load model from disk or build model
         if self.isLoadModel:
+            print 'Loading model...'
             self.loadModel()
         else:
+            print 'Initializing model...'
             self.initModel()
+            print 'Building Model...'
             self.buildModel()
 
         #preict the ratings or item ranking
+        print 'Predicting...'
         if self.ranking.isMainOn():
             self.evalRanking()
         else:
@@ -92,6 +105,7 @@ class Recommender(object):
 
         #save model
         if self.isSaveModel:
+            print 'Saving model...'
             self.saveModel()
 
 

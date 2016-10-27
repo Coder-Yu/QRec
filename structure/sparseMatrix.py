@@ -6,17 +6,18 @@ class SparseMatrix():
     'matrix used to store raw data'
     def __init__(self,data,indices,indptr,shape=None):
         self.matrix = csr_matrix((data,indices,indptr),shape)
+        self.shape = self.matrix.shape
 
     def row(self,r):
-        if r > self.matrix.shape[0]:
-            return np.zeros(self.matrix.shape[1])
+        if r >= self.shape[0]:
+            return np.zeros((1,self.shape[1]))
         return self.matrix.getrow(r).toarray()
     def col(self,c):
-        if c > self.matrix.shape[1]:
-            return np.zeros(self.matrix.shape[0])
+        if c >= self.shape[1]:
+            return np.zeros((1, self.shape[0]))
         return self.matrix.getcol(c).toarray().transpose()
     def elem(self,r,c):
-        if r > self.matrix.shape[0] or c > self.matrix.shape[1]:
+        if r >= self.shape[0] or c >= self.shape[1]:
             return 0
         return self.matrix.getrow(r).toarray()[0][c]
     def sRow(self,r):

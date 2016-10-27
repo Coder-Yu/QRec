@@ -43,7 +43,7 @@ class UserKNN(Recommender):
     def computeCorr(self):
         'compute correlation among users'
         print 'Computing user correlation...'
-        for u1 in self.dao.testSet:
+        for u1 in self.dao.testSet_u:
             print u1
             self.userSim[u1] = {}
             for u2 in self.dao.user:
