@@ -1,5 +1,5 @@
 import numpy as np
-from structure import sparseMatrix
+from structure import sparseMatrix,new_sparseMatrix
 from tool.config import Config,LineConfig
 import os.path
 #from sklearn.cross_validation import train_test_split
@@ -43,6 +43,7 @@ class ratingDAO(object):
         userList= []
         u_i_r = {}
         i_u_r = {}
+        triple = []
         for line in ratings:
             items = line.strip().split(delimiter)
             userId =  items[int(order[0])]
@@ -65,22 +66,24 @@ class ratingDAO(object):
             if not i_u_r.has_key(itemId):
                 i_u_r[itemId] = []
             i_u_r[itemId].append([userId,float(rating)])
+            triple.append([self.user[userId],self.item[itemId],float(rating)])
 
         if not bTest:
             #contruct the sparse matrix
-            data=[]
-            indices=[]
-            indptr=[]
-            offset = 0
-            for uid in userList:
-                uRating = [r[1] for r in u_i_r[uid]]
-                uColunms = [self.item[r[0]] for r in u_i_r[uid]]
-                data += uRating
-                indices += uColunms
-                indptr .append(offset)
-                offset += len(uRating)
-            indptr.append(offset)
-            return sparseMatrix.SparseMatrix(data, indices, indptr)
+            # data=[]
+            # indices=[]
+            # indptr=[]
+            # offset = 0
+            # for uid in userList:
+            #     uRating = [r[1] for r in u_i_r[uid]]
+            #     uColunms = [self.item[r[0]] for r in u_i_r[uid]]
+            #     data += uRating
+            #     indices += uColunms
+            #     indptr .append(offset)
+            #     offset += len(uRating)
+            # indptr.append(offset)
+            # return sparseMatrix.SparseMatrix(data, indices, indptr)
+            return new_sparseMatrix.SparseMatrix(triple,(len(self.user),len(self.item)))
         else:
             # return testSet
             return u_i_r,i_u_r
@@ -90,12 +93,6 @@ class ratingDAO(object):
 
     def column(self,c):
         return self.trainingMatrix.col(self.item[c])
-
-    def sRow(self,u):
-        return self.trainingMatrix.sRow(self.user[u])
-
-    def sColumn(self,c):
-        return self.trainingMatrix.sCol(self.item[c])
 
     def rating(self,u,c):
         return self.trainingMatrix.elem(self.user[u],self.item[c])
