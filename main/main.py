@@ -15,7 +15,7 @@ if __name__ == '__main__':
         algor = UserKNN(conf)
     elif order == 2:
         conf = Config('../config/itemKNN')
-        algor = UserKNN(conf)
+        algor = ItemKNN(conf)
     else:
         print 'Error num!'
         exit()

@@ -41,9 +41,12 @@ class LineConfig(object):
         for i,item in enumerate(self.line):
             if (item.startswith('-') or item.startswith('--')) and  not item[1:].isdigit():
                 ind = i+1
-                for j,sub in enumerate(self.line[i+1:]):
+                for j,sub in enumerate(self.line[ind:]):
                     if (sub.startswith('-') or sub.startswith('--')) and  not sub[1:].isdigit():
                         ind = j
+                        break
+                    if j == len(self.line[ind:])-1:
+                        ind=j+1
                         break
                 try:
                     self.options[item] = ' '.join(self.line[i+1:i+1+ind])

@@ -1,6 +1,6 @@
 ratings=../dataset/FilmTrust/trainset.txt
 ratings.setup=-columns 0 1 2
-recommender=UserKNN
+recommender=ItemKNN
 evaluation=-testSet ../dataset/FilmTrust/testset.txt
 item.ranking=off -topN -1 -ignore -1
 similarity=cos
