@@ -14,6 +14,7 @@ class SparseMatrix():
                 self.matrix_Item[item[1]] = {}
             self.matrix_User[item[0]][item[1]]=item[2]
             self.matrix_Item[item[1]][item[0]]=item[2]
+        self.elemNum = len(triple)
 
     def row(self,r):
         if not self.matrix_User.has_key(r):
@@ -38,6 +39,8 @@ class SparseMatrix():
         if not self.matrix_User.has_key(r) or not self.matrix_User[r].has_key(c):
             return 0
         return self.matrix_User[r][c]
+    def elemCount(self):
+        return self.elemNum
     # def sRow(self,r):
     #     'return the sparse row'
     #     return self.matrix.getrow(r)

@@ -14,3 +14,10 @@ class Measure(object):
             return error
         return float(error)/count
 
+    @staticmethod
+    def precision(hit,groundTruth,N):
+        #* @param groundTruth: a collection of positive/correct item IDs
+        return float(hit)/(userCount*N)
+
+    @staticmethod
+    def recall(hit,):

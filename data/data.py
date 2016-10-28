@@ -23,9 +23,9 @@ class ratingDAO(object):
             #specify testSet
             self.trainingMatrix = self.loadRatings(config['ratings'])
             self.testSet_u,self.testSet_i = self.loadRatings(self.evaluation['-testSet'],True)
-
         else: #cross validation and leave-one-out
             self.ratingMatrix = self.loadRatings(config['ratings'])
+
 
 
     def loadRatings(self,file,bTest=False):
@@ -100,6 +100,9 @@ class ratingDAO(object):
 
     def ratingScale(self):
         return (self.rScale[0],self.rScale[1])
+
+    def elemCount(self):
+        return self.trainingMatrix.elemCount()
 
 
 
