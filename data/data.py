@@ -1,6 +1,7 @@
 import numpy as np
 from structure import sparseMatrix,new_sparseMatrix
 from tool.config import Config,LineConfig
+from tool.qmath import normalize
 import os.path
 #from sklearn.cross_validation import train_test_split
 class ratingDAO(object):
@@ -91,7 +92,7 @@ class ratingDAO(object):
     def row(self,u):
         return self.trainingMatrix.row(self.user[u])
 
-    def column(self,c):
+    def col(self,c):
         return self.trainingMatrix.col(self.item[c])
 
     def rating(self,u,c):

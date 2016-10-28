@@ -1,11 +1,12 @@
 from baseclass.recommender import Recommender
 from tool import qmath
+from structure.symmetricMatrix import SymmetricMatrix
 import numpy as np
 class UserKNN(Recommender):
     def __init__(self,conf):
         super(UserKNN, self).__init__(conf)
         super(UserKNN, self).readConfiguration()
-        self.userSim = {}
+        self.userSim = SymmetricMatrix(len(self.dao.user))
 
     def readConfiguration(self):
         self.sim = self.config['similarity']
@@ -37,7 +38,7 @@ class UserKNN(Recommender):
             n = self.dao.row(u)>0
             if sum(n[0]) == 0: #no data about current user in training set
                 return 0
-            pred = float(self.dao.row(u)[0].sum()/sum(n[0]))
+            pred = float(self.dao.row(u)[0].sum()/n[0].sum())
             return round(pred,3)
         pred = pred/float(denom)
         return round(pred,3)
@@ -46,12 +47,14 @@ class UserKNN(Recommender):
         'compute correlation among users'
         print 'Computing user correlation...'
         for u1 in self.dao.testSet_u:
-            print u1
-            self.userSim[u1] = {}
+
             for u2 in self.dao.user:
                 if u1 <> u2:
+                    if self.userSim.contains(u1,u2):
+                        continue
                     sim = qmath.similarity(self.dao.row(u1),self.dao.row(u2),self.sim)
-                    self.userSim[u1][u2]=sim
+                    self.userSim.set(u1,u2,sim)
+            print u1,'finished.'
         print 'The user correlation has been figured out.'
 
 

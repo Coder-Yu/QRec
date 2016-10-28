@@ -1,4 +1,3 @@
-from scipy.sparse import csr_matrix
 import numpy as np
 
 
@@ -21,8 +20,9 @@ class SparseMatrix():
             return np.zeros((1,self.shape[1]))
         else:
             array = np.zeros((1,self.shape[1]))
-            for item in self.matrix_User[r]:
-                array[0][item] = self.matrix_User[r][item]
+            ind = self.matrix_User[r].keys()
+            val = self.matrix_User[r].values()
+            array[0][ind] = val
             return array
 
     def col(self,c):
@@ -30,8 +30,9 @@ class SparseMatrix():
             return np.zeros((1,self.shape[0]))
         else:
             array = np.zeros((1,self.shape[0]))
-            for item in self.matrix_Item[c]:
-                array[0][item] = self.matrix_Item[c][item]
+            ind = self.matrix_Item[c].keys()
+            val = self.matrix_Item[c].values()
+            array[0][ind] = val
             return array
     def elem(self,r,c):
         if not self.matrix_User.has_key(r) or not self.matrix_User[r].has_key(c):

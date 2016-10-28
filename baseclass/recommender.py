@@ -37,7 +37,7 @@ class Recommender(object):
         if LineConfig(self.config['evaluation']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
-        print '='*50
+        print '='*80
 
     def initModel(self):
         pass
