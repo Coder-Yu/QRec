@@ -13,7 +13,7 @@ class IterativeRecommender(Recommender):
     def loadModel(self):
         pass
 
-    def updateLearningRate(self):
+    def updateLearningRate(self,iter):
         pass
 
     def predict(self,u,i):
