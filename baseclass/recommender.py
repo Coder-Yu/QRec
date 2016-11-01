@@ -13,8 +13,8 @@ from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
 class Recommender(object):
-    def __init__(self,configuration):
-        self.config = configuration
+    def __init__(self,conf):
+        self.config = conf
         self.dao = None
         self.isSaveModel = False
         self.ranking = None
@@ -82,7 +82,9 @@ class Recommender(object):
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
-        N = self.ranking['-topN']
+        N = int(self.ranking['-topN'])
+        if N>100 or N<0:
+            N=100
         res.append('userId: recommendations in (itemId, ranking score) pairs, where a correct recommendation is denoted by symbol *.')
         # predict
         topNSet = {}
@@ -94,7 +96,7 @@ class Recommender(object):
                 pred = self.predict(userId, itemId)
                 # add prediction in order to measure
                 itemSet[itemId] = pred
-            topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:int(N)]
+            topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
 
             if i%100==0:
                 print 'Progress:'+str(i)+'/'+str(userCount)
@@ -109,7 +111,7 @@ class Recommender(object):
         # output prediction result
         if self.isOutput:
             outDir = self.output['-dir']
-            fileName = self.config['recommender'] + '@' + currentTime + '-top-'+N+'items' + self.foldInfo + '.txt'
+            fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
             print 'The Result has been output to ', abspath(outDir), '.'
         # output evaluation result

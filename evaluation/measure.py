@@ -12,6 +12,9 @@ class Measure(object):
 
         return measure
 
+    @staticmethod
+    def rankingMeasure(res):
+        pass
 
     @staticmethod
     def MAE(res):
