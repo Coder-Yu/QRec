@@ -23,4 +23,4 @@ if __name__ == '__main__':
         exit()
     algor.execute()
     e = time.clock()
-    print "run time: %f s" % (e - s)
+    print "Run time: %f s" % (e - s)

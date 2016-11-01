@@ -77,9 +77,8 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
-        info = []
-        info.append('MAE '+str(Measure.MAE(self.dao.testSet_u)))
-        FileIO.writeFile(outDir, fileName, info)
+        measure = Measure.ratingMeasure(self.dao.testSet_u)
+        FileIO.writeFile(outDir, fileName, measure)
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
