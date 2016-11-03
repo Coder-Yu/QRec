@@ -36,7 +36,7 @@ class ItemKNN(Recommender):
         if pred == 0:
             #no users have rating on item i,return the average rating of user u
             n = self.dao.col(i)>0
-            if sum(n[0]) == 0: #no data about current user in training set
+            if n[0].sum()== 0: #no data about current user in training set
                 return 0
             pred = float(self.dao.col(i)[0].sum()/n[0].sum())
             return round(pred,3)

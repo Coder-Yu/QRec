@@ -85,7 +85,7 @@ class Recommender(object):
         N = int(self.ranking['-topN'])
         if N>100 or N<0:
             N=100
-        res.append('userId: recommendations in (itemId, ranking score) pairs, where a correct recommendation is denoted by symbol *.')
+        res.append('userId: recommendations in (itemId, ranking score) pairs\n')
         # predict
         topNSet = {}
         userCount = len(self.dao.testSet_u)
@@ -101,10 +101,7 @@ class Recommender(object):
             if i%100==0:
                 print 'Progress:'+str(i)+'/'+str(userCount)
             for item in topNSet[userId]:
-                if self.dao.rating(userId,item[0]) != 0:
-                    line+='*('+item[0]+','+str(item[1])+') '
-                else:
-                    line += '(' + item[0] + ',' + str(item[1]) + ') '
+                line += '(' + item[0] + ',' + str(item[1]) + ') '
             line+='\n'
             res.append(line)
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
@@ -114,12 +111,11 @@ class Recommender(object):
             fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
             print 'The Result has been output to ', abspath(outDir), '.'
-        # output evaluation result
-        # outDir = self.output['-dir']
-        # fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
-        # info = []
-        # info.append('MAE ' + str(Measure.MAE(self.dao.testSet_u)))
-        # FileIO.writeFile(outDir, fileName, info)
+        #output evaluation result
+        outDir = self.output['-dir']
+        fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
+        measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
+        FileIO.writeFile(outDir, fileName, measure)
 
     def execute(self):
         self.printAlgorConfig()
