@@ -97,7 +97,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 </div>
 
 ##How to extend it##
-* 1.Make your new algorithm Generalize the proper base class.
+* 1.Make your new algorithm generalize the proper base class.
 * 2.Rewrite some of the following functions as needed.
  - **readConfiguration()**
  - **initModel()** 
