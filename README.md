@@ -35,7 +35,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>
   <tr>
     <td scope="row">ratings.setup</td>
-    <td>-columns 0 1 2 3</td>
+    <td>-columns 0 1 2</td>
 
     <td>-columns: (user, item, rating) columns of rating data are used;
       -header: to skip the first head line when reading data<br>
@@ -80,17 +80,17 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 <table class="table table-hover table-bordered">
   <tr>
     <td scope="row">similarity</td>
-    <td>pcc/cos/msd</td>
-    <td>Set the similarity method to use. Options: PCC, COS, MSD, CPC, exJaccard;</td>
+    <td>pcc/cos</td>
+    <td>Set the similarity method to use. Options: PCC, COS;</td>
   </tr>
   <tr>
     <td scope="row">num.shrinkage</td>
-    <td>25/number</td>
+    <td>25</td>
     <td>Set the shrinkage parameter to devalue similarity value. -1: to disable simialrity shrinkage. </td>
   </tr>
   <tr>
     <td scope="row">num.neighbors</td>
-    <td>60/number</td>
+    <td>30</td>
     <td>Set the number of neighbors used for KNN-based algorithms such as UserKNN, ItemKNN. </td>
   </tr>
   </table>
