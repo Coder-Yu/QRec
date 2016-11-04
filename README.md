@@ -29,7 +29,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>
   <tr>
     <td>ratings</td>
-    <td>D:\\MovieLens\\100K.txt</td>
+    <td>D:/MovieLens/100K.txt</td>
  
     <td>Set the path to input dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
