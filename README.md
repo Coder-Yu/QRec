@@ -20,6 +20,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 
 ##How to Configure it##
 ###Essential Options
+<div>
  <table class="table table-hover table-bordered">
   <tr>
     <th width="12%" scope="col"> Entry</th>
@@ -72,6 +73,28 @@ To design it exquisitely, we brought some thoughts from another recommender syst
        </td>
   </tr>  
   </table>
+</div>
+
+###Memory-based Options
+<div>
+<table class="table table-hover table-bordered">
+  <tr>
+    <td scope="row">similarity</td>
+    <td>pcc/cos/msd</td>
+    <td>Set the similarity method to use. Options: PCC, COS, MSD, CPC, exJaccard;</td>
+  </tr>
+  <tr>
+    <td scope="row">num.shrinkage</td>
+    <td>25/number</td>
+    <td>Set the shrinkage parameter to devalue similarity value. -1: to disable simialrity shrinkage. </td>
+  </tr>
+  <tr>
+    <td scope="row">num.neighbors</td>
+    <td>60/number</td>
+    <td>Set the number of neighbors used for KNN-based algorithms such as UserKNN, ItemKNN. </td>
+  </tr>
+  </table>
+</div>
 
 ##How to extend it##
 Waiting...
