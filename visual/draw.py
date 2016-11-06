@@ -9,4 +9,5 @@ class Visualization(object):
         pass
 
     @staticmethod
-    def
+    def drawDistribution():
+        pass
