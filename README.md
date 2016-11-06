@@ -20,6 +20,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 
 ##How to Configure it##
 ###Essential Options
+<div>
  <table class="table table-hover table-bordered">
   <tr>
     <th width="12%" scope="col"> Entry</th>
@@ -28,100 +29,79 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>
   <tr>
     <td>ratings</td>
-    <td>D:\\MovieLens\\100K.txt<br>
-      /home/user/ratings.txt</td>
+    <td>D:/MovieLens/100K.txt</td>
  
-    <td>Set the path to input dataset: &quot;*.wins&quot; for Windows, and &quot;*.lins&quot; for Linux and Unix. It is convenient if you need to frequently switch among different platforms. If not, you can use &quot;dataset.ratings&quot; for short. Format: each row separated by empty, tab or comma symbol. </td>
-  </tr>
-  <tr>
-    <td>dataset.social.wins<br>
-      dataset.social.lins</td>
-    <td>D:\\Epinions\\trust.txt<br>
-      /home/user/trust.txt</td>
- 
-    <td>Set the path to social dataset. Put &quot;-1&quot; to disable it. </td>
+    <td>Set the path to input dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
   <tr>
     <td scope="row">ratings.setup</td>
-    <td>-columns 0 1 2 3 -threshold -1</td>
+    <td>-columns 0 1 2</td>
 
-    <td>-columns: (user, item, [rating, [timestamp]]) columns of rating data are used; -threshold: to convert rating values to binary ones<br>
-      --time-unit DAYS, HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS, [SECONDS]: time unit of timestamps<br>
-      --headline: to skip the first head line when reading data<br>
-      --as-tensor: to read all columns as a tensor</td>
+    <td>-columns: (user, item, rating) columns of rating data are used;
+      -header: to skip the first head line when reading data<br>
+    </td>
   </tr>
   <tr>
     <td scope="row">recommender</td>
-    <td>RegSVD/SVD++/PMF/etc.</td>
+    <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
 
     <td>Set the recommender to use. Available options include: <br>
-      Baselines: GlobalAvg, UserAvg, ItemAvg, UserCluster, ItemCluster, Random, Constant, MostPop; <br>
-      Extensions:  NMF, SlopeOne, Hybrid, PD, AR, PRankD, External;<br>
-      Algorithms: check out the advanced <a href="#algos" class="blue-link page-scroll">algorithms</a> implemented</td>
+        Algorithms inplemented: UserKNN, ItemKNN, SlopeOne</td>
   </tr>
   <tr>
     <td scope="row">evaluation.setup</td>
-    <td>      cv -k 5 -p on -v 0.1 -o on</td>
+    <td>../dataset/FilmTrust/testset.txt</td>
  
-    <td>Main option: test-set; cv; leave-one-out;  given-n;  given-ratio;<br>
-      test-set -f path/to/test/file;<br>
-      cv -k kfold (default 5); -p on (parallel execution, default), off (singleton, fold-by-fold); <br>
-      leave-one-out -t threads (number of threads, used only for target r) -target u, i, r (r by dafault) [--by-date]<br>
-      given-n -N number (default 20) -target u, i [--by-date]; 
-      given-ratio -r ratio (default 0.8) -target u, i, r [--by-date]<br>
-      -target u, i, r: 
-      preserve a ratio of ratings relative to users (u), items (i) or ratings (r); --by-date: sort ratings by timestamps<br>
-        Commonly optional settings include: <br>
-        -v ratio of validation data (derived from training data, default 0)<br>
-        -rand-seed N: 
-        set the random seed, if not set, system time will be used;<br>
-        --test-view all, cold-start, trust-degree min max (default all); 
-        <br>
-        --early-stop loss, RMSE, MAE, etc: set the criterion for early stop. Note that early-stop may not produce the best performance. </td>
+    <td>Main option: -testSet;<br>
+      -testSet -f path/to/test/file;<br>
+     </td>
   </tr>
   <tr>
     <td scope="row">item.ranking</td>
-    <td>off -topN -1 -ignore -1</td>
+    <td>off -topN -1
 
     <td>Main option: whether to do item ranking<br>
       -topN: the length of the recommendation list for item recommendation, default -1 for full list; <br>
-      -ignore:  the number of the most popular items to ignore; -diverse: whether to use diversity measures</td>
+    </td>
   </tr>
   <tr>
     <td scope="row">output.setup</td>
-    <td>on -dir ./Results/ -verbose on</td>
+    <td>on -dir ./Results/</td>
 
     <td>Main option: whether to output recommendation results<br>
-      -dir path: the directory path of output results;<br>
-      -verbose on, off: whether to print out intermediate results;<br>
-      --save-model: whether to save recommendation model;<br>
-      --fold-data: whether to print out traing and test data;<br>
-      --measures-only: whether to print other information except measurements; <br>
-      --to-clipboard: copy results to clipboard, useful for a single run;<br>
-      --to-file filePath: collect results to a specific file, useful for multiple runs, especifially if not all at once. </td>
+      -dir path: the directory path of output results.
+       </td>
+  </tr>  
+  </table>
+</div>
+
+###Memory-based Options
+<div>
+<table class="table table-hover table-bordered">
+  <tr>
+    <td scope="row">similarity</td>
+    <td>pcc/cos</td>
+    <td>Set the similarity method to use. Options: PCC, COS;</td>
   </tr>
   <tr>
-    <td scope="row">guava.cache.spec</td>
-    <td>maximumSize=200</td>
-
-    <td>Set the Guava cache specificaiton, see <a href="http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/cache/CacheBuilderSpec.html">more options</a></td>
+    <td scope="row">num.shrinkage</td>
+    <td>25</td>
+    <td>Set the shrinkage parameter to devalue similarity value. -1: to disable simialrity shrinkage. </td>
   </tr>
   <tr>
-    <td scope="row">email.setup</td>
-    <td><p>on/off -host smtp.gmail.com<br>
-      -port 465 -user xxx@yy.com<br>
-      -password xxxx<br>
-      -auth true<br>
-      -to zzz@yy.com
-
-    <td>main option: if email notification is enabled; <br>
-      -host: the email server; -port: the port of the email server<br>
-      -user: the user name of your email account; <br>
-      -password: the password of your email account;<br>
-      -auth true/false: whether the email server requires authentification; <br>
-      -to:  the email address to which you want to send notification; </td>
+    <td scope="row">num.neighbors</td>
+    <td>30</td>
+    <td>Set the number of neighbors used for KNN-based algorithms such as UserKNN, ItemKNN. </td>
   </tr>
   </table>
+</div>
 
 ##How to extend it##
-Waiting...
+* 1.Make your new algorithm generalize the proper base class.
+* 2.Rewrite some of the following functions as needed.
+ - **readConfiguration()**
+ - **initModel()** 
+ - **buildModel()**
+ - **saveModel()**
+ - **loadModel()**
+ - **predict()**

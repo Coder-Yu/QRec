@@ -34,8 +34,8 @@ class Recommender(object):
         "show algorithm's configuration"
         print 'Algorithm:',self.config['recommender']
         print 'Ratings dataSet:',abspath(self.config['ratings'])
-        if LineConfig(self.config['evaluation']).contains('-testSet'):
-            print 'Test set:',abspath(LineConfig(self.config['evaluation']).getOption('-testSet'))
+        if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
+            print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
         print '='*80
 
