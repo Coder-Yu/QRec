@@ -1,7 +1,7 @@
 from baseclass.recommender import Recommender
 from tool import qmath
 from structure.symmetricMatrix import SymmetricMatrix
-import numpy as np
+
 class UserKNN(Recommender):
     def __init__(self,conf):
         super(UserKNN, self).__init__(conf)

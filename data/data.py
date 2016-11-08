@@ -3,13 +3,14 @@ from structure import sparseMatrix,new_sparseMatrix
 from tool.config import Config,LineConfig
 from tool.qmath import normalize
 import os.path
+from re import split
 #from sklearn.cross_validation import train_test_split
 class ratingDAO(object):
     'data access control'
     def __init__(self,config):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
-        self.evaluation = LineConfig(config['evaluation'])
+        self.evaluation = LineConfig(config['evaluation.setup'])
         self.user = {}
         self.item = {}
         self.timestamp = {}
@@ -23,9 +24,9 @@ class ratingDAO(object):
             #specify testSet
             self.trainingMatrix = self.loadRatings(config['ratings'])
             self.testSet_u,self.testSet_i = self.loadRatings(self.evaluation['-testSet'],True)
-
         else: #cross validation and leave-one-out
             self.ratingMatrix = self.loadRatings(config['ratings'])
+
 
 
     def loadRatings(self,file,bTest=False):
@@ -34,10 +35,6 @@ class ratingDAO(object):
         #ignore the headline
         if self.ratingConfig.contains('-header'):
             ratings = ratings[1:]
-        #set delimiter
-        delimiter = ' '
-        if self.ratingConfig.contains('-d'):
-            delimiter = self.ratingConfig['-d']
         #order of the columns
         order = self.ratingConfig['-columns'].strip().split()
         #split data
@@ -46,7 +43,7 @@ class ratingDAO(object):
         i_u_r = {}
         triple = []
         for line in ratings:
-            items = line.strip().split(delimiter)
+            items = split(' |,|\t',line.strip())
             userId =  items[int(order[0])]
             itemId =  items[int(order[1])]
             rating =  items[int(order[2])]
@@ -100,6 +97,9 @@ class ratingDAO(object):
 
     def ratingScale(self):
         return (self.rScale[0],self.rScale[1])
+
+    def elemCount(self):
+        return self.trainingMatrix.elemCount()
 
 
 

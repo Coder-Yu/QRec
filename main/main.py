@@ -10,6 +10,8 @@ if __name__ == '__main__':
     print '1. UserKNN   2. ItemKNN'
     algor = 0
     order = input('please enter the num of the algorithm to run it:')
+    import time
+    s = time.clock()
     if order == 1:
         conf = Config('../config/UserKNN')
         algor = UserKNN(conf)
@@ -20,3 +22,5 @@ if __name__ == '__main__':
         print 'Error num!'
         exit()
     algor.execute()
+    e = time.clock()
+    print "Run time: %f s" % (e - s)

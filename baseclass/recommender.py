@@ -13,8 +13,8 @@ from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
 class Recommender(object):
-    def __init__(self,configuration):
-        self.config = configuration
+    def __init__(self,conf):
+        self.config = conf
         self.dao = None
         self.isSaveModel = False
         self.ranking = None
@@ -34,8 +34,8 @@ class Recommender(object):
         "show algorithm's configuration"
         print 'Algorithm:',self.config['recommender']
         print 'Ratings dataSet:',abspath(self.config['ratings'])
-        if LineConfig(self.config['evaluation']).contains('-testSet'):
-            print 'Test set:',abspath(LineConfig(self.config['evaluation']).getOption('-testSet'))
+        if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
+            print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
         print '='*80
 
@@ -77,12 +77,45 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
-        info = []
-        info.append('MAE '+str(Measure.MAE(self.dao.testSet_u)))
-        FileIO.writeFile(outDir, fileName, info)
+        measure = Measure.ratingMeasure(self.dao.testSet_u)
+        FileIO.writeFile(outDir, fileName, measure)
 
     def evalRanking(self):
-        pass
+        res = []  # used to contain the text of the result
+        N = int(self.ranking['-topN'])
+        if N>100 or N<0:
+            N=100
+        res.append('userId: recommendations in (itemId, ranking score) pairs\n')
+        # predict
+        topNSet = {}
+        userCount = len(self.dao.testSet_u)
+        for i,userId in enumerate(self.dao.testSet_u):
+            itemSet = {}
+            line = userId+':'
+            for itemId in self.dao.item:
+                pred = self.predict(userId, itemId)
+                # add prediction in order to measure
+                itemSet[itemId] = pred
+            topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
+
+            if i%100==0:
+                print 'Progress:'+str(i)+'/'+str(userCount)
+            for item in topNSet[userId]:
+                line += '(' + item[0] + ',' + str(item[1]) + ') '
+            line+='\n'
+            res.append(line)
+        currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        # output prediction result
+        if self.isOutput:
+            outDir = self.output['-dir']
+            fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
+            FileIO.writeFile(outDir, fileName, res)
+            print 'The Result has been output to ', abspath(outDir), '.'
+        #output evaluation result
+        outDir = self.output['-dir']
+        fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
+        measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
+        FileIO.writeFile(outDir, fileName, measure)
 
     def execute(self):
         self.printAlgorConfig()
