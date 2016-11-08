@@ -6,7 +6,7 @@ class ItemKNN(Recommender):
     def __init__(self,conf):
         super(ItemKNN, self).__init__(conf)
         super(ItemKNN, self).readConfiguration()
-        self.itemSim = SymmetricMatrix(len(self.dao.user))
+        self.itemSim = SymmetricMatrix(len(self.dao.user)) #used to store the similarity among items
 
     def readConfiguration(self):
         self.sim = self.config['similarity']
@@ -18,7 +18,7 @@ class ItemKNN(Recommender):
 
 
     def predict(self,u,i):
-        #find the closest neighbors of user u
+        #find the closest neighbors of item i
         topItems = sorted(self.itemSim[i].iteritems(),key = lambda d:d[1],reverse=True)
         itemCount = self.neighbors
         if itemCount > len(topItems):
@@ -34,9 +34,9 @@ class ItemKNN(Recommender):
                 pred += corr*rating
                 denom += topItems[n][1]
         if pred == 0:
-            #no users have rating on item i,return the average rating of user u
+            #no items have rating on item i,return the average rating of user u
             n = self.dao.col(i)>0
-            if n[0].sum()== 0: #no data about current user in training set
+            if n[0].sum()== 0: #no data about current item in training set
                 return 0
             pred = float(self.dao.col(i)[0].sum()/n[0].sum())
             return round(pred,3)
@@ -44,7 +44,7 @@ class ItemKNN(Recommender):
         return round(pred,3)
 
     def computeCorr(self):
-        'compute correlation among users'
+        'compute correlation among items'
         print 'Computing item correlation...'
         for i1 in self.dao.testSet_i:
 
