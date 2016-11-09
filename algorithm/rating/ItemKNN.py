@@ -5,13 +5,22 @@ from structure.symmetricMatrix import SymmetricMatrix
 class ItemKNN(Recommender):
     def __init__(self,conf):
         super(ItemKNN, self).__init__(conf)
-        super(ItemKNN, self).readConfiguration()
         self.itemSim = SymmetricMatrix(len(self.dao.user)) #used to store the similarity among items
 
     def readConfiguration(self):
+        super(ItemKNN, self).readConfiguration()
         self.sim = self.config['similarity']
         self.shrinkage =int(self.config['num.shrinkage'])
         self.neighbors = int(self.config['num.neighbors'])
+
+    def printAlgorConfig(self):
+        "show algorithm's configuration"
+        super(ItemKNN, self).printAlgorConfig()
+        print 'Specified Arguments of',self.config['recommender']+':'
+        print 'num.neighbors:',self.config['num.neighbors']
+        print 'num.shrinkage:', self.config['num.shrinkage']
+        print 'similarity:', self.config['similarity']
+        print '='*80
 
     def initModel(self):
         self.computeCorr()

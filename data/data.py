@@ -11,8 +11,8 @@ class ratingDAO(object):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
         self.evaluation = LineConfig(config['evaluation.setup'])
-        self.user = {}
-        self.item = {}
+        self.user = {} #used to store the order of users
+        self.item = {} #used to store the order of items
         self.timestamp = {}
         self.ratingMatrix = None
         self.trainingMatrix = None
