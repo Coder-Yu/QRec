@@ -22,7 +22,7 @@ class SlopeOne(Recommender):
                     ave = sum / count
                 else:
                     continue
-            average.setdefault(i1,ave)
+            average.setdefault(i1,ave)klkl
 
     def predict(self,u,i):
         diff={}
