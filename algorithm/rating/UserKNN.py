@@ -7,7 +7,7 @@ class UserKNN(Recommender):
     def __init__(self,conf):
         super(UserKNN, self).__init__(conf)
         self.userSim = SymmetricMatrix(len(self.dao.user))
-        self.userMeans = np.zeros(len(self.dao.user))
+
 
     def readConfiguration(self):
         super(UserKNN, self).readConfiguration()
@@ -27,7 +27,7 @@ class UserKNN(Recommender):
 
 
     def initModel(self):
-        self.computeUserMean()
+
         self.computeCorr()
 
 
@@ -45,25 +45,19 @@ class UserKNN(Recommender):
             #if user n has rating on item i
             similarUser = topUsers[n][0]
             if self.dao.rating(similarUser,i) != 0:
-                corr = topUsers[n][1]
+                similarity = topUsers[n][1]
                 rating = self.dao.rating(similarUser,i)
-                sum += corr*(rating-self.userMeans[self.dao.user[similarUser]])
-                denom += topUsers[n][1]
+                sum += similarity*(rating-self.dao.userMeans[similarUser])
+                denom += similarity
         if sum == 0:
             #no users have rating on item i,return the average rating of user u
-            return round(self.userMeans[self.dao.user[u]],3)
-        pred = self.userMeans[self.dao.user[u]]+sum/float(denom)
+            if self.dao.userMeans[u]==0:
+                #user u has no ratings in the training set
+                return round(self.dao.globalMean,3)
+            return round(self.dao.userMeans[u],3)
+        pred = self.dao.userMeans[u]+sum/float(denom)
         return round(pred,3)
 
-    def computeUserMean(self):
-        print 'Computing mean values of users...'
-        for u in self.dao.user:
-            n = self.dao.row(u) > 0
-            if sum(n[0]) == 0:  # no data about current user in training set
-                continue
-            mean = float(self.dao.row(u)[0].sum() / n[0].sum())
-            self.userMeans[self.dao.user[u]] = mean
-        print 'The mean values of users have been figured out.'
 
 
     def computeCorr(self):

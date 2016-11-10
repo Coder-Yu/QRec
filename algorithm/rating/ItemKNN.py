@@ -33,24 +33,26 @@ class ItemKNN(Recommender):
         if itemCount > len(topItems):
             itemCount = len(topItems)
         #predict
-        pred = 0
+        sum = 0
         denom = 0
         for n in range(itemCount):
+            similarItem = topItems[n][0]
             #if user n has rating on item i
-            if self.dao.rating(u,topItems[n][0]) != 0:
-                corr = topItems[n][1]
-                rating = self.dao.rating(u,topItems[n][0])
-                pred += corr*rating
-                denom += topItems[n][1]
-        if pred == 0:
-            #no items have rating on item i,return the average rating of user u
-            n = self.dao.col(i)>0
-            if n[0].sum()== 0: #no data about current item in training set
-                return 0
-            pred = float(self.dao.col(i)[0].sum()/n[0].sum())
-            return round(pred,3)
-        pred = pred/float(denom)
+            if self.dao.contains(u,similarItem):
+                similarity = topItems[n][1]
+                rating = self.dao.rating(u,similarItem)
+                sum += similarity*(rating-self.dao.itemMeans[similarItem])
+                denom += similarity
+        if sum == 0:
+            #no items have rating on item i,return the average rating of item i
+            if self.dao.itemMeans[i] == 0:
+                # item i has no ratings in the training set
+                return round(self.dao.globalMean,3)
+            return round(self.dao.itemMeans[i], 3)
+        pred = self.dao.itemMeans[i]+sum/float(denom)
         return round(pred,3)
+
+
 
     def computeCorr(self):
         'compute correlation among items'
