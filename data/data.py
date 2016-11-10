@@ -11,8 +11,11 @@ class ratingDAO(object):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
         self.evaluation = LineConfig(config['evaluation.setup'])
-        self.user = {}
-        self.item = {}
+        self.user = {} #used to store the order of users
+        self.item = {} #used to store the order of items
+        self.userMeans = {} #used to store the mean values of users's ratings
+        self.itemMeans = {} #used to store the mean values of items's ratings
+        self.globalMean = 0
         self.timestamp = {}
         self.ratingMatrix = None
         self.trainingMatrix = None
@@ -22,14 +25,17 @@ class ratingDAO(object):
         self.rScale = [-9999999,999999]
         if self.evaluation.contains('-testSet'):
             #specify testSet
-            self.trainingMatrix = self.loadRatings(config['ratings'])
-            self.testSet_u,self.testSet_i = self.loadRatings(self.evaluation['-testSet'],True)
+            self.trainingMatrix = self.__loadRatings(config['ratings'])
+            self.testSet_u,self.testSet_i = self.__loadRatings(self.evaluation['-testSet'],True)
         else: #cross validation and leave-one-out
-            self.ratingMatrix = self.loadRatings(config['ratings'])
+            self.ratingMatrix = self.__loadRatings(config['ratings'])
+        self.__computeItemMean()
+        self.__computeUserMean()
+        self.__globalAverage()
 
 
 
-    def loadRatings(self,file,bTest=False):
+    def __loadRatings(self,file,bTest=False):
         with open(file) as f:
             ratings = f.readlines()
         #ignore the headline
@@ -85,6 +91,34 @@ class ratingDAO(object):
         else:
             # return testSet
             return u_i_r,i_u_r
+
+    def __globalAverage(self):
+        self.globalMean = sum(self.userMeans.values())/len(self.userMeans)
+
+    def __computeUserMean(self):
+        for u in self.user:
+            n = self.row(u) > 0
+            mean = 0
+            if n[0].sum() == 0:  # no data about current user in training set
+                pass
+            else:
+                mean = float(self.row(u)[0].sum() / n[0].sum())
+            self.userMeans[u] = mean
+
+    def __computeItemMean(self):
+        for c in self.item:
+            n = self.col(c) > 0
+            mean = 0
+            if n[0].sum() == 0:  # no data about current user in training set
+                pass
+            else:
+                mean = float(self.col(c)[0].sum() / n[0].sum())
+            self.itemMeans[c] = mean
+
+    def contains(self,u,i):
+        'whether user u rated item i'
+        return self.trainingMatrix.contains(self.user[u],self.item[i])
+
 
     def row(self,u):
         return self.trainingMatrix.row(self.user[u])

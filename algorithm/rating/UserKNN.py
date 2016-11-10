@@ -1,20 +1,35 @@
 from baseclass.recommender import Recommender
 from tool import qmath
 from structure.symmetricMatrix import SymmetricMatrix
+import numpy as np
 
 class UserKNN(Recommender):
     def __init__(self,conf):
         super(UserKNN, self).__init__(conf)
-        super(UserKNN, self).readConfiguration()
         self.userSim = SymmetricMatrix(len(self.dao.user))
 
+
     def readConfiguration(self):
+        super(UserKNN, self).readConfiguration()
         self.sim = self.config['similarity']
         self.shrinkage =int(self.config['num.shrinkage'])
         self.neighbors = int(self.config['num.neighbors'])
 
+    def printAlgorConfig(self):
+        "show algorithm's configuration"
+        super(UserKNN, self).printAlgorConfig()
+        print 'Specified Arguments of',self.config['recommender']+':'
+        print 'num.neighbors:',self.config['num.neighbors']
+        print 'num.shrinkage:', self.config['num.shrinkage']
+        print 'similarity:', self.config['similarity']
+        print '='*80
+
+
+
     def initModel(self):
+
         self.computeCorr()
+
 
 
     def predict(self,u,i):
@@ -24,24 +39,26 @@ class UserKNN(Recommender):
         if userCount > len(topUsers):
             userCount = len(topUsers)
         #predict
-        pred = 0
+        sum = 0
         denom = 0
         for n in range(userCount):
             #if user n has rating on item i
-            if self.dao.rating(topUsers[n][0],i) != 0:
-                corr = topUsers[n][1]
-                rating = self.dao.rating(topUsers[n][0],i)
-                pred += corr*rating
-                denom += topUsers[n][1]
-        if pred == 0:
+            similarUser = topUsers[n][0]
+            if self.dao.rating(similarUser,i) != 0:
+                similarity = topUsers[n][1]
+                rating = self.dao.rating(similarUser,i)
+                sum += similarity*(rating-self.dao.userMeans[similarUser])
+                denom += similarity
+        if sum == 0:
             #no users have rating on item i,return the average rating of user u
-            n = self.dao.row(u)>0
-            if sum(n[0]) == 0: #no data about current user in training set
-                return 0
-            pred = float(self.dao.row(u)[0].sum()/n[0].sum())
-            return round(pred,3)
-        pred = pred/float(denom)
+            if self.dao.userMeans[u]==0:
+                #user u has no ratings in the training set
+                return round(self.dao.globalMean,3)
+            return round(self.dao.userMeans[u],3)
+        pred = self.dao.userMeans[u]+sum/float(denom)
         return round(pred,3)
+
+
 
     def computeCorr(self):
         'compute correlation among users'
