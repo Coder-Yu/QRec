@@ -45,7 +45,7 @@ class ItemKNN(Recommender):
                 denom += similarity
         if sum == 0:
             #no items have rating on item i,return the average rating of item i
-            if self.dao.itemMeans[i] == 0:
+            if not self.dao.containsItem(i):
                 # item i has no ratings in the training set
                 return round(self.dao.globalMean,3)
             return round(self.dao.itemMeans[i], 3)

@@ -51,8 +51,8 @@ class UserKNN(Recommender):
                 denom += similarity
         if sum == 0:
             #no users have rating on item i,return the average rating of user u
-            if self.dao.userMeans[u]==0:
-                #user u has no ratings in the training set
+            if not self.dao.containsUser(u):
+                #user u has no ratings in the training set,return the global mean
                 return round(self.dao.globalMean,3)
             return round(self.dao.userMeans[u],3)
         pred = self.dao.userMeans[u]+sum/float(denom)
