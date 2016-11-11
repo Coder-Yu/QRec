@@ -99,26 +99,34 @@ class ratingDAO(object):
         for u in self.user:
             n = self.row(u) > 0
             mean = 0
-            if n[0].sum() == 0:  # no data about current user in training set
+
+            if not self.containsUser(u):  # no data about current user in training set
                 pass
             else:
-                mean = float(self.row(u)[0].sum() / n[0].sum())
+                mean = float(self.row(u)[0].sum()) / n[0].sum()
             self.userMeans[u] = mean
 
     def __computeItemMean(self):
         for c in self.item:
             n = self.col(c) > 0
             mean = 0
-            if n[0].sum() == 0:  # no data about current user in training set
+            if not self.containsItem(c):  # no data about current user in training set
                 pass
             else:
-                mean = float(self.col(c)[0].sum() / n[0].sum())
+                mean = float(self.col(c)[0].sum()) / n[0].sum()
             self.itemMeans[c] = mean
 
     def contains(self,u,i):
         'whether user u rated item i'
         return self.trainingMatrix.contains(self.user[u],self.item[i])
 
+    def containsUser(self,u):
+        'whether user is in training set'
+        return self.trainingMatrix.matrix_User.has_key(self.user[u])
+
+    def containsItem(self,i):
+        'whether item is in training set'
+        return self.trainingMatrix.matrix_Item.has_key(self.item[i])
 
     def row(self,u):
         return self.trainingMatrix.row(self.user[u])
