@@ -11,20 +11,29 @@ class SlopeOne(Recommender):
         self.computeAverage()
 
     def computeAverage(self):
-        average = {}
-        for i1 in self.dao.item:
-            count = 0
-            sum = 0
-            for n in range(len(self.dao.col(i1))):
-                if self.dao.col(i1)[n] != 0:
-                    count = count + 1
-                    sum = sum + self.dao.col(i1)[n]
-                    ave = sum / count
-                else:
-                    continue
-            average.setdefault(i1,ave)
+        diffAverage = {}
+        freq = {}
+        for i1 in range(len(self.dao.testSet_i.keys())):
+            for i2 in self.dao.testSet_i.keys()[i1:]:
+                new_x1,new_x2 = qmath.common(self.dao.testSet_i.keys()[i1],i2)
+                diff = new_x1 - new_x2
+                diffAverage_sub = {}
+                diffAverage_sub.setdefault(i2,diff.sum()/len(diff))
+
+                freq_sub = {}
+                freq_sub.setdefault(i2,len(diff))
+
+            diffAverage.setdefault(self.dao.testSet_i.keys()[i1],diffAverage_sub)
+            freq.setdefault(self.dao.testSet_i.keys()[i1],freq_sub)
+
 
     def predict(self,u,i):
-        diff={}
-        for i2 in self.dao.item:
-            pass
+        for u in self.dao.testSet_u.keys():
+            if SymmetricMatrix.contains(u) == True:#should use another interface
+                itemList = self.dao.row(u)>0
+                for item in self.dao.testSet_u[u].keys():
+                    pass
+            else:
+                for item in self.dao.testSet_u[u].keys():
+                    pred = self.dao.itemMeans[item]
+
