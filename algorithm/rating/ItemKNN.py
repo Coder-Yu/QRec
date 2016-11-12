@@ -1,4 +1,4 @@
-from baseclass.recommender import Recommender
+from baseclass.Recommender import Recommender
 from tool import qmath
 from structure.symmetricMatrix import SymmetricMatrix
 

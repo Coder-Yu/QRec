@@ -52,7 +52,7 @@ class IterativeRecommender(Recommender):
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return round(self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]].transpose()),3)
+            return round(self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]]),3)
         else:
             return round(self.dao.globalMean,3)
 
