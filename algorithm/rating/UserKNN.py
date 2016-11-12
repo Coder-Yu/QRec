@@ -8,7 +8,6 @@ class UserKNN(Recommender):
         super(UserKNN, self).__init__(conf)
         self.userSim = SymmetricMatrix(len(self.dao.user))
 
-
     def readConfiguration(self):
         super(UserKNN, self).readConfiguration()
         self.sim = self.config['similarity']
@@ -24,13 +23,8 @@ class UserKNN(Recommender):
         print 'similarity:', self.config['similarity']
         print '='*80
 
-
-
     def initModel(self):
-
         self.computeCorr()
-
-
 
     def predict(self,u,i):
         #find the closest neighbors of user u
@@ -39,8 +33,7 @@ class UserKNN(Recommender):
         if userCount > len(topUsers):
             userCount = len(topUsers)
         #predict
-        sum = 0
-        denom = 0
+        sum,denom = 0,0
         for n in range(userCount):
             #if user n has rating on item i
             similarUser = topUsers[n][0]
@@ -57,8 +50,6 @@ class UserKNN(Recommender):
             return round(self.dao.userMeans[u],3)
         pred = self.dao.userMeans[u]+sum/float(denom)
         return round(pred,3)
-
-
 
     def computeCorr(self):
         'compute correlation among users'

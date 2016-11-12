@@ -87,7 +87,7 @@ class ratingDAO(object):
             #     offset += len(uRating)
             # indptr.append(offset)
             # return sparseMatrix.SparseMatrix(data, indices, indptr)
-            return new_sparseMatrix.SparseMatrix(triple,(len(self.user),len(self.item)))
+            return new_sparseMatrix.SparseMatrix(triple)
         else:
             # return testSet
             return u_i_r,i_u_r
@@ -115,6 +115,12 @@ class ratingDAO(object):
             else:
                 mean = float(self.col(c)[0].sum()) / n[0].sum()
             self.itemMeans[c] = mean
+
+    def trainingSize(self):
+        return self.trainingMatrix.size
+
+    def testSize(self):
+        return (len(self.testSet_u),len(self.testSet_i))
 
     def contains(self,u,i):
         'whether user u rated item i'

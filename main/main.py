@@ -13,10 +13,10 @@ if __name__ == '__main__':
     import time
     s = time.clock()
     if order == 1:
-        conf = Config('../config/UserKNN')
+        conf = Config('../config/UserKNN.conf')
         algor = UserKNN(conf)
     elif order == 2:
-        conf = Config('../config/itemKNN')
+        conf = Config('../config/itemKNN.conf')
         algor = ItemKNN(conf)
     else:
         print 'Error num!'

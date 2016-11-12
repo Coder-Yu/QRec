@@ -25,7 +25,6 @@ class ItemKNN(Recommender):
     def initModel(self):
         self.computeCorr()
 
-
     def predict(self,u,i):
         #find the closest neighbors of item i
         topItems = sorted(self.itemSim[i].iteritems(),key = lambda d:d[1],reverse=True)
@@ -51,8 +50,6 @@ class ItemKNN(Recommender):
             return round(self.dao.itemMeans[i], 3)
         pred = self.dao.itemMeans[i]+sum/float(denom)
         return round(pred,3)
-
-
 
     def computeCorr(self):
         'compute correlation among items'
