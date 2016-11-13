@@ -3,10 +3,9 @@ import numpy as np
 
 class SparseMatrix():
     'matrix used to store raw data'
-    def __init__(self,triple,shape):
+    def __init__(self,triple):
         self.matrix_User = {}
         self.matrix_Item = {}
-        self.shape = shape
         for item in triple:
             if not self.matrix_User.has_key(item[0]):
                 self.matrix_User[item[0]] = {}
@@ -15,12 +14,13 @@ class SparseMatrix():
             self.matrix_User[item[0]][item[1]]=item[2]
             self.matrix_Item[item[1]][item[0]]=item[2]
         self.elemNum = len(triple)
+        self.size = (len(self.matrix_User),len(self.matrix_Item))
 
     def row(self,r):
         if not self.matrix_User.has_key(r):
-            return np.zeros((1,self.shape[1]))
+            return np.zeros((1,self.size[1]))
         else:
-            array = np.zeros((1,self.shape[1]))
+            array = np.zeros((1,self.size[1]))
             ind = self.matrix_User[r].keys()
             val = self.matrix_User[r].values()
             array[0][ind] = val
@@ -28,9 +28,9 @@ class SparseMatrix():
 
     def col(self,c):
         if not self.matrix_Item.has_key(c):
-            return np.zeros((1,self.shape[0]))
+            return np.zeros((1,self.size[0]))
         else:
-            array = np.zeros((1,self.shape[0]))
+            array = np.zeros((1,self.size[0]))
             ind = self.matrix_Item[c].keys()
             val = self.matrix_Item[c].values()
             array[0][ind] = val
@@ -48,6 +48,9 @@ class SparseMatrix():
 
     def elemCount(self):
         return self.elemNum
+
+    def size(self):
+        return self.size
     # def sRow(self,r):
     #     'return the sparse row'
     #     return self.matrix.getrow(r)
