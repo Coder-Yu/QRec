@@ -45,8 +45,8 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td scope="row">recommender</td>
     <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
 
-    <td>Set the recommender to use. Available options include: <br>
-        Algorithms inplemented: UserKNN, ItemKNN, SlopeOne</td>
+    <td>Set the recommender to use. <br>
+    </td>
   </tr>
   <tr>
     <td scope="row">evaluation.setup</td>
@@ -96,10 +96,39 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </table>
 </div>
 
+###Model-based Options
+<div>
+ <table class="table table-hover table-bordered">
+  <tr>
+    <td scope="row">num.factors</td>
+    <td>5/10/20/number</td>
+    <td>Set the number of latent factors</td>
+  </tr>
+  <tr>
+    <td scope="row">num.max.iter</td>
+    <td>100/200/number</td>
+    <td>Set the maximum number of iterations for iterative recommendation algorithms. </td>
+  </tr>
+  <tr>
+    <td scope="row">learnRate</td>
+    <td>-init 0.01 -max 1</td>
+    <td>-init initial learning rate for iterative recommendation algorithms; <br>
+      -max: maximum learning rate (default 1);<br>
+    </td>
+  </tr>
+  <tr>
+    <td scope="row">reg.lambda</td>
+    <td>-u 0.05 -i 0.05 -b 0.1 -s 0.1</td>
+    <td>
+      -u: user regularizaiton; -i: item regularization; -b: bias regularizaiton; -s: social regularization</td>
+  </tr> 
+  </table>
+</div>
 ##How to extend it##
 * 1.Make your new algorithm generalize the proper base class.
 * 2.Rewrite some of the following functions as needed.
  - **readConfiguration()**
+ - **printAlgorConfig()**
  - **initModel()** 
  - **buildModel()**
  - **saveModel()**
