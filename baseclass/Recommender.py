@@ -64,7 +64,7 @@ class Recommender(object):
             for ind,item in enumerate(self.dao.testSet_u[userId]):
                 itemId = item[0]
                 originRating = item[1]
-                pred = self.predict(userId,itemId)
+                pred = round(self.predict(userId,itemId),3)
                 # add prediction in order to measure
                 self.dao.testSet_u[userId][ind].append(pred)
                 res.append(userId+' '+itemId+' '+str(originRating)+' '+str(pred)+'\n')

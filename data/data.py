@@ -136,6 +136,16 @@ class ratingDAO(object):
         'whether item is in training set'
         return self.trainingMatrix.matrix_Item.has_key(self.item[i])
 
+    def userRated(self,u):
+        itemIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
+        rating = self.trainingMatrix.matrix_User[self.user[u]].values()
+        return (itemIndex,rating)
+
+    def itemRated(self,i):
+        userIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
+        rating = self.trainingMatrix.matrix_Item[self.item[i]].values()
+        return (userIndex,rating)
+
     def row(self,u):
         return self.trainingMatrix.row(self.user[u])
 
