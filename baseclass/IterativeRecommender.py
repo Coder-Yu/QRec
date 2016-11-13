@@ -25,7 +25,7 @@ class IterativeRecommender(Recommender):
         super(IterativeRecommender, self).printAlgorConfig()
         print 'Reduced Dimension:',self.k
         print 'Maximum Iteration:',self.maxIter
-        print 'Regularization parameter: regU %f, regI %f' %(self.regU,self.regI)
+        print 'Regularization parameter: regU %.3f, regI %.3f' %(self.regU,self.regI)
         print '='*80
 
     def initModel(self):
