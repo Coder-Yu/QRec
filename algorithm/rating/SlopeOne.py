@@ -1,4 +1,4 @@
-from baseclass.recommender import Recommender
+from baseclass.Recommender import Recommender
 from tool import qmath
 from structure.symmetricMatrix import SymmetricMatrix
 
@@ -12,36 +12,42 @@ class SlopeOne(Recommender):
         self.computeAverage()
 
     def computeAverage(self):
-        for i1 in range(len(self.dao.testSet_i.keys())):
+        for item in self.dao.testSet_i:
             freq_sub = {}
             diffAverage_sub = {}
-            for i2 in self.dao.testSet_i.keys()[i1:]:
-                new_x1,new_x2 = qmath.common(self.dao.testSet_i.keys()[i1],i2)
+            for item2 in self.dao.item:
+                new_x1,new_x2 = qmath.common(self.dao.col(item),self.dao.col(item2))
                 diff = new_x1 - new_x2
+                if len(diff)==0:
+                    diffAverage_sub.setdefault(self.dao.item[item2], 0)
+                else:
+                    diffAverage_sub.setdefault(self.dao.item[item2],diff.mean())
+                freq_sub.setdefault(self.dao.item[item2],len(diff))
 
-                diffAverage_sub.setdefault(i2,diff.mean())
-                freq_sub.setdefault(i2,len(diff))
-
-            self.diffAverage[i1] = diffAverage_sub
-            self.freq[i1] = freq_sub
+            self.diffAverage[item] = diffAverage_sub
+            self.freq[item] = freq_sub
 
 
     def predict(self,u,i):
-        itemDict = {}
+        pred = 0
         # check if the user existed in trainSet or not
         if self.dao.containsUser(u):
-            for item in self.dao.row(u).valuse():
-                if item.values() > 0:
-                    itemDict[item] = item.values()
-                else:
-                    continue
             sum = 0
             freqSum = 0
-            for item2 in itemDict.keys():
-                sum = sum + ((itemDict[item2] + self.diffAverage[u][item2]) * self.freq[u][item2])
-                freqSum = freqSum + self.freq[u][item2]
-            pred = sum/freqSum
-
+            itemRated,ratings = self.dao.userRated(u)
+            for item,rating in zip(itemRated,ratings):
+                diff = self.diffAverage[i][item]
+                count = self.freq[i][item]
+                sum += (rating + diff) * count
+                freqSum += count
+            try:
+                pred = float(sum)/freqSum
+            except ZeroDivisionError:
+                pred = self.dao.userMeans[u]
+        elif self.dao.containsItem(i):
+            pred = self.dao.itemMeans[i]
         else:
-            pred = self.dao.itemMeans[u]
+            pred = self.dao.globalMean
+
+        return pred
 
