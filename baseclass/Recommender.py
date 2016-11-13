@@ -25,6 +25,7 @@ class Recommender(object):
         self.readConfiguration()
 
     def readConfiguration(self):
+        self.algorName = self.config['recommender']
         self.dao = ratingDAO(self.config)
         self.output = LineConfig(self.config['output.setup'])
         self.isOutput = self.output.isMainOn()
