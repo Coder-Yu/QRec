@@ -36,9 +36,16 @@ class SparseMatrix():
             array[0][ind] = val
             return array
     def elem(self,r,c):
-        if not self.matrix_User.has_key(r) or not self.matrix_User[r].has_key(c):
+        if not self.contains(r,c):
             return 0
         return self.matrix_User[r][c]
+
+    def contains(self,r,c):
+        if self.matrix_User.has_key(r) and self.matrix_User[r].has_key(c):
+            return True
+        return False
+
+
     def elemCount(self):
         return self.elemNum
     # def sRow(self,r):
