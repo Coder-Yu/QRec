@@ -4,12 +4,6 @@ class BasicMF(IterativeRecommender):
     def __init__(self,conf):
         super(BasicMF, self).__init__(conf)
 
-    def readConfiguration(self):
-        super(BasicMF, self).readConfiguration()
-
-    def printAlgorConfig(self):
-        super(BasicMF, self).printAlgorConfig()
-
     def buildModel(self):
         iteration = 0
         while iteration < self.maxIter:
