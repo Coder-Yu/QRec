@@ -1,4 +1,4 @@
-from recommender import Recommender
+from baseclass.Recommender import Recommender
 from tool import config
 import numpy as np
 
@@ -30,7 +30,7 @@ class IterativeRecommender(Recommender):
 
     def initModel(self):
         self.P = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent user matrix
-        self.Q = np.random.rand(self.k, self.dao.trainingSize[1])  # latent item matrix
+        self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
     def saveModel(self):
@@ -62,7 +62,7 @@ class IterativeRecommender(Recommender):
             print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
-        print '%s iteration %d: loss = %f, delta_loss = %f' %(self.algorName,iter,self.loss,deltaLoss)
+        print '%s iteration %d: loss = %f, delta_loss = %f learning_Rate = %f' %(self.algorName,iter,self.loss,deltaLoss,self.lRate)
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond

@@ -15,6 +15,7 @@ class ratingDAO(object):
         self.item = {} #used to store the order of items
         self.userMeans = {} #used to store the mean values of users's ratings
         self.itemMeans = {} #used to store the mean values of items's ratings
+        self.triple = None
         self.globalMean = 0
         self.timestamp = {}
         self.ratingMatrix = None
@@ -87,6 +88,7 @@ class ratingDAO(object):
             #     offset += len(uRating)
             # indptr.append(offset)
             # return sparseMatrix.SparseMatrix(data, indices, indptr)
+            self.triple = triple
             return new_sparseMatrix.SparseMatrix(triple)
         else:
             # return testSet
