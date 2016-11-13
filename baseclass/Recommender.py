@@ -38,6 +38,8 @@ class Recommender(object):
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
+        print 'Training set size: (user count: %d, item count %d)' %(self.dao.trainingSize())
+        print 'Test set size: (user count: %d, item count %d)' %(self.dao.testSize())
         print '='*80
 
     def initModel(self):
@@ -56,6 +58,14 @@ class Recommender(object):
     def predict(self,u,i):
         pass
 
+    def checkRatingBoundary(self,prediction):
+        if prediction > self.dao.rScale[0]:
+            return self.dao.rScale[0]
+        elif prediction < self.dao.rScale[1]:
+            return self.dao.rScale[1]
+        else:
+            return round(prediction,3)
+
     def evalRatings(self):
         res = [] #used to contain the text of the result
         res.append('userId  itemId  original  prediction\n')
@@ -64,7 +74,10 @@ class Recommender(object):
             for ind,item in enumerate(self.dao.testSet_u[userId]):
                 itemId = item[0]
                 originRating = item[1]
-                pred = round(self.predict(userId,itemId),3)
+                #predict
+                prediction = self.predict(userId,itemId)
+                #####################################
+                pred = self.checkRatingBoundary(prediction)
                 # add prediction in order to measure
                 self.dao.testSet_u[userId][ind].append(pred)
                 res.append(userId+' '+itemId+' '+str(originRating)+' '+str(pred)+'\n')
@@ -94,7 +107,10 @@ class Recommender(object):
             itemSet = {}
             line = userId+':'
             for itemId in self.dao.item:
-                pred = self.predict(userId, itemId)
+                # predict
+                prediction = self.predict(userId, itemId)
+                #####################################
+                pred = self.checkRatingBoundary(prediction)
                 # add prediction in order to measure
                 itemSet[itemId] = pred
             topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]

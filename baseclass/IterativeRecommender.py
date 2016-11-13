@@ -25,7 +25,7 @@ class IterativeRecommender(Recommender):
         super(IterativeRecommender, self).printAlgorConfig()
         print 'Reduced Dimension:',self.k
         print 'Maximum Iteration:',self.maxIter
-        print 'Regularization parameter: regU %f, regI %f' %(self.regU,self.regI)
+        print 'Regularization parameter: regU %.3f, regI %.3f' %(self.regU,self.regI)
         print '='*80
 
     def initModel(self):
@@ -52,9 +52,9 @@ class IterativeRecommender(Recommender):
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return round(self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]]),3)
+            return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
         else:
-            return round(self.dao.globalMean,3)
+            return self.dao.globalMean
 
     def isConverged(self,iter):
         from math import isnan
@@ -62,7 +62,7 @@ class IterativeRecommender(Recommender):
             print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
-        print '%s iteration %d: loss = %f, delta_loss = %f learning_Rate = %f' %(self.algorName,iter,self.loss,deltaLoss,self.lRate)
+        print '%s iteration %d: loss = %.4f, delta_loss = %.4f learning_Rate = %f' %(self.algorName,iter,self.loss,deltaLoss,self.lRate)
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
