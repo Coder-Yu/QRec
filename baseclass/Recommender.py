@@ -38,6 +38,8 @@ class Recommender(object):
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
+        print 'Training set size: (user count: %d, item count %d)' %(self.dao.trainingSize())
+        print 'Test set size: (user count: %d, item count %d)' %(self.dao.testSize())
         print '='*80
 
     def initModel(self):
@@ -94,7 +96,7 @@ class Recommender(object):
             itemSet = {}
             line = userId+':'
             for itemId in self.dao.item:
-                pred = self.predict(userId, itemId)
+                pred = round(self.predict(userId, itemId),3)
                 # add prediction in order to measure
                 itemSet[itemId] = pred
             topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
