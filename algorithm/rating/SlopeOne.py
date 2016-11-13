@@ -5,35 +5,43 @@ from structure.symmetricMatrix import SymmetricMatrix
 class SlopeOne(Recommender):
     def __init__(self,conf):
         super(SlopeOne, self).__init__(conf)
-        pass
+        self.diffAverage = {}
+        self.freq = {}
 
     def initModel(self):
         self.computeAverage()
 
     def computeAverage(self):
-        diffAverage = {}
-        freq = {}
         for i1 in range(len(self.dao.testSet_i.keys())):
+            freq_sub = {}
+            diffAverage_sub = {}
             for i2 in self.dao.testSet_i.keys()[i1:]:
                 new_x1,new_x2 = qmath.common(self.dao.testSet_i.keys()[i1],i2)
                 diff = new_x1 - new_x2
-                diffAverage_sub = {}
-                diffAverage_sub.setdefault(i2,diff.sum()/len(diff))
 
-                freq_sub = {}
+                diffAverage_sub.setdefault(i2,diff.sum()/len(diff))
                 freq_sub.setdefault(i2,len(diff))
 
-            diffAverage.setdefault(self.dao.testSet_i.keys()[i1],diffAverage_sub)
-            freq.setdefault(self.dao.testSet_i.keys()[i1],freq_sub)
+            self.diffAverage[i1] = diffAverage_sub
+            self.freq[i1] = freq_sub
 
 
     def predict(self,u,i):
-        for u in self.dao.testSet_u.keys():
-            if SymmetricMatrix.contains(u) == True:#should use another interface
-                itemList = self.dao.row(u)>0
-                for item in self.dao.testSet_u[u].keys():
-                    pass
-            else:
-                for item in self.dao.testSet_u[u].keys():
-                    pred = self.dao.itemMeans[item]
+        itemDict = {}
+        # check if the user existed in trainSet or not
+        if self.dao.containsUser(u) == True:
+            for item in self.dao.row(u).valuse():
+                if item.values() > 0:
+                    itemDict[item] = item.values()
+                else:
+                    continue
+            Sum = 0
+            freqSum = 0
+            for item2 in itemDict.keys():
+                Sum = Sum + ((itemDict[item2] + self.diffAverage[u][item2]) * self.freq[u][item2])
+                freqSum = freqSum + self.freq[u][item2]
+            pred = Sum/freqSum
+
+        else:
+            pred = self.dao.itemMeans[u]
 
