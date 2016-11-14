@@ -15,6 +15,7 @@ class ratingDAO(object):
         self.item = {} #used to store the order of items
         self.userMeans = {} #used to store the mean values of users's ratings
         self.itemMeans = {} #used to store the mean values of items's ratings
+        self.triple = None
         self.globalMean = 0
         self.timestamp = {}
         self.ratingMatrix = None
@@ -87,7 +88,8 @@ class ratingDAO(object):
             #     offset += len(uRating)
             # indptr.append(offset)
             # return sparseMatrix.SparseMatrix(data, indices, indptr)
-            return new_sparseMatrix.SparseMatrix(triple,(len(self.user),len(self.item)))
+            self.triple = triple
+            return new_sparseMatrix.SparseMatrix(triple)
         else:
             # return testSet
             return u_i_r,i_u_r
@@ -116,6 +118,12 @@ class ratingDAO(object):
                 mean = float(self.col(c)[0].sum()) / n[0].sum()
             self.itemMeans[c] = mean
 
+    def trainingSize(self):
+        return self.trainingMatrix.size
+
+    def testSize(self):
+        return (len(self.testSet_u),len(self.testSet_i))
+
     def contains(self,u,i):
         'whether user u rated item i'
         return self.trainingMatrix.contains(self.user[u],self.item[i])
@@ -127,6 +135,16 @@ class ratingDAO(object):
     def containsItem(self,i):
         'whether item is in training set'
         return self.trainingMatrix.matrix_Item.has_key(self.item[i])
+
+    def userRated(self,u):
+        itemIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
+        rating = self.trainingMatrix.matrix_User[self.user[u]].values()
+        return (itemIndex,rating)
+
+    def itemRated(self,i):
+        userIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
+        rating = self.trainingMatrix.matrix_Item[self.item[i]].values()
+        return (userIndex,rating)
 
     def row(self,u):
         return self.trainingMatrix.row(self.user[u])
