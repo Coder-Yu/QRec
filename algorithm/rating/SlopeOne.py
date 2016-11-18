@@ -12,6 +12,7 @@ class SlopeOne(Recommender):
         self.computeAverage()
 
     def computeAverage(self):
+        print 'Computing average difference between item...'
         for item in self.dao.testSet_i:
             freq_sub = {}
             diffAverage_sub = {}
@@ -23,12 +24,14 @@ class SlopeOne(Recommender):
                 else:
                     diffAverage_sub.setdefault(self.dao.item[item2],diff.mean())
                 freq_sub.setdefault(self.dao.item[item2],len(diff))
-
+            print item, 'finished.'
             self.diffAverage[item] = diffAverage_sub
             self.freq[item] = freq_sub
+        print 'The diffAverage has been figured out.'
 
 
     def predict(self,u,i):
+        print 'predicting...'
         pred = 0
         # check if the user existed in trainSet or not
         if self.dao.containsUser(u):
