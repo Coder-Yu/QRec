@@ -6,7 +6,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-from data.data import ratingDAO
+from data.rating import RatingDAO
 from tool.file import FileIO
 from tool.config import Config,LineConfig
 from os.path import abspath
@@ -22,11 +22,10 @@ class Recommender(object):
         self.output = None
         self.foldInfo = '[1]'
         self.isOutput = True
-        self.readConfiguration()
+        self.dao = RatingDAO(self.config)
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
-        self.dao = ratingDAO(self.config)
         self.output = LineConfig(self.config['output.setup'])
         self.isOutput = self.output.isMainOn()
         self.ranking = LineConfig(self.config['item.ranking'])
@@ -135,6 +134,7 @@ class Recommender(object):
         FileIO.writeFile(outDir, fileName, measure)
 
     def execute(self):
+        self.readConfiguration()
         self.printAlgorConfig()
         #load model from disk or build model
         if self.isLoadModel:

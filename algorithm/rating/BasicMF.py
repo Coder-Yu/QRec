@@ -8,7 +8,7 @@ class BasicMF(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for triple in self.dao.triple:
+            for index,triple in enumerate(self.dao.triple):
                 u,i,r = triple
                 error = r-self.P[u].dot(self.Q[i])
                 self.loss+=error**2

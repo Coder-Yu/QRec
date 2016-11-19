@@ -5,7 +5,7 @@ from tool.qmath import normalize
 import os.path
 from re import split
 #from sklearn.cross_validation import train_test_split
-class ratingDAO(object):
+class RatingDAO(object):
     'data access control'
     def __init__(self,config):
         self.config = config
@@ -15,7 +15,7 @@ class ratingDAO(object):
         self.item = {} #used to store the order of items
         self.userMeans = {} #used to store the mean values of users's ratings
         self.itemMeans = {} #used to store the mean values of items's ratings
-        self.triple = None
+        self.triple = [] #training data
         self.globalMean = 0
         self.timestamp = {}
         self.ratingMatrix = None
@@ -34,8 +34,6 @@ class ratingDAO(object):
         self.__computeUserMean()
         self.__globalAverage()
 
-
-
     def __loadRatings(self,file,bTest=False):
         with open(file) as f:
             ratings = f.readlines()
@@ -45,12 +43,15 @@ class ratingDAO(object):
         #order of the columns
         order = self.ratingConfig['-columns'].strip().split()
         #split data
-        userList= []
+        #userList= []
         u_i_r = {}
         i_u_r = {}
         triple = []
-        for line in ratings:
+        for lineNo,line in enumerate(ratings):
             items = split(' |,|\t',line.strip())
+            if len(order) < 3:
+                print 'The rating file is not in a correct format. Error: Line num %d' %lineNo
+                exit(-1)
             userId =  items[int(order[0])]
             itemId =  items[int(order[1])]
             rating =  items[int(order[2])]
@@ -66,12 +67,13 @@ class ratingDAO(object):
                 self.item[itemId] = len(self.item)
             if not u_i_r.has_key(userId):
                 u_i_r[userId] = []
-                userList.append(userId)
+                #userList.append(userId)
             u_i_r[userId].append([itemId,float(rating)])
             if not i_u_r.has_key(itemId):
                 i_u_r[itemId] = []
             i_u_r[itemId].append([userId,float(rating)])
-            triple.append([self.user[userId],self.item[itemId],float(rating)])
+            if not bTest:
+                self.triple.append([self.user[userId],self.item[itemId],float(rating)])
 
         if not bTest:
             #contruct the sparse matrix
@@ -88,8 +90,7 @@ class ratingDAO(object):
             #     offset += len(uRating)
             # indptr.append(offset)
             # return sparseMatrix.SparseMatrix(data, indices, indptr)
-            self.triple = triple
-            return new_sparseMatrix.SparseMatrix(triple)
+            return new_sparseMatrix.SparseMatrix(self.triple)
         else:
             # return testSet
             return u_i_r,i_u_r
@@ -137,9 +138,12 @@ class ratingDAO(object):
         return self.trainingMatrix.matrix_Item.has_key(self.item[i])
 
     def userRated(self,u):
-        itemIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
-        rating = self.trainingMatrix.matrix_User[self.user[u]].values()
-        return (itemIndex,rating)
+        if self.trainingMatrix.matrix_User.has_key(self.user[u]):
+            itemIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
+            rating = self.trainingMatrix.matrix_User[self.user[u]].values()
+            return (itemIndex,rating)
+        else:
+            return ([],[])
 
     def itemRated(self,i):
         userIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
@@ -160,12 +164,3 @@ class ratingDAO(object):
 
     def elemCount(self):
         return self.trainingMatrix.elemCount()
-
-
-
-
-
-
-
-
-
