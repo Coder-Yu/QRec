@@ -35,6 +35,10 @@ class RatingDAO(object):
         self.__globalAverage()
 
     def __loadRatings(self,file,bTest=False):
+        if not bTest:
+            print 'load training data...'
+        else:
+            print 'load test data...'
         with open(file) as f:
             ratings = f.readlines()
         #ignore the headline
