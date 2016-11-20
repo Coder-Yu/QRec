@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 from algorithm.rating.UserKNN import UserKNN
 from algorithm.rating.ItemKNN import ItemKNN
 from algorithm.rating.BasicMF import BasicMF
