@@ -46,10 +46,10 @@ class ItemKNN(Recommender):
             #no items have rating on item i,return the average rating of item i
             if not self.dao.containsItem(i):
                 # item i has no ratings in the training set
-                return round(self.dao.globalMean,3)
-            return round(self.dao.itemMeans[i], 3)
+                return self.dao.globalMean
+            return self.dao.itemMeans[i]
         pred = self.dao.itemMeans[i]+sum/float(denom)
-        return round(pred,3)
+        return pred
 
     def computeCorr(self):
         'compute correlation among items'

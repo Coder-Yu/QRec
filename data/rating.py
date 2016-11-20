@@ -5,7 +5,7 @@ from tool.qmath import normalize
 import os.path
 from re import split
 #from sklearn.cross_validation import train_test_split
-class ratingDAO(object):
+class RatingDAO(object):
     'data access control'
     def __init__(self,config):
         self.config = config
@@ -15,7 +15,7 @@ class ratingDAO(object):
         self.item = {} #used to store the order of items
         self.userMeans = {} #used to store the mean values of users's ratings
         self.itemMeans = {} #used to store the mean values of items's ratings
-        self.triple = None
+        self.triple = [] #training data
         self.globalMean = 0
         self.timestamp = {}
         self.ratingMatrix = None
@@ -34,8 +34,6 @@ class ratingDAO(object):
         self.__computeUserMean()
         self.__globalAverage()
 
-
-
     def __loadRatings(self,file,bTest=False):
         with open(file) as f:
             ratings = f.readlines()
@@ -45,12 +43,16 @@ class ratingDAO(object):
         #order of the columns
         order = self.ratingConfig['-columns'].strip().split()
         #split data
-        userList= []
+        #userList= []
         u_i_r = {}
         i_u_r = {}
         triple = []
-        for line in ratings:
+        #find the maximum rating and minimum value
+        for lineNo,line in enumerate(ratings):
             items = split(' |,|\t',line.strip())
+            if len(order) < 3:
+                print 'The rating file is not in a correct format. Error: Line num %d' %lineNo
+                exit(-1)
             userId =  items[int(order[0])]
             itemId =  items[int(order[1])]
             rating =  items[int(order[2])]
@@ -58,6 +60,18 @@ class ratingDAO(object):
                 self.rScale[0] = float(rating)
             if float(rating) < self.rScale[1]:
                 self.rScale[1] = float(rating)
+
+        for lineNo,line in enumerate(ratings):
+            items = split(' |,|\t',line.strip())
+            if len(order) < 3:
+                print 'The rating file is not in a correct format. Error: Line num %d' %lineNo
+                exit(-1)
+            userId =  items[int(order[0])]
+            itemId =  items[int(order[1])]
+            rating =  items[int(order[2])]
+
+            #makes the rating within the range [0, 1].
+            normRating = normalize(float(rating),self.rScale[0],self.rScale[1])
             #order the user
             if not self.user.has_key(userId):
                 self.user[userId] = len(self.user)
@@ -66,12 +80,14 @@ class ratingDAO(object):
                 self.item[itemId] = len(self.item)
             if not u_i_r.has_key(userId):
                 u_i_r[userId] = []
-                userList.append(userId)
+                #userList.append(userId)
             u_i_r[userId].append([itemId,float(rating)])
             if not i_u_r.has_key(itemId):
                 i_u_r[itemId] = []
             i_u_r[itemId].append([userId,float(rating)])
-            triple.append([self.user[userId],self.item[itemId],float(rating)])
+            if not bTest:
+                self.triple.append([userId,itemId,normRating])
+                triple.append([self.user[userId],self.item[itemId],normRating])
 
         if not bTest:
             #contruct the sparse matrix
@@ -88,14 +104,17 @@ class ratingDAO(object):
             #     offset += len(uRating)
             # indptr.append(offset)
             # return sparseMatrix.SparseMatrix(data, indices, indptr)
-            self.triple = triple
             return new_sparseMatrix.SparseMatrix(triple)
         else:
             # return testSet
             return u_i_r,i_u_r
 
     def __globalAverage(self):
-        self.globalMean = sum(self.userMeans.values())/len(self.userMeans)
+        total = sum(self.userMeans.values())
+        if total==0:
+            self.globalMean = 0
+        else:
+            self.globalMean = total/len(self.userMeans)
 
     def __computeUserMean(self):
         for u in self.user:
@@ -105,7 +124,11 @@ class ratingDAO(object):
             if not self.containsUser(u):  # no data about current user in training set
                 pass
             else:
-                mean = float(self.row(u)[0].sum()) / n[0].sum()
+                sum = float(self.row(u)[0].sum())
+                try:
+                    mean =  sum/ n[0].sum()
+                except ZeroDivisionError:
+                    mean = 0
             self.userMeans[u] = mean
 
     def __computeItemMean(self):
@@ -115,8 +138,24 @@ class ratingDAO(object):
             if not self.containsItem(c):  # no data about current user in training set
                 pass
             else:
-                mean = float(self.col(c)[0].sum()) / n[0].sum()
+                sum = float(self.col(c)[0].sum())
+                try:
+                    mean = sum / n[0].sum()
+                except ZeroDivisionError:
+                    mean = 0
             self.itemMeans[c] = mean
+
+    def getUserId(self,u):
+        if self.user.has_key(u):
+            return self.user[u]
+        else:
+            return -1
+
+    def getItemId(self,i):
+        if self.item.has_key(i):
+            return self.item[i]
+        else:
+            return -1
 
     def trainingSize(self):
         return self.trainingMatrix.size
@@ -126,46 +165,41 @@ class ratingDAO(object):
 
     def contains(self,u,i):
         'whether user u rated item i'
-        return self.trainingMatrix.contains(self.user[u],self.item[i])
+        return self.trainingMatrix.contains(self.getUserId(u),self.getItemId(i))
 
     def containsUser(self,u):
         'whether user is in training set'
-        return self.trainingMatrix.matrix_User.has_key(self.user[u])
+        return self.trainingMatrix.matrix_User.has_key(self.getUserId(u))
 
     def containsItem(self,i):
         'whether item is in training set'
-        return self.trainingMatrix.matrix_Item.has_key(self.item[i])
+        return self.trainingMatrix.matrix_Item.has_key(self.getItemId(i))
 
     def userRated(self,u):
-        itemIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
-        rating = self.trainingMatrix.matrix_User[self.user[u]].values()
-        return (itemIndex,rating)
+        if self.trainingMatrix.matrix_User.has_key(self.getUserId(u)):
+            userIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
+            rating = self.trainingMatrix.matrix_User[self.user[u]].values()
+            return (userIndex,rating)
+        return ([],[])
 
     def itemRated(self,i):
-        userIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
-        rating = self.trainingMatrix.matrix_Item[self.item[i]].values()
-        return (userIndex,rating)
+        if self.trainingMatrix.matrix_Item.has_key(self.getItemId(i)):
+            itemIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
+            rating = self.trainingMatrix.matrix_Item[self.item[i]].values()
+            return (itemIndex,rating)
+        return ([],[])
 
     def row(self,u):
-        return self.trainingMatrix.row(self.user[u])
+        return self.trainingMatrix.row(self.getUserId(u))
 
     def col(self,c):
-        return self.trainingMatrix.col(self.item[c])
+        return self.trainingMatrix.col(self.getItemId(c))
 
     def rating(self,u,c):
-        return self.trainingMatrix.elem(self.user[u],self.item[c])
+        return self.trainingMatrix.elem(self.getUserId(u),self.getItemId(c))
 
     def ratingScale(self):
         return (self.rScale[0],self.rScale[1])
 
     def elemCount(self):
         return self.trainingMatrix.elemCount()
-
-
-
-
-
-
-
-
-

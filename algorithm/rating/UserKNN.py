@@ -46,10 +46,10 @@ class UserKNN(Recommender):
             #no users have rating on item i,return the average rating of user u
             if not self.dao.containsUser(u):
                 #user u has no ratings in the training set,return the global mean
-                return round(self.dao.globalMean,3)
-            return round(self.dao.userMeans[u],3)
+                return self.dao.globalMean
+            return self.dao.userMeans[u]
         pred = self.dao.userMeans[u]+sum/float(denom)
-        return round(pred,3)
+        return pred
 
     def computeCorr(self):
         'compute correlation among users'
