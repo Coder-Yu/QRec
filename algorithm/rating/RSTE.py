@@ -12,11 +12,41 @@ class RSTE(SocialRecommender):
     def printAlgorConfig(self):
         super(RSTE, self).printAlgorConfig()
         print 'Specified Arguments of',self.config['recommender']+':'
-        print 'alpha: .3f' %self.alpha
+        print 'alpha: %.3f' %self.alpha
         print '='*80
 
     def initModel(self):
         super(RSTE, self).initModel()
 
     def buildModel(self):
-        pass
+        iteration = 0
+        while iteration < self.maxIter:
+            self.loss = 0
+            for triple in self.dao.triple:
+                u, i, r = triple
+                i = self.dao.item[i]
+                fPred = 0
+                denom = 0
+                relations = self.sao.getFollowees(u)
+                for followee in relations:
+                    weight = relations[followee]
+                    uf = self.dao.getUserId(followee)
+                    if uf<>-1 and self.dao.containsUser(uf): #followee is in rating set
+                        fPred += weight*(self.P[uf].dot(self.Q[i]))
+                        denom+=weight
+
+                u = self.dao.user[u]
+
+                if denom<>0:
+                    error = r - self.alpha*self.P[u].dot(self.Q[i])\
+                            -(1-self.alpha)*fPred/denom
+                else:
+                    error = r - self.alpha * self.P[u].dot(self.Q[i])
+                self.loss += error ** 2
+                # update latent vectors
+                p = self.P[u].copy()
+                q = self.Q[i].copy()
+                self.P[u] = p + self.lRate * (self.alpha*error * q - self.regU * p)
+                self.Q[i] = q + self.lRate * (self.alpha*error * p - self.regI * q)
+            iteration += 1
+            self.isConverged(iteration)

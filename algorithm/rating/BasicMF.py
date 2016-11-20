@@ -8,8 +8,10 @@ class BasicMF(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for index,triple in enumerate(self.dao.triple):
+            for triple in self.dao.triple:
                 u,i,r = triple
+                u = self.dao.user[u]
+                i = self.dao.item[i]
                 error = r-self.P[u].dot(self.Q[i])
                 self.loss+=error**2
                 #update latent vectors

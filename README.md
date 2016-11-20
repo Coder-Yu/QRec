@@ -33,11 +33,17 @@ To design it exquisitely, we brought some thoughts from another recommender syst
  
     <td>Set the path to input dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
+ <tr>
+    <td>social</td>
+    <td>D:/MovieLens/trusts.txt</td>
+ 
+    <td>Set the path to input social dataset. Format: each row separated by empty, tab or comma symbol. </td>
+  </tr>
   <tr>
-    <td scope="row">ratings.setup</td>
+    <td scope="row">social.setup</td>
     <td>-columns 0 1 2</td>
 
-    <td>-columns: (user, item, rating) columns of rating data are used;
+    <td>-columns: (trustor, trustee, weight) columns of social data are used;
       -header: to skip the first head line when reading data<br>
     </td>
   </tr>

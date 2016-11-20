@@ -8,6 +8,7 @@
 # (at your option) any later version.
 from data.rating import RatingDAO
 from tool.file import FileIO
+from tool.qmath import denormalize
 from tool.config import Config,LineConfig
 from os.path import abspath
 from time import strftime,localtime,time
@@ -75,6 +76,8 @@ class Recommender(object):
                 originRating = item[1]
                 #predict
                 prediction = self.predict(userId,itemId)
+                #denormalize
+                prediction = denormalize(prediction,self.dao.rScale[0],self.dao.rScale[1])
                 #####################################
                 pred = self.checkRatingBoundary(prediction)
                 # add prediction in order to measure
@@ -108,6 +111,8 @@ class Recommender(object):
             for itemId in self.dao.item:
                 # predict
                 prediction = self.predict(userId, itemId)
+                # denormalize
+                prediction = denormalize(prediction, self.dao.rScale[0], self.dao.rScale[1])
                 #####################################
                 pred = self.checkRatingBoundary(prediction)
                 # add prediction in order to measure

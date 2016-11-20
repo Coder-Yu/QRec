@@ -11,10 +11,13 @@ class SocialDAO(object):
         self.socialConfig = LineConfig(self.config['social.setup'])
         self.user = {} #used to store the order of users
         self.triple = []
+        self.followees = {}
+        self.followers = {}
         self.trustMatrix = self.loadRelationship(self.config['social'])
 
 
     def loadRelationship(self,filePath):
+        triple = []
         with open(filePath) as f:
             relations = f.readlines()
             # ignore the headline
@@ -34,14 +37,22 @@ class SocialDAO(object):
             if len(order)<3:
                 weight = 1
             else:
-                weight = items[int(order[2])]
+                weight = float(items[int(order[2])])
+            #add relations to dict
+            if not self.followees.has_key(userId1):
+                self.followees[userId1] = {}
+            self.followees[userId1][userId2] = weight
+            if not self.followers.has_key(userId2):
+                self.followers[userId2] = {}
+            self.followers[userId2][userId1] = weight
             # order the user
             if not self.user.has_key(userId1):
                 self.user[userId1] = len(self.user)
             if not self.user.has_key(userId2):
                 self.user[userId2] = len(self.user)
-            self.triple.append([self.user[userId1], self.user[userId2], float(weight)])
-        return new_sparseMatrix.SparseMatrix(self.triple)
+            self.triple.append([userId1,userId2,weight])
+            triple.append([self.user[userId1], self.user[userId2], weight])
+        return new_sparseMatrix.SparseMatrix(triple)
 
     def row(self,u):
         #return user u's followees
@@ -52,34 +63,37 @@ class SocialDAO(object):
         return self.trustMatrix.col(self.user[u])
 
     def weight(self,u1,u2):
-        return self.trustMatrix.elem(self.user[u1],self.user[u2])
+        if self.followees.has_key(u1) and self.followees[u1].has_key[u2]:
+            return self.followees[u1][u2]
+        else:
+            return 0
 
     def trustSize(self):
         return self.trustMatrix.size
 
-    def followers(self,u):
-        if self.user.has_key(u):
-            return self.trustMatrix.matrix_Item[self.user[u]]
+    def getFollowers(self,u):
+        if self.followers.has_key(u):
+            return self.followers[u]
         else:
             return {}
 
-    def followees(self,u):
-        if self.user.has_key(u):
-            return self.trustMatrix.matrix_User[self.user[u]]
+    def getFollowees(self,u):
+        if self.followees.has_key(u):
+            return self.followees[u]
         else:
             return {}
 
     def hasFollowee(self,u1,u2):
-        if self.user.has_key(u1):
-            if self.trustMatrix.matrix_User[self.user[u1]].has_key(self.user[u2]):
+        if self.followees.has_key(u1):
+            if self.followees[u1].has_key(u2):
                 return True
             else:
                 return False
         return False
 
     def hasFollower(self,u1,u2):
-        if self.user.has_key(u1):
-            if self.trustMatrix.matrix_Item[self.user[u1]].has_key(self.user[u2]):
+        if self.followers.has_key(u1):
+            if self.followers[u1].has_key(u2):
                 return True
             else:
                 return False
