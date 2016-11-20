@@ -17,6 +17,7 @@ class SocialDAO(object):
 
 
     def loadRelationship(self,filePath):
+        print 'load social data...'
         triple = []
         with open(filePath) as f:
             relations = f.readlines()
