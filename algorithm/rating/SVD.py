@@ -27,8 +27,8 @@ class SVD(IterativeRecommender):
                 bi = self.Bi[i]
                 self.P[u] = p+self.lRate*(error*q-self.regU*p)
                 self.Q[i] = q+self.lRate*(error*p-self.regI*q)
-                self.Bu[u] = bu+self.lRate*(error-self.regU*bu)
-                self.Bi[i] = bi+self.lRate*(error-self.regI*bi)
+                self.Bu[u] = bu+self.lRate*(error-self.regB*bu)
+                self.Bi[i] = bi+self.lRate*(error-self.regB*bi)
             iteration += 1
             self.isConverged(iteration)
 
