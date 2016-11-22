@@ -10,6 +10,8 @@ class BasicMF(IterativeRecommender):
             self.loss = 0
             for triple in self.dao.triple:
                 u,i,r = triple
+                u = self.dao.user[u]
+                i = self.dao.item[i]
                 error = r-self.P[u].dot(self.Q[i])
                 self.loss+=error**2
                 #update latent vectors

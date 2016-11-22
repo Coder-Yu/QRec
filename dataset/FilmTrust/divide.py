@@ -3,7 +3,7 @@ train = []
 with open('ratings.txt') as f:
     import random
     for line in f:
-        if random.random()<0.3:
+        if random.random()<0.1:
             test.append(line)
         else:
             train.append(line)
