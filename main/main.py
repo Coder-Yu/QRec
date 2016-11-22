@@ -7,6 +7,7 @@ from algorithm.rating.SlopeOne import SlopeOne
 from algorithm.rating.RSTE import RSTE
 from algorithm.rating.UserMean import UserMean
 from algorithm.rating.ItemMean import ItemMean
+from algorithm.rating.SVD import SVD
 from tool.config import Config
 
 if __name__ == '__main__':
@@ -15,7 +16,7 @@ if __name__ == '__main__':
     print '='*80
 
     print '1. UserKNN   2. ItemKNN   3. BasicMF   4. SlopeOne   5. RSTE   6. UserMean'
-    print '7. ItemMean'
+    print '7. ItemMean   8. SVD'
     algor = 0
     order = input('please enter the num of the algorithm to run it:')
     import time
@@ -41,6 +42,9 @@ if __name__ == '__main__':
     elif order == 7:
         conf = Config('../config/ItemMean.conf')
         algor = ItemMean(conf)
+    elif order == 8:
+        conf = Config('../config/SVD.conf')
+        algor = SVD(conf)
     else:
         print 'Error num!'
         exit()
