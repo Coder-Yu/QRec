@@ -39,6 +39,9 @@ if __name__ == '__main__':
     elif order == 7:
         conf = Config('../config/ItemMean.conf')
         algor = ItemMean(conf)
+    elif order == 8:
+        conf = Config('../config/SVD.conf')
+        algor = SVD(conf)
     else:
         print 'Error num!'
         exit()
