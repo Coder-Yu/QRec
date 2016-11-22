@@ -12,7 +12,7 @@ def l2(x):
 
 def common(x1,x2):
     # find common ratings
-    common = (x1 * x2) <> 0
+    common = (x1<>0)&(x2<>0)
     new_x1 = x1[common]
     new_x2 = x2[common]
     return new_x1,new_x2

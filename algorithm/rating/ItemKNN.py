@@ -62,7 +62,7 @@ class ItemKNN(Recommender):
                         continue
                     sim = qmath.similarity(self.dao.col(i1),self.dao.col(i2),self.sim)
                     self.itemSim.set(i1,i2,sim)
-            print i1,'finished.'
+            print 'item '+i1+' finished.'
         print 'The item correlation has been figured out.'
 
 

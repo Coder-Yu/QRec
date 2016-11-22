@@ -17,7 +17,8 @@ class BasicMF(IterativeRecommender):
                 #update latent vectors
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
-                self.P[u] = p+self.lRate*(error*q-self.regU*p)
-                self.Q[i] = q+self.lRate*(error*p-self.regI*q)
+                self.P[u] += self.lRate*(error*q-self.regU*p)
+                self.Q[i] += self.lRate*(error*p-self.regI*q)
             iteration += 1
-            self.isConverged(iteration)
+            if self.isConverged(iteration):
+                break
