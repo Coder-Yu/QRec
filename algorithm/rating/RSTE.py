@@ -24,7 +24,7 @@ class RSTE(SocialRecommender):
             self.loss = 0
             for triple in self.dao.triple:
                 u, i, r = triple
-                i = self.dao.item[i]
+                i = self.dao.getItemId(i)
                 fPred = 0
                 denom = 0
                 relations = self.sao.getFollowees(u)
@@ -35,7 +35,7 @@ class RSTE(SocialRecommender):
                         fPred += weight*(self.P[uf].dot(self.Q[i]))
                         denom+=weight
 
-                u = self.dao.user[u]
+                u = self.dao.getUserId(u)
 
                 if denom<>0:
                     error = r - self.alpha*self.P[u].dot(self.Q[i])\
@@ -43,9 +43,10 @@ class RSTE(SocialRecommender):
                 else:
                     error = r - self.alpha * self.P[u].dot(self.Q[i])
                 self.loss += error ** 2
-                # update latent vectors
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
+                self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
+                # update latent vectors
                 self.P[u] = p + self.lRate * (self.alpha*error * q - self.regU * p)
                 self.Q[i] = q + self.lRate * (self.alpha*error * p - self.regI * q)
             iteration += 1
