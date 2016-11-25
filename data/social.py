@@ -67,7 +67,7 @@ class SocialDAO(object):
         return self.trustMatrix.elem(u1,u2)
 
     def weight(self,u1,u2):
-        if self.followees.has_key(u1) and self.followees[u1].has_key[u2]:
+        if self.followees.has_key(u1) and self.followees[u1].has_key(u2):
             return self.followees[u1][u2]
         else:
             return 0
