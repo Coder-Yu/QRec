@@ -61,8 +61,11 @@ class RatingDAO(object):
             if len(order) < 3:
                 print 'The rating file is not in a correct format. Error: Line num %d' %lineNo
                 exit(-1)
-            rating =  items[int(order[2])]
-            scale.add(float(rating))
+            try:
+                rating =  items[int(order[2])]
+                scale.add(float(rating))
+            except ValueError:
+                print 'Error! Have you added the option -header to the rating.setup?'
         self.rScale = list(scale)
         self.rScale.sort()
 

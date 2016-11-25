@@ -24,7 +24,8 @@ class Display(object):
         if self.conf.contains('ratings'):
             y = [triple[2] for triple in self.dao.trainingData]
             x = self.dao.rScale
-            Chart.hist(x,y,len(self.dao.rScale),'#058edc',
+            if len(x) <20:
+                Chart.hist(x,y,len(self.dao.rScale),'#058edc',
                        'Rating Histogram','Rating Scale','Count','../visual/visualization/images/rh')
             y = [len(self.dao.userRated(u)[0]) for u in self.dao.user]
             Chart.distribution(y,'Rating Count Distribution','',
@@ -81,5 +82,6 @@ class Display(object):
 
         html+="</div></body></html>"
         FileIO.writeFile('../visual/visualization/','analysis.html',html)
+        print 'The report has been output to',abspath('../visual/visualization/analysis.html')
         webbrowser.open(abspath('../visual/visualization/analysis.html'), new=0, autoraise=True)
 
