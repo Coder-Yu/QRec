@@ -1,4 +1,5 @@
-# RecQ #
+![RecQ](http://chuantu.biz/t5/43/1480095308x760008152.png)
+
 Released by School of Software Engineering, Chongqing University
 ##Introduction##
 **RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
