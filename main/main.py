@@ -25,7 +25,7 @@ if __name__ == '__main__':
     s = time.clock()
     if order == 0:
         conf = Config('../config/visual/visual.conf')
-        Display(conf).draw()
+        Display(conf).render()
         exit(0)
     elif order == 1:
         conf = Config('../config/UserKNN.conf')
