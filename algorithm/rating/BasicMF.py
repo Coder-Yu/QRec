@@ -8,8 +8,8 @@ class BasicMF(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for triple in self.dao.triple:
-                u,i,r = triple
+            for entry in self.dao.trainingData:
+                u, i, r = entry
                 u = self.dao.getUserId(u)
                 i = self.dao.getItemId(i)
                 error = r - self.P[u].dot(self.Q[i])
