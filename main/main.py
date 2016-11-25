@@ -11,6 +11,7 @@ from algorithm.rating.SVD import SVD
 from tool.config import Config
 from visual.display import Display
 
+
 if __name__ == '__main__':
     print '='*80
     print '   RecQ: An effective python-based recommender algorithm library.   '
@@ -24,6 +25,11 @@ if __name__ == '__main__':
     import time
     s = time.clock()
     if order == 0:
+        try:
+            import seaborn as sns
+        except ImportError:
+            print '!!!To obtain nice data charts, ' \
+                  'we strongly recommend you to install the third-party package <seaborn>!!!'
         conf = Config('../config/visual/visual.conf')
         Display(conf).render()
         exit(0)
