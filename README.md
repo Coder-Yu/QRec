@@ -13,6 +13,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 * **Fast execution**: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it runs much faster than other libraries based on Python.
 * **Easy configuration**: RecQ configs recommenders using a configuration file.
 * **Easy expansion**: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.
+* **<font color="red">Data visualization</font>**: RecQ can help visualize the input dataset without running any algorithm. 
 
 ##How to Run it##
 * 1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)
