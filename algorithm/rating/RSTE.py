@@ -22,8 +22,8 @@ class RSTE(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for triple in self.dao.triple:
-                u, i, r = triple
+            for entry in self.dao.trainingData:
+                u, i, r = entry
                 i = self.dao.getItemId(i)
                 fPred = 0
                 denom = 0

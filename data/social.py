@@ -10,7 +10,7 @@ class SocialDAO(object):
         self.config = conf
         self.socialConfig = LineConfig(self.config['social.setup'])
         self.user = {} #used to store the order of users
-        self.triple = []
+        self.relation = []
         self.followees = {}
         self.followers = {}
         self.trustMatrix = self.loadRelationship(self.config['social'])
@@ -51,7 +51,7 @@ class SocialDAO(object):
                 self.user[userId1] = len(self.user)
             if not self.user.has_key(userId2):
                 self.user[userId2] = len(self.user)
-            self.triple.append([userId1,userId2,weight])
+            self.relation.append([userId1,userId2,weight])
             triple.append([self.user[userId1], self.user[userId2], weight])
         return new_sparseMatrix.SparseMatrix(triple)
 
@@ -63,8 +63,11 @@ class SocialDAO(object):
         #return user u's followers
         return self.trustMatrix.col(self.user[u])
 
+    def elem(self,u1,u2):
+        return self.trustMatrix.elem(u1,u2)
+
     def weight(self,u1,u2):
-        if self.followees.has_key(u1) and self.followees[u1].has_key[u2]:
+        if self.followees.has_key(u1) and self.followees[u1].has_key(u2):
             return self.followees[u1][u2]
         else:
             return 0
