@@ -3,6 +3,7 @@ from tool.config import Config
 from data.rating import RatingDAO
 from data.social import SocialDAO
 from tool.file import FileIO
+from tool.qmath import denormalize
 from os.path import abspath
 import webbrowser
 
@@ -64,7 +65,8 @@ class Display(object):
             html+="<div class='area1'><div class='title'><h3>Rating Data</h3></div>\n"
             html += "<div class='text'>Rating Scale: {scale}</br>".format(scale=' '.join([str(item) for item in self.dao.rScale]))
             html += "User Count: {user}<br>Item Count: {item}<br>Record Count: {record}<br>Global Mean: {mean}</div>\n"\
-                .format(user = str(len(self.dao.user)),item=str(len(self.dao.item)),record = str(len(self.dao.trainingData)),mean = str(self.dao.globalMean))
+                .format(user = str(len(self.dao.user)),item=str(len(self.dao.item)),record = str(len(self.dao.trainingData)),
+                        mean = str(round(denormalize(self.dao.globalMean,self.dao.rScale[-1],self.dao.rScale[0]),3)))
             html+="<center><div class='img'><img src='images/rh.png' width='640px' height='480px'/></div></center>\n"
             html += "<center><div class='img'><img src='images/rcu.png' width='640px' height='480px'/></div></center>\n"
             html += "<center><div class='img'><img src='images/rci.png' width='640px' height='480px'/></div></center>\n"
