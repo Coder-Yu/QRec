@@ -8,6 +8,7 @@ from algorithm.rating.RSTE import RSTE
 from algorithm.rating.UserMean import UserMean
 from algorithm.rating.ItemMean import ItemMean
 from algorithm.rating.SVD import SVD
+from algorithm.rating.PMF import PMF
 from tool.config import Config
 from visual.display import Display
 
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '1. UserKNN   2. ItemKNN   3. BasicMF   4. SlopeOne   5. RSTE   6. UserMean'
-    print '7. ItemMean   8. SVD'
+    print '7. ItemMean   8. SVD   9.PMF'
     algor = -1
     print '-'*80
     order = input('please enter the num of the algorithm to run it:')
@@ -57,6 +58,9 @@ if __name__ == '__main__':
     elif order == 8:
         conf = Config('../config/SVD.conf')
         algor = SVD(conf)
+    elif order == 9:
+        conf = Config('../config/PMF.conf')
+        algor = PMF(conf)
     else:
         print 'Error num!'
         exit(-1)
