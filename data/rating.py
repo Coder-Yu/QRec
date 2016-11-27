@@ -15,6 +15,7 @@ class RatingDAO(object):
         self.userMeans = {} #used to store the mean values of users's ratings
         self.itemMeans = {} #used to store the mean values of items's ratings
         self.trainingData = [] #training data
+        self.testData = [] #testData
         self.globalMean = 0
         self.timestamp = {}
         self.trainingMatrix = None
@@ -96,6 +97,8 @@ class RatingDAO(object):
             if not bTest:
                 self.trainingData.append([userId,itemId,normRating])
                 triple.append([self.user[userId],self.item[itemId],normRating])
+            else:
+                self.testData.append([userId,itemId,normRating])
 
         if not bTest:
             #contruct the sparse matrix
@@ -166,10 +169,10 @@ class RatingDAO(object):
             return -1
 
     def trainingSize(self):
-        return self.trainingMatrix.size
+        return (self.trainingMatrix.size[0],self.trainingMatrix.size[1],len(self.trainingData))
 
     def testSize(self):
-        return (len(self.testSet_u),len(self.testSet_i))
+        return (len(self.testSet_u),len(self.testSet_i),len(self.testData))
 
     def contains(self,u,i):
         'whether user u rated item i'
