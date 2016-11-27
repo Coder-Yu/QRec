@@ -38,8 +38,8 @@ class Recommender(object):
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
-        print 'Training set size: (user count: %d, item count %d)' %(self.dao.trainingSize())
-        print 'Test set size: (user count: %d, item count %d)' %(self.dao.testSize())
+        print 'Training set size: (user count: %d, item count %d, record count: %d)' %(self.dao.trainingSize())
+        print 'Test set size: (user count: %d, item count %d, record count: %d)' %(self.dao.testSize())
         print '='*80
 
     def initModel(self):
