@@ -56,15 +56,15 @@ class Display(object):
               "<div class='main'><div class='area1'>\n" \
               "<div class='title'><h3>Data Files</h3></div><div class='text'>"
         if self.conf.contains('ratings'):
-            html+="Rating Data: {rating}".format(rating = abspath(self.conf['ratings']))
+            html+="<b>Rating Data</b>: {rating}".format(rating = abspath(self.conf['ratings']))
         if self.conf.contains('social'):
-            html+="<br>Social Data: {social}".format(social = abspath(self.conf['social']))
+            html+="<br><b>Social Data</b>: {social}".format(social = abspath(self.conf['social']))
         html+="</div></div><div style='padding-top:20px'><center>" \
               "<img src='images/header2.png'/></center></div>\n"
         if self.conf.contains('ratings'):
             html+="<div class='area1'><div class='title'><h3>Rating Data</h3></div>\n"
-            html += "<div class='text'>Rating Scale: {scale}</br>".format(scale=' '.join([str(item) for item in self.dao.rScale]))
-            html += "User Count: {user}<br>Item Count: {item}<br>Record Count: {record}<br>Global Mean: {mean}</div>\n"\
+            html += "<div class='text'><b>Rating Scale</b>: {scale}</br>".format(scale=' '.join([str(item) for item in self.dao.rScale]))
+            html += "<b>User Count</b>: {user}<br><b>Item Count</b>: {item}<br><b>Record Count</b>: {record}<br><b>Global Mean</b>: {mean}</div>\n"\
                 .format(user = str(len(self.dao.user)),item=str(len(self.dao.item)),record = str(len(self.dao.trainingData)),
                         mean = str(round(denormalize(self.dao.globalMean,self.dao.rScale[-1],self.dao.rScale[0]),3)))
             html+="<center><div class='img'><img src='images/rh.png' width='640px' height='480px'/></div></center>\n"
@@ -74,7 +74,7 @@ class Display(object):
               "<img src='images/header2.png'/></center></div>\n"
         if self.conf.contains('social'):
             html += "<div class='area1'><div class='title'><h3>Social Data</h3></div>\n"
-            html += "<div class='text'>User Count: {user}<br>Relation Count: {relation}<br></div>\n" \
+            html += "<div class='text'><b>User Count</b>: {user}<br><b>Relation Count</b>: {relation}<br></div>\n" \
                 .format(user=str(len(self.sao.user)), relation=str(len(self.sao.relation)))
             html += "<center><div class='img'><img src='images/ff.png' width='640px' height='480px'/></div></center>\n"
             html += "<center><div class='img'><img src='images/fd1.png' width='640px' height='480px'/></div></center>\n"
