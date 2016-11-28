@@ -23,9 +23,13 @@ class Config(object):
             print 'config file is not found!'
             raise IOError
         with open(path) as f:
-            for line in f:
-                key,value=line.strip().split('=')
-                self.config[key]=value
+            for ind,line in enumerate(f):
+                if line.strip()<>'':
+                    try:
+                        key,value=line.strip().split('=')
+                        self.config[key]=value
+                    except ValueError:
+                        print 'config file is not in the correct format! Error Line:%d'%(ind)
 
 
 

@@ -5,7 +5,6 @@ import numpy as np
 class IterativeRecommender(Recommender):
     def __init__(self,conf):
         super(IterativeRecommender, self).__init__(conf)
-        self.readConfiguration()
 
     def readConfiguration(self):
         super(IterativeRecommender, self).readConfiguration()
@@ -19,13 +18,13 @@ class IterativeRecommender(Recommender):
         self.maxLRate = float(learningRate['-max'])
         # regularization parameter
         regular = config.LineConfig(self.config['reg.lambda'])
-        self.regU,self.regI= float(regular['-u']),float(regular['-i'])#,float(regular['-b'])
+        self.regU,self.regI,self.regB= float(regular['-u']),float(regular['-i']),float(regular['-b'])
 
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
         print 'Reduced Dimension:',self.k
         print 'Maximum Iteration:',self.maxIter
-        print 'Regularization parameter: regU %.3f, regI %.3f' %(self.regU,self.regI)
+        print 'Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB)
         print '='*80
 
     def initModel(self):
@@ -52,7 +51,7 @@ class IterativeRecommender(Recommender):
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
+            return self.P[self.dao.getUserId(u)].dot(self.Q[self.dao.getItemId(i)])
         else:
             return self.dao.globalMean
 

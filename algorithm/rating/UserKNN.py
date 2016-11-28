@@ -62,7 +62,7 @@ class UserKNN(Recommender):
                         continue
                     sim = qmath.similarity(self.dao.row(u1),self.dao.row(u2),self.sim)
                     self.userSim.set(u1,u2,sim)
-            print u1,'finished.'
+            print 'user '+u1+' finished.'
         print 'The user correlation has been figured out.'
 
 

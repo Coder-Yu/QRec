@@ -1,4 +1,6 @@
 .idea/
 results/
 dataset/
+visual/visualization
 *.pyc
+

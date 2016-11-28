@@ -23,7 +23,7 @@ class SlopeOne(Recommender):
                 else:
                     diffAverage_sub.setdefault(self.dao.item[item2],diff.mean())
                 freq_sub.setdefault(self.dao.item[item2],len(diff))
-
+            print 'item '+ item +" finished."
             self.diffAverage[item] = diffAverage_sub
             self.freq[item] = freq_sub
 
