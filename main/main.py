@@ -9,6 +9,7 @@ from algorithm.rating.UserMean import UserMean
 from algorithm.rating.ItemMean import ItemMean
 from algorithm.rating.SVD import SVD
 from algorithm.rating.PMF import PMF
+from algorithm.rating.SocialMF import SocialMF
 from tool.config import Config
 from visual.display import Display
 
@@ -61,6 +62,9 @@ if __name__ == '__main__':
     elif order == 9:
         conf = Config('../config/PMF.conf')
         algor = PMF(conf)
+    elif order == 10:
+        conf = Config('../config/SocialMF.conf')
+        algor = SocialMF(conf)
     else:
         print 'Error num!'
         exit(-1)
