@@ -27,10 +27,10 @@ class SVD(IterativeRecommender):
                 bi = self.Bi[i]
                 self.loss += self.regB*bu**2 + self.regB*bi**2
                 #update latent vectors
-                self.P[u] = p+self.lRate*(error*q-self.regU*p)
-                self.Q[i] = q+self.lRate*(error*p-self.regI*q)
-                self.Bu[u] = bu+self.lRate*(error-self.regB*bu)
-                self.Bi[i] = bi+self.lRate*(error-self.regB*bi)
+                self.P[u] += self.lRate*(error*q-self.regU*p)
+                self.Q[i] += self.lRate*(error*p-self.regI*q)
+                self.Bu[u] += self.lRate*(error-self.regB*bu)
+                self.Bi[i] += self.lRate*(error-self.regB*bi)
             iteration += 1
             self.isConverged(iteration)
 
