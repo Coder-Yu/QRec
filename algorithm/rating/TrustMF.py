@@ -38,7 +38,7 @@ class TrustMF(SocialRecommender):
                 mbu=len(self.sao.getFollowees(u))
                 uid = self.dao.getUserId(u)
                 iid = self.dao.getItemId(i)
-                error = self.predict1(u,i)-r
+                error = self.truserPredict(u,i)-r
                 nbu=len(self.dao.userRated(u)[0])
                 nvi=len(self.dao.itemRated(i)[0])
                 self.loss+=error**2+self.regB*((mbu+nbu)*self.Br[uid].dot(self.Br[uid])+nvi*self.Vr[iid].dot(self.Vr[iid]))
@@ -67,7 +67,7 @@ class TrustMF(SocialRecommender):
                 mwu=len(self.sao.getFollowers(u))
                 uid = self.dao.getUserId(u)
                 iid = self.dao.getItemId(i)
-                error = self.predict2(u,i)-r
+                error = self.truseePredict(u,i)-r
                 nwu=len(self.dao.userRated(u)[0])
                 nvi=len(self.dao.itemRated(i)[0])
                 self.loss+=error**2+self.regB*((mwu+nwu)*self.We[uid].dot(self.We[uid])+nvi*self.Vr[iid].dot(self.Vr[iid]))
@@ -77,7 +77,7 @@ class TrustMF(SocialRecommender):
                 for follower in relations:
                     weight = relations[follower]
                     uf = self.dao.getUserId(follower)
-                    if uf <> -1 and self.dao.containsUser(uf):  # followee is in rating set
+                    if uf <> -1 and self.dao.containsUser(uf):  # follower is in rating set
                         error1 = self.Be[uf].dot(self.We[u])-weight
                         mbk=len(self.sao.getFollowees(follower))
                         self.loss+=self.regT*error1**2+self.regB*mbk*self.Be[uf].dot(self.Be[uf])
@@ -87,7 +87,7 @@ class TrustMF(SocialRecommender):
             iteration += 1
             self.isConverged(iteration)
 
-    def predict1(self,u,i):
+    def truserPredict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             u = self.dao.getUserId(u)
             i = self.dao.getItemId(i)
@@ -95,7 +95,7 @@ class TrustMF(SocialRecommender):
         else:
             return self.dao.globalMean
 
-    def predict2(self,u,i):
+    def truseePredict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             u = self.dao.getUserId(u)
             i = self.dao.getItemId(i)
