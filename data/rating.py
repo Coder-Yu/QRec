@@ -32,16 +32,18 @@ class RatingDAO(object):
                 self.__loadDataSet(self.evaluation['-testSet'],bTest=True)
             elif self.evaluation.contains('-ap'):
                 # auto partition
-                self.trainingData,self.testData = DataSplit.dataSplit(self.trainingData,self.evaluation['-ap'])
-
-                pass
+                self.__loadDataSet(config['ratings'])
+                self.trainingData,self.testData = DataSplit.\
+                    dataSplit(self.trainingData,test_ratio=float(self.evaluation['-ap']))
+            self.__generateSet()
         else:
-            self.trainingMatrix = self.__loadRatings(config['ratings'])
+            print 'Evaluation is not well configured!'
+            exit(-1)
         self.__computeItemMean()
         self.__computeUserMean()
         self.__globalAverage()
 
-    def __loadDataSet(self,file,noPatrition= False, bTest=False):
+    def __loadDataSet(self,file, bTest=False):
         if not bTest:
             print 'loading training data...'
         else:
@@ -53,9 +55,7 @@ class RatingDAO(object):
             ratings = ratings[1:]
         # order of the columns
         order = self.ratingConfig['-columns'].strip().split()
-        # split data
-        # userList= []
-        triple = []
+
         scale = set()
         # find the maximum rating and minimum value
 
@@ -81,75 +81,47 @@ class RatingDAO(object):
             itemId = items[int(order[1])]
             rating = items[int(order[2])]
 
+            if not bTest:
+                self.trainingData.append([userId, itemId, float(rating)])
+            else:
+                self.testData.append([userId, itemId, float(rating)])
+
+
+
+    def __generateSet(self):
+        triple = []
+        for i,entry in enumerate(self.trainingData):
+            userId,itemId,rating = entry
             # makes the rating within the range [0, 1].
-            normRating = normalize(float(rating), self.rScale[-1], self.rScale[0])
+            rating = normalize(float(rating), self.rScale[-1], self.rScale[0])
+            self.trainingData[i][2] = rating
             # order the user
             if not self.user.has_key(userId):
                 self.user[userId] = len(self.user)
             # order the item
             if not self.item.has_key(itemId):
                 self.item[itemId] = len(self.item)
-                # userList.append(userId)
-            if not bTest:
-                self.trainingData.append([userId, itemId, normRating])
-                triple.append([self.user[userId], self.item[itemId], normRating])
+                # userList.append
+            triple.append([self.user[userId], self.item[itemId], rating])
+        self.trainingMatrix = new_sparseMatrix.SparseMatrix(triple)
 
-            else:
-                if not self.testSet_u.has_key(userId):
-                    self.testSet_u[userId] = {}
-                self.testSet_u[userId][itemId] = float(rating)
-                if not self.testSet_i.has_key(itemId):
-                    self.testSet_i[itemId] = {}
-                    self.testSet_i[itemId][userId] = 0
-                self.testData.append([userId, itemId, float(rating)])
-        if not noPatrition and not bTest:
-            self.trainingMatrix = new_sparseMatrix.SparseMatrix(triple)
-
-
-    def __loadRatings(self,file):
-        print 'loading ratings...'
-        with open(file) as f:
-            ratings = f.readlines()
-        #ignore the headline
-        if self.ratingConfig.contains('-header'):
-            ratings = ratings[1:]
-        #order of the columns
-        order = self.ratingConfig['-columns'].strip().split()
-        #split data
-        #userList= []
-        scale = set()
-        #find the maximum rating and minimum value
-        for lineNo,line in enumerate(ratings):
-            items = split(' |,|\t',line.strip())
-            if len(order) < 3:
-                print 'The rating file is not in a correct format. Error: Line num %d' %lineNo
-                exit(-1)
-            try:
-                rating =  items[int(order[2])]
-                scale.add(float(rating))
-            except ValueError:
-                print 'Error! Have you added the option -header to the rating.setup?'
-        self.rScale = list(scale)
-        self.rScale.sort()
-
-        for lineNo,line in enumerate(ratings):
-            items = split(' |,|\t',line.strip())
-            if len(order) < 3:
-                print 'The rating file is not in a correct format. Error: Line num %d' %lineNo
-                exit(-1)
-            userId =  items[int(order[0])]
-            itemId =  items[int(order[1])]
-            rating =  items[int(order[2])]
-
-            #makes the rating within the range [0, 1].
-            normRating = normalize(float(rating),self.rScale[-1],self.rScale[0])
-            #order the user
+        for entry in self.testData:
+            userId, itemId, rating = entry
+            # order the user
             if not self.user.has_key(userId):
                 self.user[userId] = len(self.user)
-            #order the item
+            # order the item
             if not self.item.has_key(itemId):
                 self.item[itemId] = len(self.item)
-            self.trainingData.append([userId,itemId,normRating])
+
+            if not self.testSet_u.has_key(userId):
+                self.testSet_u[userId] = {}
+            self.testSet_u[userId][itemId] = rating
+            if not self.testSet_i.has_key(itemId):
+                self.testSet_i[itemId] = {}
+            self.testSet_i[itemId][userId] = rating
+
+
 
 
     def __globalAverage(self):
