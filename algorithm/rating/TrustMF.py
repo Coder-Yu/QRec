@@ -12,6 +12,12 @@ class TrustMF(SocialRecommender):
 
     def initModel(self):
         super(TrustMF, self).initModel()
+        self.Br = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent user matrix
+        self.Wr = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent item matrix
+        self.Vr = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
+        self.Be = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent user matrix
+        self.We = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent item matrix
+        self.Ve = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
 
     def readConfiguration(self):
         super(SocialRecommender, self).readConfiguration()
@@ -20,14 +26,8 @@ class TrustMF(SocialRecommender):
         self.regT=float(regular['-t'])
 
     def buildModel(self):
-        self.Br = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent user matrix
-        self.Wr = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent item matrix
-        self.Vr = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
         self.trusterModel()
-        # self.Be = np.random.rand(self.sao.trustSize()[0], self.k)  # latent user matrix
-        # self.We = np.random.rand(self.sao.trustSize()[0], self.k)  # latent item matrix
-        # self.Ve = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
-        # self.trusteeModel()
+        self.trusteeModel()
 
     def trusterModel(self):
         iteration = 0
@@ -38,65 +38,54 @@ class TrustMF(SocialRecommender):
                 mbu=len(self.sao.getFollowees(u))
                 uid = self.dao.getUserId(u)
                 iid = self.dao.getItemId(i)
-                error = r-self.predict(uid,iid)
-                nbu=len(self.dao.userRated(uid)[0])
-                nvi=len(self.dao.itemRated(iid)[0])
+                error = self.predict1(u,i)-r
+                nbu=len(self.dao.userRated(u)[0])
+                nvi=len(self.dao.itemRated(i)[0])
                 self.loss+=error**2+self.regB*((mbu+nbu)*self.Br[uid].dot(self.Br[uid])+nvi*self.Vr[iid].dot(self.Vr[iid]))
-                self.Br[uid]=self.Br[uid]-self.lRate*(error*self.Vr[iid]+self.regB*(mbu+nbu)*self.Br[uid])
                 self.Vr[iid]=self.Vr[iid]-self.lRate*(error*self.Br[uid]+self.regB*nvi*self.Vr[iid])
 
-            for entry in self.sao.relation:
-                user1,user2,weight=entry
-                mwk=len(self.sao.getFollowers(user2))
-
-                u1 = self.dao.user[user1]
-                u2 = self.dao.user[user2]
-
-                error = weight-self.Br[u1].dot(self.Wr[u2])
-                self.loss+=self.regT*error**2+self.regB*mwk*self.Wr[u2].dot(self.Wr[u2])
-                self.Br[u1]=self.Br[u1]-self.lRate*(self.regT*(self.Br[u1].dot(self.Wr[u2])-self.sao.elem(u1,u2))*self.Wr[u2])
-                self.Wr[u2]=self.Wr[u2]-self.lRate*(self.regT*error*self.Br[u1]+self.regB*mwk*self.Wr[u2])
+                relations = self.sao.getFollowees(u)
+                for followee in relations:
+                    weight = relations[followee]
+                    uf = self.dao.getUserId(followee)
+                    if uf <> -1 and self.dao.containsUser(uf):  # followee is in rating set
+                        error1 = self.Br[u].dot(self.Wr[uf])-weight
+                        mwk=len(self.sao.getFollowers(followee))
+                        self.loss+=self.regT*error1**2+self.regB*mwk*self.Wr[uf].dot(self.Wr[uf])
+                        self.Br[u]=self.Br[u]-self.lRate*(error*self.Vr[iid]+self.regB*(mbu+nbu)*self.Br[uid]+self.regT*(self.Br[u].dot(self.Wr[uf])-weight)*self.Wr[uf])
+                        self.Wr[uf]=self.Wr[uf]-self.lRate*(self.regT*error1*self.Br[u]+self.regB*mwk*self.Wr[uf])
 
             iteration += 1
             self.isConverged(iteration)
 
-    # def trusteeModel(self):
-    #     iteration = 0
-    #     while iteration < self.maxIter:
-    #         self.loss = 0
-    #         for entry in self.dao.trainingData:
-    #             u, i, r = entry
-    #             mwu=len(self.sao.getFollowers(u))
-    #             u = self.dao.getUserId(u)
-    #             i = self.dao.getItemId(i)
-    #             error = r-self.predict2(u,i)
-    #             nwu=len(self.dao.userRated(u)[0])
-    #             nvi=len(self.dao.itemRated(i)[0])
-    #             self.loss+=error**2+self.regB*((mwu+nwu)*self.We[u].dot(self.We[u])+nvi*self.Ve[i].dot(self.Ve[i]))
-    #
-    #             self.We[u]=self.We[u]-self.lRate*(error*self.Ve[i]+self.regB*(mwu+nwu)*self.We[u])
-    #             self.Ve[i]=self.Ve[i]-self.lRate*(error*self.Be[u]+self.regB*nvi*self.Ve[i])
-    #
-    #         for entry in self.sao.relation:
-    #             user1,user2,weight=entry
-    #             mbk=len(self.sao.getFollowees(user2))
-    #             u1 = self.dao.getUserId(user1)
-    #             u2 = self.dao.getItemId(user2)
-    #             error = weight-self.sao.B[u1].dot(self.sao.W[u2])
-    #             self.loss+=self.regT*error**2+self.regB*mbk*self.Be[u1].dot(self.Be[u1])
-    #             self.We[u]=self.We[u]-self.lRate*(error*self.Be[u1])
-    #             self.Be[u1]=self.Be[u1]-self.lRate*(self.regT*error*self.dao.W[u2]+self.regB*mbk*self.Be[u1])
-    #
-    #         iteration += 1
-    #         self.isConverged(iteration)
+    def trusteeModel(self):
+        iteration = 0
+        while iteration < self.maxIter:
+            self.loss = 0
+            for entry in self.dao.trainingData:
+                u, i, r = entry
+                mwu=len(self.sao.getFollowers(u))
+                uid = self.dao.getUserId(u)
+                iid = self.dao.getItemId(i)
+                error = self.predict2(u,i)-r
+                nwu=len(self.dao.userRated(u)[0])
+                nvi=len(self.dao.itemRated(i)[0])
+                self.loss+=error**2+self.regB*((mwu+nwu)*self.We[uid].dot(self.We[uid])+nvi*self.Vr[iid].dot(self.Vr[iid]))
+                self.Vr[iid]=self.Vr[iid]-self.lRate*(error*self.We[uid]+self.regB*nvi*self.Vr[iid])
 
-    def predict(self,u,i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
-            return self.Br[u].dot(self.Vr[i])
-        else:
-            return self.dao.globalMean
+                relations = self.sao.getFollowers(u)
+                for follower in relations:
+                    weight = relations[follower]
+                    uf = self.dao.getUserId(follower)
+                    if uf <> -1 and self.dao.containsUser(uf):  # followee is in rating set
+                        error1 = self.Be[uf].dot(self.We[u])-weight
+                        mbk=len(self.sao.getFollowees(follower))
+                        self.loss+=self.regT*error1**2+self.regB*mbk*self.Be[uf].dot(self.Be[uf])
+                        self.We[u]=self.We[u]-self.lRate*(error*self.Vr[iid]+self.regB*(mwu+nwu)*self.We[uid]+self.regT*error1*self.Be[uid])
+                        self.Be[uf]=self.Be[uf]-self.lRate*(self.regT*error1*self.We[u]+self.regB*mbk*self.Be[uf])
+
+            iteration += 1
+            self.isConverged(iteration)
 
     def predict1(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
@@ -106,17 +95,18 @@ class TrustMF(SocialRecommender):
         else:
             return self.dao.globalMean
 
-    # def predict2(self,u,i):
-    #     if self.dao.containsUser(u) and self.dao.containsItem(i):
-    #         u = self.dao.getUserId(u)
-    #         i = self.dao.getItemId(i)
-    #         return self.We[u].dot(self.Ve[i])
-    #     else:
-    #         return self.dao.globalMean
-    # def predict3(self,u1,u2):
-    #     if self.sao.user.has_key(u1) and self.sao.user.has_key(u2):
-    #         u1 = self.sao.user[u1]
-    #         u2 = self.sao.user[u2]
-    #         return self.Be[u1].dot(self.Ve[u2])
-    #     else:
-    #         return 0
+    def predict2(self,u,i):
+        if self.dao.containsUser(u) and self.dao.containsItem(i):
+            u = self.dao.getUserId(u)
+            i = self.dao.getItemId(i)
+            return self.We[u].dot(self.Ve[i])
+        else:
+            return self.dao.globalMean
+
+    def predict(self,u,i):
+        if self.dao.containsUser(u) and self.dao.containsItem(i):
+            u = self.dao.getUserId(u)
+            i = self.dao.getItemId(i)
+            return (self.Br[u]+self.We[u]).dot(self.Vr[i]+self.Ve[i])*0.25
+        else:
+            return self.dao.globalMean
