@@ -25,8 +25,18 @@ class TrustMF(SocialRecommender):
         self.regB=float(regular['-b'])
         self.regT=float(regular['-t'])
 
+    def printAlgorConfig(self):
+        print 'Reduced Dimension:',self.k
+        print 'Maximum Iteration:',self.maxIter
+        print 'Regularization parameter:  regB %.3f regT %.3f' %(self.regB,self.regT)
+        print '='*80
+
     def buildModel(self):
         self.trusterModel()
+        # the algorithm need train trusterModel and trusteeModel independently, They need the same parameter setting.
+        # Here, we don't consider that. You can rewrite the parameter setting like below.
+        # learningRate = config.LineConfig(self.config['learnRate'])
+        # self.lRate = float(learningRate['-init'])
         self.trusteeModel()
 
     def trusterModel(self):
