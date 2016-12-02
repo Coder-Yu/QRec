@@ -32,11 +32,8 @@ class TrustMF(SocialRecommender):
         print '='*80
 
     def buildModel(self):
+        # If necessary, you can fix the parameter in ./config/Trust.conf
         self.trusterModel()
-        # the algorithm need train trusterModel and trusteeModel independently, They need the same parameter setting.
-        # Here, we don't consider that. You can rewrite the parameter setting like below.
-        # learningRate = config.LineConfig(self.config['learnRate'])
-        # self.lRate = float(learningRate['-init'])
         self.trusteeModel()
 
     def trusterModel(self):
