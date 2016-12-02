@@ -36,10 +36,9 @@ class Measure(object):
     def MAE(res):
         error = 0
         count = 0
-        for key1 in res:
-            for lst in res[key1]:
-                error+=abs(lst[1]-lst[2])
-                count+=1
+        for entry in res:
+            error+=abs(entry[2]-entry[3])
+            count+=1
         if count==0:
             return error
         return float(error)/count
@@ -48,10 +47,9 @@ class Measure(object):
     def RMSE(res):
         error = 0
         count = 0
-        for key1 in res:
-            for lst in res[key1]:
-                error+=(lst[1]-lst[2])**2
-                count+=1
+        for entry in res:
+            error += abs(entry[2] - entry[3])
+            count += 1
         if count==0:
             return error
         return math.sqrt(float(error)/count)
