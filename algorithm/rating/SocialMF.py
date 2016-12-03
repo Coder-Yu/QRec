@@ -13,9 +13,10 @@ class SocialMF(SocialRecommender ):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
+            relationError = 0
+            relationLoss = 0
             for entry in self.dao.trainingData:
                 userId, itemId, r = entry
-                #get userU's Followers and Followees
                 followers = self.sao.getFollowers(userId)
                 u = self.dao.getUserId(userId)
                 i = self.dao.getItemId(itemId)
@@ -23,8 +24,6 @@ class SocialMF(SocialRecommender ):
                 self.loss += error**2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
-                relationError = 0
-                relationLoss = 0
                 for followee in followees:
                     weight= followees[followee]
                     uf = self.dao.getUserId(followee)
@@ -35,7 +34,6 @@ class SocialMF(SocialRecommender ):
 
 
                 # update latent vectors
-               
                 self.P[u] += self.lRate * (error * q - self.regU * p - self.regS * relationError)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
 
