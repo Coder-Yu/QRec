@@ -34,7 +34,7 @@ class TrustMF(SocialRecommender):
     def buildModel(self):
         # If necessary, you can fix the parameter in ./config/Trust.conf
         self.trusterModel()
-        # train trusterModel and trusteeModel independently using the same parameter setting
+        # train trusterModel and trusteeModel independently using the same parameter setting.
         learningRate = config.LineConfig(self.config['learnRate'])
         self.lRate = float(learningRate['-init'])
         self.trusteeModel()
