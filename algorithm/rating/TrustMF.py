@@ -34,6 +34,8 @@ class TrustMF(SocialRecommender):
     def buildModel(self):
         # If necessary, you can fix the parameter in ./config/Trust.conf
         self.trusterModel()
+        learningRate = config.LineConfig(self.config['learnRate'])
+        self.lRate = float(learningRate['-init'])
         self.trusteeModel()
 
     def trusterModel(self):
@@ -56,10 +58,10 @@ class TrustMF(SocialRecommender):
                     weight = relations[followee]
                     uf = self.dao.getUserId(followee)
                     if uf <> -1 and self.dao.containsUser(uf):  # followee is in rating set
-                        error1 = self.Br[u].dot(self.Wr[uf])-weight
+                        error1 = self.Br[uid].dot(self.Wr[uf])-weight
                         mwk=len(self.sao.getFollowers(followee))
                         self.loss+=self.regT*error1**2+self.regB*mwk*self.Wr[uf].dot(self.Wr[uf])
-                        self.Br[u]=self.Br[u]-self.lRate*(error*self.Vr[iid]+self.regB*(mbu+nbu)*self.Br[uid]+self.regT*(self.Br[u].dot(self.Wr[uf])-weight)*self.Wr[uf])
+                        self.Br[uid]=self.Br[uid]-self.lRate*(error*self.Vr[iid]+self.regB*(mbu+nbu)*self.Br[uid]+self.regT*(self.Br[uid].dot(self.Wr[uf])-weight)*self.Wr[uf])
                         self.Wr[uf]=self.Wr[uf]-self.lRate*(self.regT*error1*self.Br[u]+self.regB*mwk*self.Wr[uf])
 
             iteration += 1
@@ -77,8 +79,8 @@ class TrustMF(SocialRecommender):
                 error = self.truseePredict(u,i)-r
                 nwu=len(self.dao.userRated(u)[0])
                 nvi=len(self.dao.itemRated(i)[0])
-                self.loss+=error**2+self.regB*((mwu+nwu)*self.We[uid].dot(self.We[uid])+nvi*self.Vr[iid].dot(self.Vr[iid]))
-                self.Vr[iid]=self.Vr[iid]-self.lRate*(error*self.We[uid]+self.regB*nvi*self.Vr[iid])
+                self.loss+=error**2+self.regB*((mwu+nwu)*self.We[uid].dot(self.We[uid])+nvi*self.Ve[iid].dot(self.Ve[iid]))
+                self.Ve[iid]=self.Ve[iid]-self.lRate*(error*self.We[uid]+self.regB*nvi*self.Ve[iid])
 
                 relations = self.sao.getFollowers(u)
                 for follower in relations:
@@ -88,8 +90,8 @@ class TrustMF(SocialRecommender):
                         error1 = self.Be[uf].dot(self.We[u])-weight
                         mbk=len(self.sao.getFollowees(follower))
                         self.loss+=self.regT*error1**2+self.regB*mbk*self.Be[uf].dot(self.Be[uf])
-                        self.We[u]=self.We[u]-self.lRate*(error*self.Vr[iid]+self.regB*(mwu+nwu)*self.We[uid]+self.regT*error1*self.Be[uid])
-                        self.Be[uf]=self.Be[uf]-self.lRate*(self.regT*error1*self.We[u]+self.regB*mbk*self.Be[uf])
+                        self.We[u]=self.We[u]-self.lRate*(error*self.Vr[iid]+self.regB*(mwu+nwu)*self.We[uid]+self.regT*error1*self.Be[uf])
+                        self.Be[uf]=self.Be[uf]-self.lRate*(self.regT*error1*self.We[uid]+self.regB*mbk*self.Be[uf])
 
             iteration += 1
             self.isConverged(iteration)
