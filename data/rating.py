@@ -192,16 +192,16 @@ class RatingDAO(object):
 
     def userRated(self,u):
         if self.trainingMatrix.matrix_User.has_key(self.getUserId(u)):
-            userIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
+            itemIndex =  self.trainingMatrix.matrix_User[self.user[u]].keys()
             rating = self.trainingMatrix.matrix_User[self.user[u]].values()
-            return (userIndex,rating)
+            return (itemIndex,rating)
         return ([],[])
 
     def itemRated(self,i):
         if self.trainingMatrix.matrix_Item.has_key(self.getItemId(i)):
-            itemIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
+            userIndex = self.trainingMatrix.matrix_Item[self.item[i]].keys()
             rating = self.trainingMatrix.matrix_Item[self.item[i]].values()
-            return (itemIndex,rating)
+            return (userIndex,rating)
         return ([],[])
 
     def row(self,u):

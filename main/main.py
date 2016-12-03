@@ -11,6 +11,7 @@ from algorithm.rating.SVD import SVD
 from algorithm.rating.PMF import PMF
 from tool.config import Config
 from visual.display import Display
+from algorithm.rating.TrustMF import TrustMF
 
 
 if __name__ == '__main__':
@@ -19,7 +20,7 @@ if __name__ == '__main__':
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '1. UserKNN   2. ItemKNN   3. BasicMF   4. SlopeOne   5. RSTE   6. UserMean'
-    print '7. ItemMean   8. SVD   9.PMF'
+    print '7. ItemMean   8. SVD   9.PMF 10.TrustMF'
     algor = -1
     print '-'*80
     order = input('please enter the num of the algorithm to run it:')
@@ -61,6 +62,9 @@ if __name__ == '__main__':
     elif order == 9:
         conf = Config('../config/PMF.conf')
         algor = PMF(conf)
+    elif order == 10:
+        conf = Config('../config/TrustMF.conf')
+        algor = TrustMF(conf)
     else:
         print 'Error num!'
         exit(-1)
