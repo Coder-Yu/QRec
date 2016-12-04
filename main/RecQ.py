@@ -22,7 +22,7 @@ class RecQ(object):
             elif self.evaluation.contains('-cv'):
                 #cross validation
                 self.__loadDataSet(config['ratings'])
-                self.trainingData,self.testData = DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv']))
+                #self.trainingData,self.testData = DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv']))
             else:
                 print 'Evaluation is not well configured!'
                 exit(-1)
@@ -57,19 +57,19 @@ class RecQ(object):
             else:
                 self.testData.append([userId, itemId, float(rating)])
 
-    def initialize(self):
+    def execute(self):
         self.algor = []
         if self.evaluation.contains('-cv'):
-            for i in range(len(self.trainingData)):
+            i = 1
+            for train,test in DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv'])):
                 fold = '['+str(i)+']'
                 recommender = 'ar.' + self.config['recommender'] + '.' + self.config['recommender']\
-                              + "(self.config,self.trainingData[i],self.testData[i],fold)"
-                self.algor.append(eval(recommender))
+                              + "(self.config,train,test,fold)"
+                eval(recommender).execute()
+                i+=1
         else:
             recommender = 'ar.'+self.config['recommender']+'.'+self.config['recommender']\
                           +'(self.config,self.trainingData,self.testData)'
-            self.algor.append(eval(recommender))
+            eval(recommender).execute()
 
-    def execute(self):
-        while len(self.algor):
-            self.algor.pop().execute()
+
