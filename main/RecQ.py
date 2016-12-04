@@ -1,7 +1,18 @@
+import sys
+sys.path.append("..")
 from re import split
 from tool.config import Config,LineConfig
 from evaluation.dataSplit import *
 import algorithm.rating as ar
+from algorithm.rating import *
+# import os
+# from importlib import import_module
+# for rt,dir,module in os.walk('../algorithm/rating'):
+#     for file in module:
+#         index = file.index('.')
+#         name = file[:index]
+#         print name
+#         import_module('/algorithm/rating/'+name)
 class RecQ(object):
     def __init__(self,config):
         self.trainingData = []  # training data
