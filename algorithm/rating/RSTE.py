@@ -32,8 +32,8 @@ class RSTE(SocialRecommender):
                 q = self.Q[i].copy()
                 self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
                 # update latent vectors
-                self.P[u] = p + self.lRate * (self.alpha*error * q - self.regU * p)
-                self.Q[i] = q + self.lRate * (self.alpha*error * p - self.regI * q)
+                self.P[u] += self.lRate * (self.alpha*error * q - self.regU * p)
+                self.Q[i] += self.lRate * (self.alpha*error * p - self.regI * q)
             iteration += 1
             self.isConverged(iteration)
 

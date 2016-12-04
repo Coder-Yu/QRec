@@ -70,19 +70,18 @@ class Recommender(object):
         res = [] #used to contain the text of the result
         res.append('userId  itemId  original  prediction\n')
         #predict
-        for userId in self.dao.testSet_u:
-            for ind,item in enumerate(self.dao.testSet_u[userId]):
-                itemId = item[0]
-                originRating = item[1]
-                #predict
-                prediction = self.predict(userId,itemId)
-                #denormalize
-                prediction = denormalize(prediction,self.dao.rScale[-1],self.dao.rScale[0])
-                #####################################
-                pred = self.checkRatingBoundary(prediction)
-                # add prediction in order to measure
-                self.dao.testSet_u[userId][ind].append(pred)
-                res.append(userId+' '+itemId+' '+str(originRating)+' '+str(pred)+'\n')
+        for ind,entry in enumerate(self.dao.testData):
+            user,item,rating = entry
+
+            #predict
+            prediction = self.predict(user,item)
+            #denormalize
+            prediction = denormalize(prediction,self.dao.rScale[-1],self.dao.rScale[0])
+            #####################################
+            pred = self.checkRatingBoundary(prediction)
+            # add prediction in order to measure
+            self.dao.testData[ind].append(pred)
+            res.append(user+' '+item+' '+str(rating)+' '+str(pred)+'\n')
         currentTime = strftime("%Y-%m-%d %H-%M-%S",localtime(time()))
         #output prediction result
         if self.isOutput:
@@ -93,7 +92,7 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
-        measure = Measure.ratingMeasure(self.dao.testSet_u)
+        measure = Measure.ratingMeasure(self.dao.testData)
         FileIO.writeFile(outDir, fileName, measure)
 
     def evalRanking(self):
