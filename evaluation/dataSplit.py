@@ -21,5 +21,19 @@ class DataSplit(object):
         return trainingSet,testSet
 
     @staticmethod
-    def crossValidation(data,k,output,path):
-        pass
+    def crossValidation(data,k,output=False,path='./',order=1):
+        if k<0 or k>10:
+            k=3
+        trainingSet = []
+        testSet = []
+        for i in range(k):
+            trainingSet.append([])
+            testSet.append([])
+        for i,line in enumerate(data):
+            testSet[i%k].append(line)
+            for n in range(k):
+                if n!=i%k:
+                    trainingSet[n].append(line)
+        return trainingSet,testSet
+
+

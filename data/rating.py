@@ -8,7 +8,7 @@ from re import split
 
 class RatingDAO(object):
     'data access control'
-    def __init__(self,config):
+    def __init__(self,config,trainingSet = None, testSet = None):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
         self.user = {} #used to store the order of users
@@ -24,72 +24,27 @@ class RatingDAO(object):
         self.testSet_u = {} # used to store the test set by hierarchy user:[item,rating]
         self.testSet_i = {} # used to store the test set by hierarchy item:[user,rating]
         self.rScale = []
-        if self.config.contains('evaluation.setup'):
-            self.evaluation = LineConfig(config['evaluation.setup'])
-            if self.evaluation.contains('-testSet'):
-                #specify testSet
-                self.__loadDataSet(config['ratings'])
-                self.__loadDataSet(self.evaluation['-testSet'],bTest=True)
-            elif self.evaluation.contains('-ap'):
-                # auto partition
-                self.__loadDataSet(config['ratings'])
-                self.trainingData,self.testData = DataSplit.\
-                    dataSplit(self.trainingData,test_ratio=float(self.evaluation['-ap']))
-            self.__generateSet()
-        else:
-            print 'Evaluation is not well configured!'
-            exit(-1)
+
+        self.trainingData = trainingSet
+        self.testData = testSet
+        self.__generateSet()
+
         self.__computeItemMean()
         self.__computeUserMean()
         self.__globalAverage()
-
-    def __loadDataSet(self,file, bTest=False):
-        if not bTest:
-            print 'loading training data...'
-        else:
-            print 'loading test data...'
-        with open(file) as f:
-            ratings = f.readlines()
-        # ignore the headline
-        if self.ratingConfig.contains('-header'):
-            ratings = ratings[1:]
-        # order of the columns
-        order = self.ratingConfig['-columns'].strip().split()
-
-        scale = set()
-        # find the maximum rating and minimum value
-
-        for lineNo, line in enumerate(ratings):
-            items = split(' |,|\t', line.strip())
-            if len(order) < 3:
-                print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
-                exit(-1)
-            try:
-                rating = items[int(order[2])]
-                scale.add(float(rating))
-            except ValueError:
-                print 'Error! Have you added the option -header to the rating.setup?'
-        self.rScale = list(scale)
-        self.rScale.sort()
-
-        for lineNo, line in enumerate(ratings):
-            items = split(' |,|\t', line.strip())
-            if len(order) < 3:
-                print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
-                exit(-1)
-            userId = items[int(order[0])]
-            itemId = items[int(order[1])]
-            rating = items[int(order[2])]
-
-            if not bTest:
-                self.trainingData.append([userId, itemId, float(rating)])
-            else:
-                self.testData.append([userId, itemId, float(rating)])
 
 
 
     def __generateSet(self):
         triple = []
+        scale = set()
+        # find the maximum rating and minimum value
+        for i, entry in enumerate(self.trainingData):
+            userId, itemId, rating = entry
+            scale.add(float(rating))
+        self.rScale = list(scale)
+        self.rScale.sort()
+
         for i,entry in enumerate(self.trainingData):
             userId,itemId,rating = entry
             # makes the rating within the range [0, 1].

@@ -2,8 +2,8 @@ from baseclass.IterativeRecommender import IterativeRecommender
 import numpy as np
 
 class SVD(IterativeRecommender):
-    def __init__(self,conf):
-        super(SVD, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(SVD, self).__init__(conf,trainingSet,testSet,fold)
 
     def initModel(self):
         super(SVD, self).initModel()

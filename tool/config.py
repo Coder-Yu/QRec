@@ -7,11 +7,13 @@ class Config(object):
     def __getitem__(self, item):
         if not self.contains(item):
             print 'parameter '+item+' is invalid!'
+            exit(-1)
         return self.config[item]
 
     def getOptions(self,item):
         if not self.contains(item):
             print 'parameter '+item+' is invalid!'
+            exit(-1)
         return self.config[item]
 
     def contains(self,key):
@@ -61,11 +63,13 @@ class LineConfig(object):
     def __getitem__(self, item):
         if not self.contains(item):
             print 'parameter '+item+' is invalid!'
+            exit(-1)
         return self.options[item]
 
     def getOption(self,key):
         if not self.contains(key):
             print 'parameter '+key+' is invalid!'
+            exit(-1)
         return self.options[key]
 
     def isMainOn(self):

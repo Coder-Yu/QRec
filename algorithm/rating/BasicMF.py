@@ -1,8 +1,8 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 
 class BasicMF(IterativeRecommender):
-    def __init__(self,conf):
-        super(BasicMF, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(BasicMF, self).__init__(conf,trainingSet,testSet,fold)
 
     def buildModel(self):
         iteration = 0

@@ -1,8 +1,8 @@
 from baseclass.SocialRecommender import SocialRecommender
 from tool import config
 class RSTE(SocialRecommender):
-    def __init__(self,conf):
-        super(RSTE, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(RSTE, self).__init__(conf,trainingSet,testSet,fold)
 
     def readConfiguration(self):
         super(SocialRecommender, self).readConfiguration()
