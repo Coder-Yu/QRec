@@ -48,7 +48,7 @@ class Measure(object):
         error = 0
         count = 0
         for entry in res:
-            error += abs(entry[2] - entry[3])
+            error += abs(entry[2] - entry[3])**2
             count += 1
         if count==0:
             return error
