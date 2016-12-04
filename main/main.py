@@ -62,7 +62,7 @@ if __name__ == '__main__':
     elif order == 9:
         conf = Config('../config/PMF.conf')
         algor = PMF(conf)
-    elif order == 10:
+    elif order == 11:
         conf = Config('../config/SocialMF.conf')
         algor = SocialMF(conf)
     else:
