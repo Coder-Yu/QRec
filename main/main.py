@@ -20,7 +20,7 @@ if __name__ == '__main__':
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '1. UserKNN   2. ItemKNN   3. BasicMF   4. SlopeOne   5. RSTE   6. UserMean'
-    print '7. ItemMean   8. SVD   9.PMF 10.TrustMF'
+    print '7. ItemMean   8. SVD   9. PMF   10. TrustMF'
     algor = -1
     print '-'*80
     order = input('please enter the num of the algorithm to run it:')
