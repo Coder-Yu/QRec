@@ -11,7 +11,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 
 ##Features##
 * **Cross-platform**: as a Python software, RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.
-* **Fast execution**: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it runs much faster than other libraries based on Python.
+* **Fast execution**: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.
 * **Easy configuration**: RecQ configs recommenders using a configuration file.
 * **Easy expansion**: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.
 * **<font color="red">Data visualization</font>**: RecQ can help visualize the input dataset without running any algorithm. 
@@ -68,8 +68,9 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td scope="row">evaluation.setup</td>
     <td>../dataset/FilmTrust/testset.txt</td>
  
-    <td>Main option: -testSet;<br>
-      -testSet -f path/to/test/file;<br>
+    <td>Main option: -testSet; -ap<br>
+      -testSet path/to/test/file   (need to specify the test set manually);<br>
+      -ap 0.2   (explanation: ap means that the ratings is automatically partitioned into training set and test set, the number is the ratio of test set);<br>
      </td>
   </tr>
   <tr>
