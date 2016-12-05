@@ -1,15 +1,15 @@
 import sys
 sys.path.append("..")
 from RecQ import RecQ
-from algorithm.rating.UserKNN import UserKNN
-from algorithm.rating.ItemKNN import ItemKNN
-from algorithm.rating.BasicMF import BasicMF
-from algorithm.rating.SlopeOne import SlopeOne
-from algorithm.rating.RSTE import RSTE
-from algorithm.rating.UserMean import UserMean
-from algorithm.rating.ItemMean import ItemMean
-from algorithm.rating.SVD import SVD
-from algorithm.rating.PMF import PMF
+# from algorithm.rating.UserKNN import UserKNN
+# from algorithm.rating.ItemKNN import ItemKNN
+# from algorithm.rating.BasicMF import BasicMF
+# from algorithm.rating.SlopeOne import SlopeOne
+# from algorithm.rating.RSTE import RSTE
+# from algorithm.rating.UserMean import UserMean
+# from algorithm.rating.ItemMean import ItemMean
+# from algorithm.rating.SVD import SVD
+# from algorithm.rating.PMF import PMF
 from tool.config import Config
 from visual.display import Display
 from algorithm.rating.TrustMF import TrustMF

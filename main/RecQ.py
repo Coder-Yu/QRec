@@ -1,18 +1,9 @@
 import sys
-sys.path.append("..")
 from re import split
 from tool.config import Config,LineConfig
 from evaluation.dataSplit import *
-import algorithm.rating as ar
-from algorithm.rating import *
-# import os
-# from importlib import import_module
-# for rt,dir,module in os.walk('../algorithm/rating'):
-#     for file in module:
-#         index = file.index('.')
-#         name = file[:index]
-#         print name
-#         import_module('/algorithm/rating/'+name)
+
+
 class RecQ(object):
     def __init__(self,config):
         self.trainingData = []  # training data
@@ -69,18 +60,16 @@ class RecQ(object):
                 self.testData.append([userId, itemId, float(rating)])
 
     def execute(self):
-        self.algor = []
+        exec ('from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender'])
         if self.evaluation.contains('-cv'):
             i = 1
             for train,test in DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv'])):
                 fold = '['+str(i)+']'
-                recommender = 'ar.' + self.config['recommender'] + '.' + self.config['recommender']\
-                              + "(self.config,train,test,fold)"
+                recommender = self.config['recommender']+ "(self.config,train,test,fold)"
                 eval(recommender).execute()
                 i+=1
         else:
-            recommender = 'ar.'+self.config['recommender']+'.'+self.config['recommender']\
-                          +'(self.config,self.trainingData,self.testData)'
+            recommender = self.config['recommender']+'(self.config,self.trainingData,self.testData)'
             eval(recommender).execute()
 
 
