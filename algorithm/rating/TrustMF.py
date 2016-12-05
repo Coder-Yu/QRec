@@ -28,9 +28,8 @@ class TrustMF(SocialRecommender):
         self.regT = float(regular['-t'])
 
     def printAlgorConfig(self):
-        print 'Reduced Dimension:', self.k
-        print 'Maximum Iteration:', self.maxIter
-        print 'Regularization parameter:  regB %.3f regT %.3f' % (self.regB, self.regT)
+        super(SocialRecommender,self).printAlgorConfig()
+        print 'Regularization parameter:  regT %.3f' % self.regT
         print '=' * 80
 
     def buildModel(self):
