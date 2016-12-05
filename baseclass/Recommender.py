@@ -14,16 +14,16 @@ from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
 class Recommender(object):
-    def __init__(self,conf):
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         self.config = conf
         self.dao = None
         self.isSaveModel = False
         self.ranking = None
         self.isLoadModel = False
         self.output = None
-        self.foldInfo = '[1]'
         self.isOutput = True
-        self.dao = RatingDAO(self.config)
+        self.dao = RatingDAO(self.config, trainingSet, testSet)
+        self.foldInfo = fold
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
@@ -33,7 +33,7 @@ class Recommender(object):
 
     def printAlgorConfig(self):
         "show algorithm's configuration"
-        print 'Algorithm:',self.config['recommender']
+        print 'Algorithm:',self.config['recommender'],self.foldInfo
         print 'Ratings dataSet:',abspath(self.config['ratings'])
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))

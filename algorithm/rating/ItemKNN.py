@@ -3,8 +3,8 @@ from tool import qmath
 from structure.symmetricMatrix import SymmetricMatrix
 
 class ItemKNN(Recommender):
-    def __init__(self,conf):
-        super(ItemKNN, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(ItemKNN, self).__init__(conf,trainingSet,testSet,fold)
         self.itemSim = SymmetricMatrix(len(self.dao.user)) #used to store the similarity among items
 
     def readConfiguration(self):

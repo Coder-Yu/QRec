@@ -4,8 +4,8 @@ from structure.symmetricMatrix import SymmetricMatrix
 import numpy as np
 
 class UserKNN(Recommender):
-    def __init__(self,conf):
-        super(UserKNN, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(UserKNN, self).__init__(conf,trainingSet,testSet,fold)
         self.userSim = SymmetricMatrix(len(self.dao.user))
 
     def readConfiguration(self):

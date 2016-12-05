@@ -2,9 +2,9 @@ from baseclass.Recommender import Recommender
 from tool import qmath
 from structure.symmetricMatrix import SymmetricMatrix
 
-class SlopeOne(Recommender):
-    def __init__(self,conf):
-        super(SlopeOne, self).__init__(conf)
+class SlopeOne(Recommender,):
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(SlopeOne, self).__init__(conf,trainingSet,testSet,fold)
         self.diffAverage = {}
         self.freq = {}
 
