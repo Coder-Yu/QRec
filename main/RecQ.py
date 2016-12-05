@@ -3,7 +3,7 @@ from re import split
 from tool.config import Config,LineConfig
 from tool.file import FileIO
 from evaluation.dataSplit import *
-
+from multiprocessing import Process,Manager
 
 class RecQ(object):
     def __init__(self,config):
@@ -61,25 +61,35 @@ class RecQ(object):
             else:
                 self.testData.append([userId, itemId, float(rating)])
 
+
     def execute(self):
-        exec ('from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender'])
+        importStr = 'from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender']
+        exec (importStr)
         if self.evaluation.contains('-cv'):
+            k = int(self.evaluation['-cv'])
+            manager = Manager()
+            m = manager.dict()
             i = 1
-            for train,test in DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv'])):
+            tasks = []
+            for train,test in DataSplit.crossValidation(self.trainingData,k):
                 fold = '['+str(i)+']'
                 recommender = self.config['recommender']+ "(self.config,train,test,fold)"
-                measure = eval(recommender).execute()
-                self.measure.append(measure)
+                p = Process(target=run,args=(m,eval(recommender),i))
+                p.start()
+                tasks.append(p)
                 i+=1
+            for p in tasks:
+                p.join()
+            self.measure = [dict(m)[i] for i in range(1,k+1)]
             res = []
             for i in range(len(self.measure[0])):
                 measure = self.measure[0][i].split(':')[0]
                 total = 0
-                for j in range(len(self.measure)):
+                for j in range(k):
                     total += float(self.measure[j][i].split(':')[1])
-                res.append(measure+':'+str(total/len(self.measure))+'\n')
+                res.append(measure+':'+str(total/k)+'\n')
             outDir = LineConfig(self.config['output.setup'])['-dir']
-            fileName = self.config['recommender'] +'@'+str(int(self.evaluation['-cv']))+'-fold-cv' + '.txt'
+            fileName = self.config['recommender'] +'@'+str(k)+'-fold-cv' + '.txt'
             FileIO.writeFile(outDir,fileName,res)
 
 
@@ -88,3 +98,5 @@ class RecQ(object):
             eval(recommender).execute()
 
 
+def run(measure,algor,order):
+    measure[order] = algor.execute()
