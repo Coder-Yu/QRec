@@ -35,7 +35,7 @@ class Recommender(object):
     def printAlgorConfig(self):
         "show algorithm's configuration"
         print 'Algorithm:',self.config['recommender']
-        print 'Ratings dataSet:',abspath(self.config['ratings'])
+        print 'Ratings dataset:',abspath(self.config['ratings'])
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
         #print 'Count of the users in training set: ',len()
@@ -144,16 +144,16 @@ class Recommender(object):
             self.printAlgorConfig()
         #load model from disk or build model
         if self.isLoadModel:
-            print 'Loading model...'
+            print 'Loading model %s...' %(self.foldInfo)
             self.loadModel()
         else:
-            print 'Initializing model...'
+            print 'Initializing model %s...' %(self.foldInfo)
             self.initModel()
-            print 'Building Model...'
+            print 'Building Model %s...' %(self.foldInfo)
             self.buildModel()
 
         #preict the ratings or item ranking
-        print 'Predicting...'
+        print 'Predicting %s...' %(self.foldInfo)
         if self.ranking.isMainOn():
             self.evalRanking()
         else:
@@ -161,7 +161,7 @@ class Recommender(object):
 
         #save model
         if self.isSaveModel:
-            print 'Saving model...'
+            print 'Saving model %s...' %(self.foldInfo)
             self.saveModel()
 
         return self.measure

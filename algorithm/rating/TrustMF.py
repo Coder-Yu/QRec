@@ -9,8 +9,8 @@ from tool import config
 
 class TrustMF(SocialRecommender):
 
-    def __init__(self, conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(TrustMF, self).__init__(conf,trainingSet,testSet,fold)
+    def __init__(self, conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
+        super(TrustMF, self).__init__(conf,trainingSet,testSet,relation,fold)
 
     def initModel(self):
         super(TrustMF, self).initModel()
@@ -22,7 +22,7 @@ class TrustMF(SocialRecommender):
         self.Ve = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
 
     def readConfiguration(self):
-        super(SocialRecommender, self).readConfiguration()
+        super(TrustMF, self).readConfiguration()
         regular = config.LineConfig(self.config['reg.lambda'])
         self.regB = float(regular['-b'])
         self.regT = float(regular['-t'])

@@ -3,8 +3,8 @@ from baseclass.SocialRecommender import SocialRecommender
 
 from tool import config
 class SocialMF(SocialRecommender ):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(SocialMF, self).__init__(conf,trainingSet,testSet,fold)
+    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
+        super(SocialMF, self).__init__(conf,trainingSet,testSet,relation,fold)
 
     def readConfiguration(self):
         super(SocialMF, self).readConfiguration()

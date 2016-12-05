@@ -62,6 +62,7 @@ if __name__ == '__main__':
     elif order == 11:
         conf = Config('../config/SocialMF.conf')
 
+
     else:
         print 'Error num!'
         exit(-1)
