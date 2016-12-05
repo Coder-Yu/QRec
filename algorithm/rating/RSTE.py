@@ -38,7 +38,7 @@ class RSTE(SocialRecommender):
             self.isConverged(iteration)
 
     def predict(self,u,i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
+        if self.dao.containsUser(u) and self.dao.containsItem(i):   
             i = self.dao.getItemId(i)
             fPred = 0
             denom = 0
