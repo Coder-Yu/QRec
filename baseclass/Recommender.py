@@ -24,6 +24,7 @@ class Recommender(object):
         self.isOutput = True
         self.dao = RatingDAO(self.config, trainingSet, testSet)
         self.foldInfo = fold
+        self.measure = []
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
@@ -92,8 +93,8 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
-        measure = Measure.ratingMeasure(self.dao.testData)
-        FileIO.writeFile(outDir, fileName, measure)
+        self.measure = Measure.ratingMeasure(self.dao.testData)
+        FileIO.writeFile(outDir, fileName, self.measure)
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
@@ -134,8 +135,8 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
-        measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
-        FileIO.writeFile(outDir, fileName, measure)
+        self.measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
+        FileIO.writeFile(outDir, fileName, self.measure)
 
     def execute(self):
         self.readConfiguration()
@@ -161,5 +162,7 @@ class Recommender(object):
         if self.isSaveModel:
             print 'Saving model...'
             self.saveModel()
+
+        return self.measure
 
 

@@ -1,6 +1,7 @@
 import sys
 from re import split
 from tool.config import Config,LineConfig
+from tool.file import FileIO
 from evaluation.dataSplit import *
 
 
@@ -8,6 +9,7 @@ class RecQ(object):
     def __init__(self,config):
         self.trainingData = []  # training data
         self.testData = []  # testData
+        self.measure = []
         self.config =config
         self.ratingConfig = LineConfig(config['ratings.setup'])
         if self.config.contains('evaluation.setup'):
@@ -66,8 +68,21 @@ class RecQ(object):
             for train,test in DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv'])):
                 fold = '['+str(i)+']'
                 recommender = self.config['recommender']+ "(self.config,train,test,fold)"
-                eval(recommender).execute()
+                measure = eval(recommender).execute()
+                self.measure.append(measure)
                 i+=1
+            res = []
+            for i in range(len(self.measure[0])):
+                measure = self.measure[0][i].split(':')[0]
+                total = 0
+                for j in range(len(self.measure)):
+                    total += float(self.measure[j][i].split(':')[1])
+                res.append(measure+':'+str(total/len(self.measure))+'\n')
+            outDir = LineConfig(self.config['output.setup'])['-dir']
+            fileName = self.config['recommender'] +'@'+str(int(self.evaluation['-cv']))+'-fold-cv' + '.txt'
+            FileIO.writeFile(outDir,fileName,res)
+
+
         else:
             recommender = self.config['recommender']+'(self.config,self.trainingData,self.testData)'
             eval(recommender).execute()
