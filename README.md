@@ -68,8 +68,10 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td scope="row">evaluation.setup</td>
     <td>../dataset/FilmTrust/testset.txt</td>
  
-    <td>Main option: -testSet;<br>
-      -testSet -f path/to/test/file;<br>
+    <td>Main option: -testSet, -ap, -cv<br>
+      -testSet path/to/test/file   (need to specify the test set manually)<br>
+      -ap ratio   (ap means that the ratings is automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)<br>
+      -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)
      </td>
   </tr>
   <tr>

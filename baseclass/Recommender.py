@@ -14,16 +14,17 @@ from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
 class Recommender(object):
-    def __init__(self,conf):
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         self.config = conf
         self.dao = None
         self.isSaveModel = False
         self.ranking = None
         self.isLoadModel = False
         self.output = None
-        self.foldInfo = '[1]'
         self.isOutput = True
-        self.dao = RatingDAO(self.config)
+        self.dao = RatingDAO(self.config, trainingSet, testSet)
+        self.foldInfo = fold
+        self.measure = []
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
@@ -33,7 +34,7 @@ class Recommender(object):
 
     def printAlgorConfig(self):
         "show algorithm's configuration"
-        print 'Algorithm:',self.config['recommender']
+        print 'Algorithm:',self.config['recommender'],self.foldInfo
         print 'Ratings dataSet:',abspath(self.config['ratings'])
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
             print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
@@ -70,19 +71,18 @@ class Recommender(object):
         res = [] #used to contain the text of the result
         res.append('userId  itemId  original  prediction\n')
         #predict
-        for userId in self.dao.testSet_u:
-            for ind,item in enumerate(self.dao.testSet_u[userId]):
-                itemId = item[0]
-                originRating = item[1]
-                #predict
-                prediction = self.predict(userId,itemId)
-                #denormalize
-                prediction = denormalize(prediction,self.dao.rScale[-1],self.dao.rScale[0])
-                #####################################
-                pred = self.checkRatingBoundary(prediction)
-                # add prediction in order to measure
-                self.dao.testSet_u[userId][ind].append(pred)
-                res.append(userId+' '+itemId+' '+str(originRating)+' '+str(pred)+'\n')
+        for ind,entry in enumerate(self.dao.testData):
+            user,item,rating = entry
+
+            #predict
+            prediction = self.predict(user,item)
+            #denormalize
+            prediction = denormalize(prediction,self.dao.rScale[-1],self.dao.rScale[0])
+            #####################################
+            pred = self.checkRatingBoundary(prediction)
+            # add prediction in order to measure
+            self.dao.testData[ind].append(pred)
+            res.append(user+' '+item+' '+str(rating)+' '+str(pred)+'\n')
         currentTime = strftime("%Y-%m-%d %H-%M-%S",localtime(time()))
         #output prediction result
         if self.isOutput:
@@ -93,8 +93,8 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
-        measure = Measure.ratingMeasure(self.dao.testSet_u)
-        FileIO.writeFile(outDir, fileName, measure)
+        self.measure = Measure.ratingMeasure(self.dao.testData)
+        FileIO.writeFile(outDir, fileName, self.measure)
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
@@ -135,8 +135,8 @@ class Recommender(object):
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
-        measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
-        FileIO.writeFile(outDir, fileName, measure)
+        self.measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
+        FileIO.writeFile(outDir, fileName, self.measure)
 
     def execute(self):
         self.readConfiguration()
@@ -162,5 +162,7 @@ class Recommender(object):
         if self.isSaveModel:
             print 'Saving model...'
             self.saveModel()
+
+        return self.measure
 
 

@@ -1,8 +1,8 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 
 class PMF(IterativeRecommender):
-    def __init__(self,conf):
-        super(PMF, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(PMF, self).__init__(conf,trainingSet,testSet,fold)
 
     def buildModel(self):
         iteration = 0

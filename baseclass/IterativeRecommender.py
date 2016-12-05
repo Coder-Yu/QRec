@@ -3,8 +3,8 @@ from tool import config
 import numpy as np
 
 class IterativeRecommender(Recommender):
-    def __init__(self,conf):
-        super(IterativeRecommender, self).__init__(conf)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(IterativeRecommender, self).__init__(conf,trainingSet,testSet,fold)
 
     def readConfiguration(self):
         super(IterativeRecommender, self).readConfiguration()

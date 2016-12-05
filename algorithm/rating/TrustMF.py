@@ -9,8 +9,8 @@ from tool import config
 
 class TrustMF(SocialRecommender):
 
-    def __init__(self, conf):
-        super(TrustMF, self).__init__(conf)
+    def __init__(self, conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(TrustMF, self).__init__(conf,trainingSet,testSet,fold)
 
     def initModel(self):
         super(TrustMF, self).initModel()
