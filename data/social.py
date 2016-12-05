@@ -6,39 +6,18 @@ import os.path
 from re import split
 
 class SocialDAO(object):
-    def __init__(self,conf):
+    def __init__(self,conf,relation):
         self.config = conf
-        self.socialConfig = LineConfig(self.config['social.setup'])
         self.user = {} #used to store the order of users
-        self.relation = []
+        self.relation = relation
         self.followees = {}
         self.followers = {}
-        self.trustMatrix = self.loadRelationship(self.config['social'])
+        self.trustMatrix = self.__generateSet()
 
-
-    def loadRelationship(self,filePath):
-        print 'load social data...'
+    def __generateSet(self):
         triple = []
-        with open(filePath) as f:
-            relations = f.readlines()
-            # ignore the headline
-        if self.socialConfig.contains('-header'):
-            relations = relations[1:]
-        # order of the columns
-        order = self.socialConfig['-columns'].strip().split()
-        if len(order)<=2:
-            print 'The social file is not in a correct format.'
-        for line in relations:
-            items = split(' |,|\t', line.strip())
-            if len(order) < 2:
-                print 'The social file is not in a correct format. Error: Line num %d' % lineNo
-                exit(-1)
-            userId1 = items[int(order[0])]
-            userId2 = items[int(order[1])]
-            if len(order)<3:
-                weight = 1
-            else:
-                weight = float(items[int(order[2])])
+        for line in self.relation:
+            userId1,userId2,weight = line
             #add relations to dict
             if not self.followees.has_key(userId1):
                 self.followees[userId1] = {}
@@ -51,7 +30,6 @@ class SocialDAO(object):
                 self.user[userId1] = len(self.user)
             if not self.user.has_key(userId2):
                 self.user[userId2] = len(self.user)
-            self.relation.append([userId1,userId2,weight])
             triple.append([self.user[userId1], self.user[userId2], weight])
         return new_sparseMatrix.SparseMatrix(triple)
 
