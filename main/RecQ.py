@@ -63,10 +63,12 @@ class RecQ(object):
 
 
     def execute(self):
+        #import the algorithm module
         importStr = 'from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender']
         exec (importStr)
         if self.evaluation.contains('-cv'):
             k = int(self.evaluation['-cv'])
+            #create the manager used to communication in multiprocess
             manager = Manager()
             m = manager.dict()
             i = 1
@@ -74,12 +76,15 @@ class RecQ(object):
             for train,test in DataSplit.crossValidation(self.trainingData,k):
                 fold = '['+str(i)+']'
                 recommender = self.config['recommender']+ "(self.config,train,test,fold)"
+               #create the process
                 p = Process(target=run,args=(m,eval(recommender),i))
                 p.start()
                 tasks.append(p)
                 i+=1
+            #wait until all processes are completed
             for p in tasks:
                 p.join()
+            #compute the mean error of k-fold cross validation
             self.measure = [dict(m)[i] for i in range(1,k+1)]
             res = []
             for i in range(len(self.measure[0])):
@@ -88,6 +93,7 @@ class RecQ(object):
                 for j in range(k):
                     total += float(self.measure[j][i].split(':')[1])
                 res.append(measure+':'+str(total/k)+'\n')
+            #output result
             outDir = LineConfig(self.config['output.setup'])['-dir']
             fileName = self.config['recommender'] +'@'+str(k)+'-fold-cv' + '.txt'
             FileIO.writeFile(outDir,fileName,res)
