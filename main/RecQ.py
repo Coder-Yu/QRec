@@ -80,7 +80,7 @@ class RecQ(object):
         order = self.socialConfig['-columns'].strip().split()
         if len(order) <= 2:
             print 'The social file is not in a correct format.'
-        for line in relations:
+        for lineNo,line in enumerate(relations):
             items = split(' |,|\t', line.strip())
             if len(order) < 2:
                 print 'The social file is not in a correct format. Error: Line num %d' % lineNo
