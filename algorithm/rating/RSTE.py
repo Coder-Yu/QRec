@@ -46,7 +46,7 @@ class RSTE(SocialRecommender):
             for followee in relations:
                 weight = relations[followee]
                 uf = self.dao.getUserId(followee)
-                if uf <> -1 and self.dao.containsUser(uf):  # followee is in rating set
+                if uf <> -1 and self.dao.containsUser(followee):  # followee is in rating set
                     fPred += weight * (self.P[uf].dot(self.Q[i]))
                     denom += weight
             u = self.dao.getUserId(u)

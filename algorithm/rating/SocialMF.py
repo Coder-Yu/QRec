@@ -27,7 +27,7 @@ class SocialMF(SocialRecommender ):
                 for followee in followees:
                     weight= followees[followee]
                     uf = self.dao.getUserId(followee)
-                    if uf <> -1 and self.dao.containsUser(uf):
+                    if uf <> -1 and self.dao.containsUser(followee):
                         fPred += weight * self.P[uf]
                         denom += weight
                 if denom <> 0:
