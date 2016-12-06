@@ -6,7 +6,7 @@ import os.path
 from re import split
 
 class SocialDAO(object):
-    def __init__(self,conf,relation):
+    def __init__(self,conf,relation=list()):
         self.config = conf
         self.user = {} #used to store the order of users
         self.relation = relation

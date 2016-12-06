@@ -8,7 +8,7 @@ from re import split
 
 class RatingDAO(object):
     'data access control'
-    def __init__(self,config,trainingSet = None, testSet = None):
+    def __init__(self,config,trainingSet = list(), testSet = list()):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
         self.user = {} #used to store the order of users
