@@ -6,7 +6,7 @@ from tool.file import FileIO
 from tool.qmath import denormalize
 from os.path import abspath
 import webbrowser
-
+from tool.file import FileIO
 class Display(object):
     def __init__(self,conf):
         self.conf = conf
@@ -14,9 +14,11 @@ class Display(object):
             print 'The config file is not in the correct format!'
             exit(-1)
         if conf.contains('ratings'):
-            self.dao = RatingDAO(conf)
+            ratingData =  FileIO.loadDataSet(conf,conf['ratings'])
+            self.dao = RatingDAO(conf,ratingData)
         if conf.contains('social'):
-            self.sao = SocialDAO(conf)
+            relationData = FileIO.loadRelationship(conf,conf['social'])
+            self.sao = SocialDAO(conf,relationData)
 
 
     def draw(self):
