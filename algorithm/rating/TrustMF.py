@@ -61,7 +61,7 @@ class TrustMF(SocialRecommender):
                 for followee in relations:
                     weight = relations[followee]
                     uf = self.dao.getUserId(followee)
-                    if uf != -1 and self.dao.containsUser(uf):  # followee is in rating set
+                    if uf != -1 and self.dao.containsUser(followee):  # followee is in rating set
                         error1 = self.Br[uid].dot(self.Wr[uf]) - weight
                         mwk = len(self.sao.getFollowers(followee))
                         self.loss += self.regT * error1**2 + self.regB * mwk * self.Wr[uf].dot(self.Wr[uf])
@@ -90,7 +90,7 @@ class TrustMF(SocialRecommender):
                 for follower in relations:
                     weight = relations[follower]
                     uf = self.dao.getUserId(follower)
-                    if uf != -1 and self.dao.containsUser(uf):  # follower is in rating set
+                    if uf != -1 and self.dao.containsUser(follower):  # follower is in rating set
                         error1 = self.Be[uf].dot(self.We[u]) - weight
                         mbk = len(self.sao.getFollowees(follower))
                         self.loss += self.regT * error1**2 + self.regB * mbk * self.Be[uf].dot(self.Be[uf])
