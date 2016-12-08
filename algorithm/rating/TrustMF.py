@@ -22,13 +22,13 @@ class TrustMF(SocialRecommender):
         self.Ve = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
 
     def readConfiguration(self):
-        super(TrustMF, self).readConfiguration()
+        super(SocialRecommender, self).readConfiguration()
         regular = config.LineConfig(self.config['reg.lambda'])
         self.regB = float(regular['-b'])
         self.regT = float(regular['-t'])
 
     def printAlgorConfig(self):
-        super(SocialRecommender,self).printAlgorConfig()
+        super(TrustMF,self).printAlgorConfig()
         print 'Regularization parameter:  regT %.3f' % self.regT
         print '=' * 80
 
