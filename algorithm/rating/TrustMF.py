@@ -22,7 +22,7 @@ class TrustMF(SocialRecommender):
         self.Ve = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
 
     def readConfiguration(self):
-        super(SocialRecommender, self).readConfiguration()
+        super(TrustMF, self).readConfiguration()
         regular = config.LineConfig(self.config['reg.lambda'])
         self.regB = float(regular['-b'])
         self.regT = float(regular['-t'])
