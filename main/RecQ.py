@@ -49,6 +49,8 @@ class RecQ(object):
         exec (importStr)
         if self.evaluation.contains('-cv'):
             k = int(self.evaluation['-cv'])
+            if k <= 1 or k > 10:
+                k = 3
             #create the manager used to communication in multiprocess
             manager = Manager()
             m = manager.dict()
