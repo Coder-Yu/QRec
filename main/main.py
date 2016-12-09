@@ -62,6 +62,9 @@ if __name__ == '__main__':
     elif order == 11:
         conf = Config('../config/SocialMF.conf')
 
+    elif order == 12:
+        conf = Config('../config/SoRec.conf')
+
 
     else:
         print 'Error num!'
