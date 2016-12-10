@@ -45,25 +45,26 @@ class SoRec(SocialRecommender ):
             #relations
             for entry in self.sao.relation:
                 u, v, tuv = entry
-                vminus = len(self.sao.getFollowers(v))# ~ d - (k)
-                uplus = len(self.sao.getFollowees(u))#o~ d + (i)
-                try:
-                    weight = math.sqrt(vminus / (uplus + vminus + 0.0))
-                except ZeroDivisionError:
-                    weight = 1
-                if u != -1 and self.dao.containsUser(u) and v != -1 and self.dao.containsUser(v):
+                if self.dao.containsUser(u) and self.dao.containsUser(v):
+                    vminus = len(self.sao.getFollowers(v))# ~ d - (k)
+                    uplus = len(self.sao.getFollowees(u))#~ d + (i)
+                    try:
+                        weight = math.sqrt(vminus / (uplus + vminus + 0.0))
+                    except ZeroDivisionError:
+                        weight = 1
                     v = self.dao.getUserId(v)
                     u = self.dao.getUserId(u)
+                    euv = weight * tuv - self.P[u].dot(self.Z[v])  # weight * tuv~ cik *
+                    self.loss += self.regS * (euv ** 2)
+                    p = self.P[u].copy()
+                    z = self.Z[v].copy()
+                    self.loss += self.regZ * z.dot(z)
+                    # update latent vectors
+                    self.P[u] += self.lRate * (self.regS * euv * z)
+                    self.Z[v] += self.lRate * (euv * p - self.regZ * z)
                 else:
                     continue
-                euv =  weight * tuv - self.P[u].dot(self.Z[v]) # weight * tuv~ cik *
-                self.loss +=self.regS * (euv ** 2)
-                p = self.P[u].copy()
-                z = self.Z[v].copy()
-                self.loss += self.regZ * z.dot(z)
-                # update latent vectors
-                self.P[u] += self.lRate * (self.regS*euv * z)
-                self.Z[v] += self.lRate * (euv * p - self.regZ * z)
+
 
 
 
