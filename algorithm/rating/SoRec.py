@@ -64,10 +64,6 @@ class SoRec(SocialRecommender ):
                     self.Z[v] += self.lRate * (euv * p - self.regZ * z)
                 else:
                     continue
-
-
-
-
             iteration += 1
             if self.isConverged(iteration):
                 break
