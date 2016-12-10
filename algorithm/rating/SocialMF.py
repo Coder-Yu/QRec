@@ -1,6 +1,6 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 from baseclass.SocialRecommender import SocialRecommender
-
+import numpy as np
 from tool import config
 class SocialMF(SocialRecommender ):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
@@ -24,6 +24,7 @@ class SocialMF(SocialRecommender ):
                 q = self.Q[i].copy()
                 fPred = 0
                 denom = 0
+                relationLoss = np.zeros(self.k)
                 for followee in followees:
                     weight= followees[followee]
                     uf = self.dao.getUserId(followee)
@@ -32,8 +33,7 @@ class SocialMF(SocialRecommender ):
                         denom += weight
                 if denom <> 0:
                     relationLoss = p - fPred / denom
-                else:
-                    relationLoss = p
+
                 self.loss += self.regU * p.dot(p) + self.regI * q.dot(q) + self.regS *  relationLoss.dot(relationLoss)
 
                 # update latent vectors
