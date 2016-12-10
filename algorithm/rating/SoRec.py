@@ -10,11 +10,21 @@ class SoRec(SocialRecommender ):
 
     def readConfiguration(self):
         super(SoRec, self).readConfiguration()
-        regular = config.LineConfig(self.config['reg.lambda'])
-        self.regZ = float(regular['-z'])
+        regZ = config.LineConfig(self.config['SoRec'])
+        self.regZ = float( regZ['-z'])
+
+    def initModel(self):
+        super(SoRec, self).initModel()
+        self.Z = np.random.rand(self.dao.trainingSize()[0], self.k)
+
+    def printAlgorConfig(self):
+        super(SoRec, self).printAlgorConfig()
+        print 'Specified Arguments of', self.config['recommender'] + ':'
+        print 'regZ: %.3f' % self.regZ
+        print '=' * 80
+
 
     def buildModel(self):
-        self.Z = np.random.rand(self.dao.trainingSize()[0], self.k)
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
