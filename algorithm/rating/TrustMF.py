@@ -28,7 +28,7 @@ class TrustMF(SocialRecommender):
         self.regT = float(regular['-t'])
 
     def printAlgorConfig(self):
-        super(SocialRecommender,self).printAlgorConfig()
+        super(TrustMF,self).printAlgorConfig()
         print 'Regularization parameter:  regT %.3f' % self.regT
         print '=' * 80
 

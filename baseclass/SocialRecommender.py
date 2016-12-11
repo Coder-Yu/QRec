@@ -17,3 +17,4 @@ class SocialRecommender(IterativeRecommender):
         print 'Social dataset:',abspath(self.config['social'])
         print 'Social Regularization parameter: regS %.3f' % (self.regS)
         print '=' * 80
+
