@@ -162,6 +162,13 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 		<th>Paper</th>
   </tr>
   <tr>
+	<td scope="row">SlopeOne</td>
+   
+    <td>Lemire and Maclachlan, Slope One Predictors for Online Rating-Based Collaborative Filtering, SDM 2005.<br>
+    </td>
+  </tr>
+
+  <tr>
     <td scope="row">PMF</td>
    
     <td>Salakhutdinov and Mnih, Probabilistic Matrix Factorization, NIPS 2008.
@@ -194,7 +201,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   <tr>
     <td scope="row">SVD</td>
    
-    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics
+    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
      </td>
   </tr> 
   </table>
