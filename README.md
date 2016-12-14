@@ -152,3 +152,58 @@ To design it exquisitely, we brought some thoughts from another recommender syst
  - **saveModel()**
  - **loadModel()**
  - **predict()**
+
+##Algorithms Implemented##
+
+<div>
+ <table class="table table-hover table-bordered">
+  <tr>
+		<th>Algorithm</th>
+		<th>Paper</th>
+  </tr>
+  <tr>
+	<td scope="row">SlopeOne</td>
+   
+    <td>Lemire and Maclachlan, Slope One Predictors for Online Rating-Based Collaborative Filtering, SDM 2005.<br>
+    </td>
+  </tr>
+
+  <tr>
+    <td scope="row">PMF</td>
+   
+    <td>Salakhutdinov and Mnih, Probabilistic Matrix Factorization, NIPS 2008.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">SoRec</td>
+   
+    <td>Ma et al., SoRec: Social Recommendation Using Probabilistic Matrix Factorization, SIGIR 2008.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">SocialMF</td>
+   
+    <td>Jamali and Ester, A Matrix Factorization Technique with Trust Propagation for Recommendation in Social Networks, RecSys 2010.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">TrustMF</td>
+   
+    <td>Yang et al., Social Collaborative Filtering by Trust, IJCAI 2013.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">RSTE</td>
+   
+    <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">SVD</td>
+   
+    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
+     </td>
+  </tr> 
+  </table>
+</div>
+

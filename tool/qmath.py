@@ -21,8 +21,8 @@ def cosine(x1,x2):
     #find common ratings
     new_x1, new_x2 = common(x1,x2)
     #compute the cosine similarity between two vectors
-    sum = new_x1.dot(new_x2.transpose())
-    denom = sqrt((new_x1.dot(new_x1.transpose()))+(new_x2.dot(new_x2.transpose())))
+    sum = new_x1.dot(new_x2)
+    denom = sqrt(new_x1.dot(new_x1)*new_x2.dot(new_x2))
     try:
         return float(sum)/denom
     except ZeroDivisionError:
@@ -36,7 +36,7 @@ def euclidean(x1,x2):
     new_x1, new_x2 = common(x1, x2)
     #compute the euclidean between two vectors
     diff = new_x1-new_x2
-    denom = sqrt((diff.dot(diff.transpose())))
+    denom = sqrt((diff.dot(diff)))
     try:
         return 1/denom
     except ZeroDivisionError:
@@ -54,8 +54,8 @@ def pearson(x1,x2):
         mean_x2 = float(new_x2.sum())/ind2.sum()
         new_x1 = new_x1 - mean_x1
         new_x2 = new_x2 - mean_x2
-        sum = new_x1.dot(new_x2.transpose())
-        denom = sqrt((new_x1.dot(new_x1.transpose()))+(new_x2.dot(new_x2.transpose())))
+        sum = new_x1.dot(new_x2)
+        denom = sqrt((new_x1.dot(new_x1))*(new_x2.dot(new_x2)))
         return float(sum) / denom
     except ZeroDivisionError:
         return 0
