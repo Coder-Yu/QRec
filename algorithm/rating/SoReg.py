@@ -1,7 +1,6 @@
 from baseclass.SocialRecommender import SocialRecommender
 from tool import config
 from tool import qmath
-import math
 
 
 class SoReg(SocialRecommender):
@@ -21,6 +20,17 @@ class SoReg(SocialRecommender):
 
     def initModel(self):
         super(SoReg, self).initModel()
+        # compute similarity
+        self.Sim = {}
+        for entry in self.dao.trainingData:
+            u, i, r = entry
+            if self.sao.getFollowees(u):
+                for f in self.sao.getFollowees(u):
+                    if not self.Sim.has_key(u):
+                        self.Sim[u]={}
+                    self.Sim[u][f]=self.sim(u,f)
+
+
 
     def sim(self,u,v):
         return (qmath.pearson(self.dao.row(u), self.dao.row(v))+1)/2.0
@@ -35,12 +45,13 @@ class SoReg(SocialRecommender):
                 id = self.dao.getItemId(i)
                 simSumf = 0
                 simSum2 = 0
+                # add the followees' influence
                 if self.sao.getFollowees(u):
                     for f in self.sao.getFollowees(u):
                         if self.dao.containsUser(f):
                             fid = self.dao.getUserId(f)
-                            simSumf += self.sim(u,f)*(self.P[uid]-self.P[fid])
-                            simSum2 += self.sim(u, f) * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
+                            simSumf += self.Sim[u][f]*(self.P[uid]-self.P[fid])
+                            simSum2 += self.Sim[u][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
 
                 error = r - self.P[uid].dot(self.Q[id])
                 p = self.P[uid].copy()
