@@ -24,7 +24,7 @@ class RSTE(SocialRecommender):
             self.loss = 0
             for entry in self.dao.trainingData:
                 u, i, r = entry
-                error = r - self.P[u].dot(self.Q[i])
+                error = r - self.predict(u,i)
                 i = self.dao.getItemId(i)
                 u = self.dao.getUserId(u)
                 self.loss += error ** 2
