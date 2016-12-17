@@ -46,13 +46,16 @@ class FileIO(object):
 
         for lineNo, line in enumerate(ratings):
             items = split(' |,|\t', line.strip())
-            if len(order) < 3:
+            if not bTest and len(order) < 3:
                 print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
                 exit(-1)
             try:
                 userId = items[int(order[0])]
                 itemId = items[int(order[1])]
-                rating = items[int(order[2])]
+                if bTest and len(order)<3:
+                    rating = 1 #default value
+                else:
+                    rating  = items[int(order[2])]
             except ValueError:
                 print 'Error! Have you added the option -header to the rating.setup?'
                 exit(-1)
