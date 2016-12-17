@@ -28,6 +28,8 @@ class Measure(object):
         measure.append('Precision:' + str(prec)+'\n')
         recall = Measure.recall(hits,res)
         measure.append('Recall:' + str(recall)+'\n')
+        F1 = Measure.F1(prec,recall)
+        measure.append('F1:' + str(F1) + '\n')
         return measure
 
 
@@ -63,6 +65,13 @@ class Measure(object):
     def recall(hits,origin):
         recall = sum([float(hits[user])/len(origin[user]) for user in hits])/len(hits)
         return recall
+
+    @staticmethod
+    def F1(prec,recall):
+        if (prec+recall)!=0:
+            return 2*prec*recall/(prec+recall)
+        else:
+            return 0
 
 
 
