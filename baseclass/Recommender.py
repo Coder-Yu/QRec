@@ -11,7 +11,7 @@ from tool.file import FileIO
 from tool.qmath import denormalize
 from tool.config import Config,LineConfig
 from os.path import abspath
-from time import strftime,localtime,time,clock
+from time import strftime,localtime,time
 from evaluation.measure import Measure
 class Recommender(object):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -105,25 +105,29 @@ class Recommender(object):
         # predict
         topNSet = {}
         userCount = len(self.dao.testSet_u)
-        for i,userId in enumerate(self.dao.testSet_u):
+        for i,user in enumerate(self.dao.testSet_u):
             itemSet = {}
-            line = userId+':'
+            line = user+':'
 
-            for itemId in self.dao.testSet_i:
-                # predict
-                prediction = self.predict(userId, itemId)
-                # denormalize
-                prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
-                #pred = self.checkRatingBoundary(prediction)
-                #####################################
-                # add prediction in order to measure
-                itemSet[itemId] = prediction
+            for item in self.dao.item:
+                if not self.dao.rating(user,item):
+                    # predict
+                    prediction = self.predict(user, item)
+                    # denormalize
 
-            topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
+                    prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+
+                    #pred = self.checkRatingBoundary(prediction)
+                    #####################################
+                    # add prediction in order to measure
+                    itemSet[item] = prediction
+
+            topNSet[user] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
+
 
             if i%100==0:
                 print self.algorName,self.foldInfo,'progress:'+str(i)+'/'+str(userCount)
-            for item in topNSet[userId]:
+            for item in topNSet[user]:
                 line += '(' + item[0] + ',' + str(item[1]) + ') '
             line+='\n'
             res.append(line)

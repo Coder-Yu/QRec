@@ -38,6 +38,8 @@ class RecQ(object):
             self.socialConfig = LineConfig(self.config['social.setup'])
             self.relation = FileIO.loadRelationship(config,self.config['social'])
 
+        print 'preprocessing...'
+
 
 
 
