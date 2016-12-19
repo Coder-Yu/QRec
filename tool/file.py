@@ -72,7 +72,7 @@ class FileIO(object):
     def loadRelationship(conf, filePath):
         socialConfig = LineConfig(conf['social.setup'])
         relation = []
-        print 'load social data...'
+        print 'loading social data...'
         with open(filePath) as f:
             relations = f.readlines()
             # ignore the headline
