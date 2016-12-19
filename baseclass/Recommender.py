@@ -110,7 +110,7 @@ class Recommender(object):
             line = user+':'
 
             for item in self.dao.item:
-                if self.dao.rating(user,item)==0:
+                if self.dao.contains(user,item):
                     # predict
                     prediction = self.predict(user, item)
                     # denormalize
