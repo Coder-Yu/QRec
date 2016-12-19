@@ -11,7 +11,7 @@ from tool.file import FileIO
 from tool.qmath import denormalize
 from tool.config import Config,LineConfig
 from os.path import abspath
-from time import strftime,localtime,time
+from time import strftime,localtime,time,clock
 from evaluation.measure import Measure
 class Recommender(object):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -108,19 +108,21 @@ class Recommender(object):
         for i,userId in enumerate(self.dao.testSet_u):
             itemSet = {}
             line = userId+':'
-            for itemId in self.dao.item:
+
+            for itemId in self.dao.testSet_i:
                 # predict
                 prediction = self.predict(userId, itemId)
                 # denormalize
                 prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+                #pred = self.checkRatingBoundary(prediction)
                 #####################################
-                pred = self.checkRatingBoundary(prediction)
                 # add prediction in order to measure
-                itemSet[itemId] = pred
+                itemSet[itemId] = prediction
+
             topNSet[userId] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
 
             if i%100==0:
-                print 'Progress:'+str(i)+'/'+str(userCount)
+                print self.algorName,self.foldInfo,'progress:'+str(i)+'/'+str(userCount)
             for item in topNSet[userId]:
                 line += '(' + item[0] + ',' + str(item[1]) + ') '
             line+='\n'
