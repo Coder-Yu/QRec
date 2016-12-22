@@ -101,12 +101,12 @@ class Recommender(object):
         N = int(self.ranking['-topN'])
         if N>100 or N<0:
             N=100
-        res.append('userId: recommendations in (itemId, ranking score) pairs\n')
+        res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item is matched\n')
         # predict
         topNSet = {}
         userCount = len(self.dao.testSet_u)
         for i,user in enumerate(self.dao.testSet_u):
-            itemSet = {}
+            itemSet = []
             line = user+':'
 
             for item in self.dao.item:
@@ -117,18 +117,22 @@ class Recommender(object):
 
                     prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
 
+                    prediction = round(prediction,4)
                     #pred = self.checkRatingBoundary(prediction)
                     #####################################
                     # add prediction in order to measure
-                    itemSet[item] = prediction
+                    itemSet.append((item,prediction))
 
-            topNSet[user] = sorted(itemSet.iteritems(),key=lambda d:d[1],reverse=True)[0:N]
-
+            itemSet.sort(key=lambda d:d[1],reverse=True)
+            topNSet[user] = itemSet[0:N]
 
             if i%100==0:
                 print self.algorName,self.foldInfo,'progress:'+str(i)+'/'+str(userCount)
             for item in topNSet[user]:
-                line += '(' + item[0] + ',' + str(item[1]) + ') '
+                line += ' (' + item[0] + ',' + str(item[1]) + ')'
+                if self.dao.testSet_u[user].has_key(item[0]):
+                    line+='*'
+
             line+='\n'
             res.append(line)
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
