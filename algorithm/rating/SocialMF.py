@@ -15,7 +15,7 @@ class SocialMF(SocialRecommender ):
             self.loss = 0
             for entry in self.dao.trainingData:
                 userId, itemId, r = entry
-                followees = self.sao.getFollowers(userId)
+                followees = self.sao.getFollowees(userId)
                 u = self.dao.getUserId(userId)
                 i = self.dao.getItemId(itemId)
                 error = r - self.P[u].dot(self.Q[i])
