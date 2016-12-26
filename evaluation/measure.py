@@ -21,13 +21,15 @@ class Measure(object):
         hits={}
         for user in origin:
             hits[user] = 0
-            items = [item[0] for item in origin[user]]
+            items = [key for key in origin[user]]
             predicted = [item[0] for item in res[user]]
             hits[user] += len(set(items).intersection(set(predicted)))
         prec = Measure.precision(hits,N)
         measure.append('Precision:' + str(prec)+'\n')
-        recall = Measure.recall(hits,res)
+        recall = Measure.recall(hits,origin)
         measure.append('Recall:' + str(recall)+'\n')
+        F1 = Measure.F1(prec,recall)
+        measure.append('F1:' + str(F1) + '\n')
         return measure
 
 
@@ -61,8 +63,16 @@ class Measure(object):
 
     @staticmethod
     def recall(hits,origin):
-        recall = sum([float(hits[user])/len(origin[user]) for user in hits])/len(hits)
+        recallList = [float(hits[user])/len(origin[user]) for user in hits]
+        recall = sum(recallList)/float(len(recallList))
         return recall
+
+    @staticmethod
+    def F1(prec,recall):
+        if (prec+recall)!=0:
+            return 2*prec*recall/(prec+recall)
+        else:
+            return 0
 
 
 

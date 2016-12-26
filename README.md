@@ -203,6 +203,12 @@ To design it exquisitely, we brought some thoughts from another recommender syst
    
     <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
      </td>
+  </tr>
+  <tr>
+    <td scope="row">SoReg</td>
+   
+    <td>Ma et al., Recommender systems with social regularization, WSDM 2011.
+     </td>
   </tr> 
   </table>
 </div>
