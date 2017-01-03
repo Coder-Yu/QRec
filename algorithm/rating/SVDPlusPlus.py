@@ -1,9 +1,22 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 import numpy as np
+from tool import config
 import math
 class SVDPlusPlus(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(SVDPlusPlus, self).__init__(conf,trainingSet,testSet,fold)
+
+    def readConfiguration(self):
+        super(SVDPlusPlus, self).readConfiguration()
+        regY = config.LineConfig(self.config['SVDPlusPlus'])
+        self.regY = float( regY['-y'])
+
+
+    def printAlgorConfig(self):
+        super(SVDPlusPlus, self).printAlgorConfig()
+        print 'Specified Arguments of', self.config['recommender'] + ':'
+        print 'regY: %.3f' % self.regY
+        print '=' * 80
 
     def initModel(self):
         super(SVDPlusPlus, self).initModel()
@@ -20,6 +33,7 @@ class SVDPlusPlus(IterativeRecommender):
                 u, i, r = entry
                 itemIndexs, rating = self.dao.userRated(u)
                 w = len(itemIndexs)
+                #w = math.sqrt(len(itemIndexs))
                 error = r - self.predict(u, i)
                 u = self.dao.getUserId(u)
                 i = self.dao.getItemId(i)
@@ -33,17 +47,17 @@ class SVDPlusPlus(IterativeRecommender):
                 #update latent vectors
                 self.Bu[u] += self.lRate*(error-self.regB*bu)
                 self.Bi[i] += self.lRate*(error-self.regB*bi)
-                for j in itemIndexs:
-                    y = self.Y[j].copy()
-                    # self.loss += self.regU * y.dot(y)
-                    try:
-                        self.Q[i] += self.lRate * error * self.Y[j]/w
-                        #self.Y[j] += self.lRate * (error * q / w - self.regI * q)
-                    except ZeroDivisionError:
-                        pass
+                sum = 0
+                if w> 0:
+                    for j in itemIndexs:
+                        y = self.Y[j].copy()
+                        self.loss += self.regY * y.dot(y)
+                        sum += y
+                        self.Y[j] += self.lRate * (error * q / w - self.regY * y)
+                    self.Q[i] += self.lRate * error * sum/w
+
                 self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
-            self.loss *= 0.5
             iteration += 1
             self.isConverged(iteration)
 
@@ -55,11 +69,11 @@ class SVDPlusPlus(IterativeRecommender):
             # w = math.sqrt(len(itemIndexs))
             u = self.dao.getUserId(u)
             i = self.dao.getItemId(i)
-            for j in itemIndexs:
-                try:
-                    pred += (self.Y[j].dot(self.Q[i]))/w
-                except ZeroDivisionError:
-                    pass
+            sum = 0
+            if w> 0:
+                for j in itemIndexs:
+                    sum += self.Y[j]
+                pred+= (sum/w).dot(self.Q[i])
             pred += self.P[u].dot(self.Q[i]) + self.dao.globalMean + self.Bi[i] + self.Bu[u]
 
         else:

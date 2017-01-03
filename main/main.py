@@ -13,7 +13,7 @@ if __name__ == '__main__':
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '1. UserKNN   2. ItemKNN   3. BasicMF   4. SlopeOne   5. RSTE   6. UserMean'
-    print '7. ItemMean   8. SVD   9. PMF   10. TrustMF   11. SocialMF   12. SoRec   13.SoReg'
+    print '7. ItemMean   8. SVD   9. PMF   10. TrustMF   11. SocialMF   12. SoRec   13.SoReg   14.SVD++'
     algor = -1
     conf = -1
     print '-'*80
@@ -67,6 +67,9 @@ if __name__ == '__main__':
 
     elif order == 13:
         conf = Config('../config/SoReg.conf')
+
+    elif order == 14:
+        conf = Config('../config/SVDPlusPlus.conf')
 
 
     else:
