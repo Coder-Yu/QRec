@@ -210,6 +210,12 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td>Ma et al., Recommender systems with social regularization, WSDM 2011.
      </td>
   </tr> 
+  <tr>
+    <td scope="row">EE</td>
+   
+    <td>Khoshneshin et al., Collaborative Filtering via Euclidean Embedding, RecSys2010.
+     </td>
+  </tr> 
   </table>
 </div>
 
