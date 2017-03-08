@@ -1,4 +1,4 @@
-![RecQ](http://chuantu.biz/t5/43/1480095308x760008152.png)
+#RecQ#
 
 Released by School of Software Engineering, Chongqing University
 ##Introduction##
