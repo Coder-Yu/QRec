@@ -70,7 +70,7 @@ if __name__ == '__main__':
         conf = Config('../config/SoReg.conf')
 
     elif order == 14:
-        conf = Config('../config/SVDPlusPlus.conf')
+        conf = Config('../config/SVD++.conf')
 
     elif order == 15:
         conf = Config('../config/EE.conf')
