@@ -79,7 +79,8 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td>off -topN -1
 
     <td>Main option: whether to do item ranking<br>
-      -topN: the length of the recommendation list for item recommendation, default -1 for full list; <br>
+      -topN N: the length of the recommendation list for item recommendation, default -1 for full list; <br>
+      -threshold val: if the predicted score is greater than val, the item will appear in the recommendation list.<br>
     </td>
   </tr>
   <tr>

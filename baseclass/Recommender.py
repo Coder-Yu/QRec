@@ -98,12 +98,19 @@ class Recommender(object):
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
-        N = int(self.ranking['-topN'])
-        if N>100 or N<0:
-            N=100
+        N = 0
+        threshold = 0
+        if self.ranking.contains('-topN'):
+            N = int(self.ranking['-topN'])
+            if N>100 or N<0:
+                N=100
+        elif self.ranking.contains('-threshold'):
+            threshold = float(self.ranking['-threshold'])
+
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item is matched\n')
         # predict
-        topNSet = {}
+        recList = {}
+        userN = {}
         userCount = len(self.dao.testSet_u)
         for i,user in enumerate(self.dao.testSet_u):
             itemSet = []
@@ -117,18 +124,26 @@ class Recommender(object):
 
                     prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
 
-                    prediction = round(prediction,4)
+                    prediction = self.checkRatingBoundary(prediction)
                     #pred = self.checkRatingBoundary(prediction)
                     #####################################
                     # add prediction in order to measure
-                    itemSet.append((item,prediction))
+                    if self.ranking.contains('-threshold'):
+                        if prediction > threshold:
+                            itemSet.append((item,prediction))
+                    else:
+                        itemSet.append((item,prediction))
 
-            itemSet.sort(key=lambda d:d[1],reverse=True)
-            topNSet[user] = itemSet[0:N]
+            itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
+            if self.ranking.contains('-topN'):
+                recList[user] = itemSet[0:N]
+            elif self.ranking.contains('-threshold'):
+                recList[user] = itemSet[:]
+                userN[user] = len(itemSet)
 
             if i%100==0:
                 print self.algorName,self.foldInfo,'progress:'+str(i)+'/'+str(userCount)
-            for item in topNSet[user]:
+            for item in recList[user]:
                 line += ' (' + item[0] + ',' + str(item[1]) + ')'
                 if self.dao.testSet_u[user].has_key(item[0]):
                     line+='*'
@@ -139,13 +154,19 @@ class Recommender(object):
         # output prediction result
         if self.isOutput:
             outDir = self.output['-dir']
-            fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
+            if self.ranking.contains('-topN'):
+                fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
+            elif self.ranking.contains('-threshold'):
+                fileName = self.config['recommender'] + '@' + currentTime + '-threshold-' + str(threshold)  + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
             print 'The Result has been output to ', abspath(outDir), '.'
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
-        self.measure = Measure.rankingMeasure(self.dao.testSet_u,topNSet,N)
+        if self.ranking.contains('-topN'):
+            self.measure = Measure.rankingMeasure(self.dao.testSet_u,recList,N)
+        elif self.ranking.contains('-threshold'):
+            self.measure = Measure.rankingMeasure_threshold(self.dao.testSet_u, recList, userN)
         FileIO.writeFile(outDir, fileName, self.measure)
 
     def execute(self):
