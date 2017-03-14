@@ -109,14 +109,17 @@ class Recommender(object):
 
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item is matched\n')
         # predict
-        recList = {}
+        from collections import defaultdict
+        recList = defaultdict(list)
         userN = {}
         userCount = len(self.dao.testSet_u)
+
         for i,user in enumerate(self.dao.testSet_u):
             itemSet = []
             line = user+':'
 
             for item in self.dao.item:
+
                 if not self.dao.rating(user,item):
                     # predict
                     prediction = self.predict(user, item)
@@ -124,7 +127,7 @@ class Recommender(object):
 
                     prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
 
-                    prediction = self.checkRatingBoundary(prediction)
+                    #prediction = self.checkRatingBoundary(prediction)
                     #pred = self.checkRatingBoundary(prediction)
                     #####################################
                     # add prediction in order to measure
@@ -134,9 +137,13 @@ class Recommender(object):
                     else:
                         itemSet.append((item,prediction))
 
-            itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
+            #itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
+
             if self.ranking.contains('-topN'):
-                recList[user] = itemSet[0:N]
+                for n in range(N):
+                    recList[user].append(max(itemSet,key = lambda d: d[1]))
+                    itemSet.remove(recList[user][n])
+
             elif self.ranking.contains('-threshold'):
                 recList[user] = itemSet[:]
                 userN[user] = len(itemSet)
@@ -150,9 +157,11 @@ class Recommender(object):
 
             line+='\n'
             res.append(line)
+
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
+            fileName = ''
             outDir = self.output['-dir']
             if self.ranking.contains('-topN'):
                 fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
