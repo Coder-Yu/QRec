@@ -4,8 +4,8 @@ from tool import qmath
 
 
 class SoReg(SocialRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(SoReg, self).__init__(conf,trainingSet,testSet,fold)
+    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
+        super(SoReg, self).__init__(conf,trainingSet,testSet,relation,fold)
 
     def readConfiguration(self):
         super(SoReg, self).readConfiguration()
