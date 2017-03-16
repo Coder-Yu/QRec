@@ -15,7 +15,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 
 <h2>Features</h2>
 <li><b>Cross-platform</b>: as a Python software, RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
-<li><b>Fast execution</b>: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.<li>
+<li><b>Fast execution</b>: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.</li>
 <li><b>Easy configuration</b>: RecQ configs recommenders using a configuration file.</li>
 <li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
 <li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
@@ -140,14 +140,14 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 </div>
 
 <h2>How to extend it</h2>
-<li> 1.Make your new algorithm generalize the proper base class.</li>
-<li> 2.Rewrite some of the following functions as needed.</li>
+<li>1.Make your new algorithm generalize the proper base class.</li>
+<li>2.Rewrite some of the following functions as needed.</li>
  - readConfiguration()<br>
  - printAlgorConfig()<br>
  - initModel()<br>
  - buildModel()<br>
  - saveModel()<br>
- - loadModel(<br>
+ - loadModel()<br>
  - predict()<br>
 
 <h2>Algorithms Implemented</h2>
