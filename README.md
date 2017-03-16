@@ -32,19 +32,16 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   <tr>
     <td>ratings</td>
     <td>D:/MovieLens/100K.txt</td>
- 
     <td>Set the path to input dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
  <tr>
     <td>social</td>
     <td>D:/MovieLens/trusts.txt</td>
- 
     <td>Set the path to input social dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
   <tr>
     <td scope="row">ratings.setup</td>
     <td>-columns 0 1 2</td>
-
     <td>-columns: (user, item, rating) columns of rating data are used;
       -header: to skip the first head line when reading data<br>
     </td>
@@ -52,7 +49,6 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   <tr>
     <td scope="row">social.setup</td>
     <td>-columns 0 1 2</td>
-
     <td>-columns: (trustor, trustee, weight) columns of social data are used;
       -header: to skip the first head line when reading data<br>
     </td>
@@ -60,14 +56,12 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   <tr>
     <td scope="row">recommender</td>
     <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
-
     <td>Set the recommender to use. <br>
     </td>
   </tr>
   <tr>
     <td scope="row">evaluation.setup</td>
     <td>../dataset/FilmTrust/testset.txt</td>
- 
     <td>Main option: -testSet, -ap, -cv<br>
       -testSet path/to/test/file   (need to specify the test set manually)<br>
       -ap ratio   (ap means that the ratings is automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)<br>
@@ -76,8 +70,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>
   <tr>
     <td scope="row">item.ranking</td>
-    <td>off -topN -1
-
+    <td>off -topN -1 </td>
     <td>Main option: whether to do item ranking<br>
       -topN N: the length of the recommendation list for item recommendation, default -1 for full list; <br>
       -threshold val: if the predicted score is greater than val, the item will appear in the recommendation list.<br>
@@ -86,14 +79,12 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   <tr>
     <td scope="row">output.setup</td>
     <td>on -dir ./Results/</td>
-
     <td>Main option: whether to output recommendation results<br>
       -dir path: the directory path of output results.
        </td>
   </tr>  
   </table>
 </div>
-
 ###Memory-based Options
 <div>
 <table class="table table-hover table-bordered">
@@ -114,7 +105,6 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>
   </table>
 </div>
-
 ###Model-based Options
 <div>
  <table class="table table-hover table-bordered">
@@ -153,9 +143,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
  - **saveModel()**
  - **loadModel()**
  - **predict()**
-
 ##Algorithms Implemented
-
 <div>
  <table class="table table-hover table-bordered">
   <tr>
@@ -164,59 +152,48 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>
   <tr>
 	<td scope="row">SlopeOne</td>
-   
     <td>Lemire and Maclachlan, Slope One Predictors for Online Rating-Based Collaborative Filtering, SDM 2005.<br>
     </td>
   </tr>
-
   <tr>
     <td scope="row">PMF</td>
-   
     <td>Salakhutdinov and Mnih, Probabilistic Matrix Factorization, NIPS 2008.
      </td>
   </tr> 
   <tr>
     <td scope="row">SoRec</td>
-   
     <td>Ma et al., SoRec: Social Recommendation Using Probabilistic Matrix Factorization, SIGIR 2008.
      </td>
   </tr> 
   <tr>
     <td scope="row">SocialMF</td>
-   
     <td>Jamali and Ester, A Matrix Factorization Technique with Trust Propagation for Recommendation in Social Networks, RecSys 2010.
      </td>
   </tr> 
   <tr>
     <td scope="row">TrustMF</td>
-   
     <td>Yang et al., Social Collaborative Filtering by Trust, IJCAI 2013.
      </td>
   </tr> 
   <tr>
     <td scope="row">RSTE</td>
-   
     <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
      </td>
   </tr> 
   <tr>
     <td scope="row">SVD</td>
-   
     <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
      </td>
   </tr>
   <tr>
     <td scope="row">SoReg</td>
-   
     <td>Ma et al., Recommender systems with social regularization, WSDM 2011.
      </td>
   </tr> 
   <tr>
     <td scope="row">EE</td>
-   
     <td>Khoshneshin et al., Collaborative Filtering via Euclidean Embedding, RecSys2010.
      </td>
   </tr> 
   </table>
 </div>
-
