@@ -1,27 +1,30 @@
-#RecQ
+
+<h1>RecQ</h1>
+
 Released by School of Software Engineering, Chongqing University
-##Introduction
+
+<h2>Introduction</h2>
+
 **RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
-##Architecture of RecQ
+
+<h2>Architecture of RecQ</he>
 
 ![RecQ Architecture](http://ww3.sinaimg.cn/large/88b98592gw1f9fh8jpencj21d40ouwlf.jpg)
 
 To design it exquisitely, we brought some thoughts from another recommender system library [**LibRec**](https://github.com/guoguibing/librec), which is implemented with Java.
 
-##Features
-* **Cross-platform**: as a Python software, RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.
-* **Fast execution**: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.
-* **Easy configuration**: RecQ configs recommenders using a configuration file.
-* **Easy expansion**: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.
-* **<font color="red">Data visualization</font>**: RecQ can help visualize the input dataset without running any algorithm. 
+<h2>Features</h2>
+<li><b>Cross-platform</b>: as a Python software, RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
+<li><b>Fast execution</b>: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.<li>
+<li><b>Easy configuration</b>: RecQ configs recommenders using a configuration file.</li>
+<li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
+<li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
+<h2>How to Run it</h2>
+<li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
+<li>2.Run the **main.py** in the project, and then input following the prompt.</li>
 
-##How to Run it
-* 1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)
-* 2.Run the **main.py** in the project, and then input following the prompt.
-
-##How to Configure it
-
-###Essential Options
+<h2>How to Configure it</h2>
+<h3>Essential Options</h3>
 <div>
  <table class="table table-hover table-bordered">
   <tr>
@@ -86,7 +89,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </table>
 </div>
 
-###Memory-based Options
+<h3>Memory-based Options</h3>
 <div>
 <table class="table table-hover table-bordered">
   <tr>
@@ -107,7 +110,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </table>
 </div>
 
-###Model-based Options
+<h3>Model-based Options</h3>
 <div>
  <table class="table table-hover table-bordered">
   <tr>
@@ -136,9 +139,9 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </table>
 </div>
 
-##How to extend it
-* 1.Make your new algorithm generalize the proper base class.
-* 2.Rewrite some of the following functions as needed.
+<h2>How to extend it</h2>
+<li> 1.Make your new algorithm generalize the proper base class.</li>
+<li> 2.Rewrite some of the following functions as needed.</li>
  - **readConfiguration()**
  - **printAlgorConfig()**
  - **initModel()** 
@@ -147,7 +150,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
  - **loadModel()**
  - **predict()**
 
-##Algorithms Implemented
+<h2>Algorithms Implemented</h2>
 <div>
  <table class="table table-hover table-bordered">
   <tr>
