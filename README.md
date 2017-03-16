@@ -85,6 +85,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr>  
   </table>
 </div>
+
 ###Memory-based Options
 <div>
 <table class="table table-hover table-bordered">
@@ -133,6 +134,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </tr> 
   </table>
 </div>
+
 ##How to extend it
 * 1.Make your new algorithm generalize the proper base class.
 * 2.Rewrite some of the following functions as needed.
@@ -143,6 +145,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
  - **saveModel()**
  - **loadModel()**
  - **predict()**
+
 ##Algorithms Implemented
 <div>
  <table class="table table-hover table-bordered">
