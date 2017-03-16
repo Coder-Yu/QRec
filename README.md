@@ -7,7 +7,7 @@ Released by School of Software Engineering, Chongqing University
 
 **RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
 
-<h2>Architecture of RecQ</he>
+<h2>Architecture of RecQ</h2>
 
 ![RecQ Architecture](http://ww3.sinaimg.cn/large/88b98592gw1f9fh8jpencj21d40ouwlf.jpg)
 
@@ -142,13 +142,13 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 <h2>How to extend it</h2>
 <li> 1.Make your new algorithm generalize the proper base class.</li>
 <li> 2.Rewrite some of the following functions as needed.</li>
- - **readConfiguration()**
- - **printAlgorConfig()**
- - **initModel()** 
- - **buildModel()**
- - **saveModel()**
- - **loadModel()**
- - **predict()**
+ - readConfiguration()<br>
+ - printAlgorConfig()<br>
+ - initModel()<br>
+ - buildModel()<br>
+ - saveModel()<br>
+ - loadModel(<br>
+ - predict()<br>
 
 <h2>Algorithms Implemented</h2>
 <div>
