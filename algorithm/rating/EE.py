@@ -45,6 +45,6 @@ class EE(IterativeRecommender):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             u = self.dao.getUserId(u)
             i = self.dao.getItemId(i)
-            return self.dao.globalMean + self.Bi[i] + self.Bu[u] + (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
+            return self.dao.globalMean + self.Bi[i] + self.Bu[u] - (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
         else:
             return self.dao.globalMean
