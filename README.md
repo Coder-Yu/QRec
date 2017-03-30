@@ -21,6 +21,8 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 <li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
 <li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
 </ul>
+
+![Visualization](http://i1.piimg.com/1949/8293cd78fe52bd2d.png)
 <h2>How to Run it</h2>
 <ul>
 <li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
