@@ -22,7 +22,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 <li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
 </ul>
 
-![Visualization](http://i1.piimg.com/1949/8293cd78fe52bd2d.png)
+![Visualization](http://i1.piimg.com/1949/176acec1f8fd03aa.png)
 <h2>How to Run it</h2>
 <ul>
 <li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
