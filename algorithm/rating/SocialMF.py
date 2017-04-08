@@ -14,11 +14,11 @@ class SocialMF(SocialRecommender ):
         while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
-                userId, itemId, r = entry
-                followees = self.sao.getFollowees(userId)
-                u = self.dao.getUserId(userId)
-                i = self.dao.getItemId(itemId)
-                error = r - self.P[u].dot(self.Q[i])
+                user, item, rating = entry
+                followees = self.sao.getFollowees(user)
+                u = self.dao.getUserId(user)
+                i = self.dao.getItemId(item)
+                error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()

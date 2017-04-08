@@ -208,6 +208,11 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td scope="row">EE</td>
     <td>Khoshneshin et al., Collaborative Filtering via Euclidean Embedding, RecSys2010.
      </td>
-  </tr> 
+  </tr>
+  <tr>
+    <td scope="row">CoFactor</td>
+    <td>Liang et al., Factorization Meets the Item Embedding: Regularizing Matrix Factorization with Item Co-occurrence, RecSys2016.
+     </td>
+  </tr>
   </table>
 </div>

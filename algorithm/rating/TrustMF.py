@@ -44,17 +44,17 @@ class TrustMF(SocialRecommender):
 
     def trusterModel(self):
         for entry in self.dao.trainingData:
-            u, i, r = entry
-            mbu = len(self.sao.getFollowees(u))
-            uid = self.dao.getUserId(u)
-            iid = self.dao.getItemId(i)
-            error = self.truserPredict(u, i) - r
-            nbu = len(self.dao.userRated(u)[0])
-            nvi = len(self.dao.itemRated(i)[0])
+            user, item, rating = entry
+            mbu = len(self.sao.getFollowees(user))
+            uid = self.dao.getUserId(user)
+            iid = self.dao.getItemId(item)
+            error = self.truserPredict(user, item) - rating
+            nbu = len(self.dao.userRated(user)[0])
+            nvi = len(self.dao.itemRated(item)[0])
             self.loss += error**2 + self.regB * ((mbu + nbu) * self.Br[uid].dot(self.Br[uid]) + nvi * self.Vr[iid].dot(self.Vr[iid]))
             self.Vr[iid] = self.Vr[iid] - self.lRate * (error * self.Br[uid] + self.regB * nvi * self.Vr[iid])
 
-            relations = self.sao.getFollowees(u)
+            relations = self.sao.getFollowees(user)
             if len(relations)==0:
                 for followee in relations:
                     weight = relations[followee]
@@ -69,17 +69,17 @@ class TrustMF(SocialRecommender):
 
     def trusteeModel(self):
         for entry in self.dao.trainingData:
-            u, i, r = entry
-            mwu = len(self.sao.getFollowers(u))
-            uid = self.dao.getUserId(u)
-            iid = self.dao.getItemId(i)
-            error = self.truseePredict(u, i) - r
-            nwu = len(self.dao.userRated(u)[0])
-            nvi = len(self.dao.itemRated(i)[0])
+            user, item, rating = entry
+            mwu = len(self.sao.getFollowers(user))
+            uid = self.dao.getUserId(user)
+            iid = self.dao.getItemId(item)
+            error = self.truseePredict(user, item) - rating
+            nwu = len(self.dao.userRated(user)[0])
+            nvi = len(self.dao.itemRated(item)[0])
             self.loss += error**2 + self.regB * ((mwu + nwu) * self.We[uid].dot(self.We[uid]) + nvi * self.Ve[iid].dot(self.Ve[iid]))
             self.Ve[iid] = self.Ve[iid] - self.lRate * (error * self.We[uid] + self.regB * nvi * self.Ve[iid])
 
-            relations = self.sao.getFollowers(u)
+            relations = self.sao.getFollowers(user)
             if len(relations) == 0:
                 for follower in relations:
                     weight = relations[follower]
