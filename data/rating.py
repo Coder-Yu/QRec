@@ -62,12 +62,12 @@ class RatingDAO(object):
 
         for entry in self.testData:
             userId, itemId, rating = entry
-            # order the user
-            if not self.user.has_key(userId):
-                self.user[userId] = len(self.user)
-            # order the item
-            if not self.item.has_key(itemId):
-                self.item[itemId] = len(self.item)
+            # # order the user
+            # if not self.user.has_key(userId):
+            #     self.user[userId] = len(self.user)
+            # # order the item
+            # if not self.item.has_key(itemId):
+            #     self.item[itemId] = len(self.item)
 
             if not self.testSet_u.has_key(userId):
                 self.testSet_u[userId] = {}

@@ -15,6 +15,7 @@ if __name__ == '__main__':
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. RSTE'
     print '6. UserMean       7. ItemMean       8. SVD            9. PMF             10. TrustMF'
     print '11. SocialMF      12. SoRec         13.SoReg          14.SVD++           15.EE'
+    print '16. CoFactor'
     print '-'*80
     algor = -1
     conf = -1
@@ -75,6 +76,8 @@ if __name__ == '__main__':
     elif order == 15:
         conf = Config('../config/EE.conf')
 
+    elif order == 16:
+        conf = Config('../config/CoFactor.conf')
 
     else:
         print 'Error num!'

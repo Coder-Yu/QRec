@@ -7,8 +7,8 @@ class SVD(IterativeRecommender):
 
     def initModel(self):
         super(SVD, self).initModel()
-        self.Bu = np.random.rand(self.dao.trainingSize()[0])  # biased value of user
-        self.Bi = np.random.rand(self.dao.trainingSize()[1])  # biased value of item
+        self.Bu = np.random.rand(self.dao.trainingSize()[0])  # bias value of user
+        self.Bi = np.random.rand(self.dao.trainingSize()[1])  # bias value of item
 
     def buildModel(self):
         iteration = 0
