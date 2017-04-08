@@ -15,7 +15,7 @@ class SoRec(SocialRecommender ):
 
     def initModel(self):
         super(SoRec, self).initModel()
-        self.Z = np.random.rand(self.dao.trainingSize()[0], self.k)
+        self.Z = np.random.rand(self.dao.trainingSize()[0], self.k)/10
 
     def printAlgorConfig(self):
         super(SoRec, self).printAlgorConfig()
