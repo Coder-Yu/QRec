@@ -15,10 +15,10 @@ class SVD(IterativeRecommender):
         while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
-                u, i, r = entry
-                u = self.dao.getUserId(u)
-                i = self.dao.getItemId(i)
-                error = r-self.P[u].dot(self.Q[i])-self.dao.globalMean-self.Bi[i]-self.Bu[u]
+                user, item, rating = entry
+                u = self.dao.getUserId(user)
+                i = self.dao.getItemId(item)
+                error = rating-self.P[u].dot(self.Q[i])-self.dao.globalMean-self.Bi[i]-self.Bu[u]
                 self.loss+=error**2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()

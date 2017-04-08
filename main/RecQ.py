@@ -5,6 +5,7 @@ from tool.file import FileIO
 from evaluation.dataSplit import *
 from multiprocessing import Process,Manager
 from tool.file import FileIO
+from time import strftime,localtime,time
 class RecQ(object):
     def __init__(self,config):
         self.trainingData = []  # training data
@@ -84,8 +85,9 @@ class RecQ(object):
                     total += float(self.measure[j][i].split(':')[1])
                 res.append(measure+':'+str(total/k)+'\n')
             #output result
+            currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
             outDir = LineConfig(self.config['output.setup'])['-dir']
-            fileName = self.config['recommender'] +'@'+str(k)+'-fold-cv' + '.txt'
+            fileName = self.config['recommender'] +'@'+currentTime+'-'+str(k)+'-fold-cv' + '.txt'
             FileIO.writeFile(outDir,fileName,res)
 
 

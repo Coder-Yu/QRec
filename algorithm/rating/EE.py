@@ -24,10 +24,10 @@ class EE(IterativeRecommender):
         while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
-                u, i, r = entry
-                error = r - self.predict(u,i)
-                u = self.dao.getUserId(u)
-                i = self.dao.getItemId(i)
+                user, item, rating = entry
+                error = rating - self.predict(user,item)
+                u = self.dao.getUserId(user)
+                i = self.dao.getItemId(item)
                 self.loss += error ** 2
                 self.loss += self.regU * (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
                 bu = self.Bu[u]

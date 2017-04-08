@@ -3,7 +3,7 @@ sys.path.append("..")
 from RecQ import RecQ
 from tool.config import Config
 from visual.display import Display
-from algorithm.rating.TrustMF import TrustMF
+
 
 
 if __name__ == '__main__':
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     else:
         print 'Error num!'
         exit(-1)
-    RecQ = RecQ(conf)
-    RecQ.execute()
+    recSys = RecQ(conf)
+    recSys.execute()
     e = time.clock()
     print "Run time: %f s" % (e - s)

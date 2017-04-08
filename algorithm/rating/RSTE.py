@@ -23,10 +23,10 @@ class RSTE(SocialRecommender):
         while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
-                u, i, r = entry
-                error = r - self.predict(u,i)
-                i = self.dao.getItemId(i)
-                u = self.dao.getUserId(u)
+                user, item, rating = entry
+                error = rating - self.predict(user,item)
+                i = self.dao.getItemId(item)
+                u = self.dao.getUserId(user)
                 self.loss += error ** 2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
