@@ -198,3 +198,33 @@ class Recommender(object):
         return self.measure
 
 
+    def performance(self):
+        #res = []  # used to contain the text of the result
+        #res.append('userId  itemId  original  prediction\n')
+        # predict
+        res = []
+        for ind, entry in enumerate(self.dao.testData):
+            user, item, rating = entry
+
+            # predict
+            prediction = self.predict(user, item)
+            # denormalize
+            prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+            #####################################
+            pred = self.checkRatingBoundary(prediction)
+            # add prediction in order to measure
+            res.append([user,item,rating,pred])
+            #res.append(user + ' ' + item + ' ' + str(rating) + ' ' + str(pred) + '\n')
+        #currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        # output prediction result
+        # if self.isOutput:
+        #     outDir = self.output['-dir']
+        #     fileName = self.config['recommender'] + '@' + currentTime + '-rating-predictions' + self.foldInfo + '.txt'
+        #     FileIO.writeFile(outDir, fileName, res)
+        #     print 'The Result has been output to ', abspath(outDir), '.'
+        # output evaluation result
+        # outDir = self.output['-dir']
+        # fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
+        self.measure = Measure.ratingMeasure(res)
+        return self.measure
+        #FileIO.writeFile(outDir, fileName, self.measure)

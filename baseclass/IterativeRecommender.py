@@ -1,6 +1,7 @@
 from baseclass.Recommender import Recommender
 from tool import config
 import numpy as np
+from random import shuffle
 
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -60,14 +61,18 @@ class IterativeRecommender(Recommender):
         if isnan(self.loss):
             print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
             exit(-1)
+        measure = self.performance()
+        value = [item.strip()for item in measure]
+        #with open(self.algorName+' iteration.txt')
         deltaLoss = (self.lastLoss-self.loss)
-        print '%s %s iteration %d: loss = %.4f, delta_loss = %.4f learning_Rate = %f' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
+        print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate,measure[1][:12])
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
         if not converged:
             self.updateLearningRate(iter)
         self.lastLoss = self.loss
+        shuffle(self.dao.trainingData)
         return converged
 
 
