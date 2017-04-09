@@ -27,10 +27,10 @@ class CoFactor(IterativeRecommender):
 
     def initModel(self):
         super(CoFactor, self).initModel()
-        self.w = np.random.rand(self.dao.trainingSize()[1])  # bias value of item
-        self.c = np.random.rand(self.dao.trainingSize()[1])  # bias value of context
+        self.w = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of item
+        self.c = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of context
 
-        self.G = np.random.rand(self.dao.trainingSize()[1], self.k) #context embedding
+        self.G = np.random.rand(self.dao.trainingSize()[1], self.k)/10 #context embedding
 
         #constructing SPPMI matrix
         self.SPPMI = defaultdict(dict)
@@ -77,22 +77,24 @@ class CoFactor(IterativeRecommender):
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
                 self.loss += error ** 2 + self.regU*p.dot(p) + self.regI*q.dot(q)
-                for context in self.SPPMI[item]:
-                    j = self.dao.getItemId(context)
-                    m = self.SPPMI[item][context]
-                    g = self.G[j]
-                    diff = (m-q.dot(g)-self.w[i]-self.c[j])
-                    self.loss += diff**2 + self.regR* g.dot(g)
-                    #update latent vectors
-                    self.Q[i] += self.lRate*diff*g
-                    self.G[j] += self.lRate*diff*q
-                    self.w[i] += self.lRate*diff
-                    self.c[j] += self.lRate*diff
+
 
                 #update latent vectors
                 self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
-
+            for item in self.SPPMI:
+                i = self.dao.getItemId(item)
+                for context in self.SPPMI[item]:
+                    j = self.dao.getItemId(context)
+                    m = self.SPPMI[item][context]
+                    g = self.G[j]
+                    diff = (m - q.dot(g) - self.w[i] - self.c[j])
+                    self.loss += diff ** 2 + self.regR * g.dot(g)
+                    # update latent vectors
+                    self.Q[i] += self.lRate * diff * g
+                    self.G[j] += self.lRate * diff * q
+                    self.w[i] += self.lRate * diff
+                    self.c[j] += self.lRate * diff
             iteration += 1
             self.isConverged(iteration)
 
