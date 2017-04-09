@@ -20,10 +20,9 @@ class Measure(object):
             exit(-1)
         hits={}
         for user in origin:
-            hits[user] = 0
             items = [key for key in origin[user]]
             predicted = [item[0] for item in res[user]]
-            hits[user] += len(set(items).intersection(set(predicted)))
+            hits[user] = len(set(items).intersection(set(predicted)))
         prec = Measure.precision(hits,N)
         measure.append('Precision:' + str(prec)+'\n')
         recall = Measure.recall(hits,origin)
@@ -33,17 +32,17 @@ class Measure(object):
         return measure
 
     @staticmethod
-    def rankingMeasure_threshold(origin,res,list_N):
+    def rankingMeasure_threshold(origin,res,list_N,threshold):
         measure = []
         if len(origin) != len(res):
             print 'Lengths do not match!'
             exit(-1)
         hits = {}
         for user in origin:
-            hits[user] = 0
-            items = [key for key in origin[user]]
-            predicted = [item[0] for item in res[user]]
-            hits[user] += len(set(items).intersection(set(predicted)))
+            if len(origin[user]) > 0:
+                items = [key for key in origin[user]]
+                predicted = [item[0] for item in res[user] if item[0]]
+                hits[user] = len(set(items).intersection(set(predicted)))
         prec = Measure.precision_threshold(hits, list_N)
         measure.append('Precision:' + str(prec) + '\n')
         recall = Measure.recall(hits, origin)
@@ -51,6 +50,8 @@ class Measure(object):
         F1 = Measure.F1(prec, recall)
         measure.append('F1:' + str(F1) + '\n')
         return measure
+
+
 
     @staticmethod
     def MAE(res):
