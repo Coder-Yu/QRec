@@ -103,9 +103,13 @@ class Recommender(object):
         if self.ranking.contains('-topN'):
             N = int(self.ranking['-topN'])
             if N>100 or N<0:
+                print 'N can not be larger than 100! It has been reassigned with 100'
                 N=100
         elif self.ranking.contains('-threshold'):
             threshold = float(self.ranking['-threshold'])
+        else:
+            print 'No correct evaluation metric is specified!'
+            exit(-1)
 
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item is matched\n')
         # predict
@@ -166,7 +170,14 @@ class Recommender(object):
         if self.ranking.contains('-topN'):
             self.measure = Measure.rankingMeasure(self.dao.testSet_u,recList,N)
         elif self.ranking.contains('-threshold'):
-            self.measure = Measure.rankingMeasure_threshold(self.dao.testSet_u, recList, userN)
+            origin = self.dao.testSet_u.copy()
+            for user in origin:
+                temp = {}
+                for item in origin[user]:
+                    if origin[user][item] >= threshold:
+                        temp[item] = threshold
+                origin[user] = temp
+            self.measure = Measure.rankingMeasure_threshold(origin, recList, userN, threshold)
         FileIO.writeFile(outDir, fileName, self.measure)
 
     def execute(self):

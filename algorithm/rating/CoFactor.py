@@ -22,7 +22,7 @@ class CoFactor(IterativeRecommender):
         print 'Specified Arguments of', self.config['recommender'] + ':'
         print 'k: %d' % self.negCount
         print 'regR: %.5f' %self.regR
-        print 'filter: %df' %self.filter
+        print 'filter: %d' %self.filter
         print '=' * 80
 
     def initModel(self):
@@ -43,14 +43,14 @@ class CoFactor(IterativeRecommender):
             if len(uList1)<self.filter:
                 continue
             for item2 in self.dao.item:
+                if item1==item2:
+                    continue
                 if not self.SPPMI[item1].has_key(item2):
                     uList2,rList2 = self.dao.itemRated(item2)
                     if len(uList2)<self.filter:
                         continue
                     count = len(set(uList1).intersection(set(uList2)))
                     val = 0
-
-
                     if count>0:
                         val = max([log(float(count*D)/(len(uList1)*len(uList2)),2)-log(self.negCount,2),0])
                     if val > 0:
@@ -77,8 +77,6 @@ class CoFactor(IterativeRecommender):
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
                 self.loss += error ** 2 + self.regU*p.dot(p) + self.regI*q.dot(q)
-
-
                 #update latent vectors
                 self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
