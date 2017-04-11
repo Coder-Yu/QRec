@@ -58,7 +58,7 @@ class IterativeRecommender(Recommender):
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return self.P[self.dao.getUserId(u)].dot(self.Q[self.dao.getItemId(i)])
+            return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
         elif self.dao.containsUser(u) and not self.dao.containsItem(i):
             return self.dao.userMeans[u]
         elif not self.dao.containsUser(u) and self.dao.containsItem(i):
@@ -117,7 +117,7 @@ class IterativeRecommender(Recommender):
         userN = {}
         userCount = len(self.dao.testSet_u)
         for i, user in enumerate(self.dao.testSet_u):
-            itemSet = []
+            itemSet = {}
             line = user + ':'
             predictedItems = self.predictForRanking(user)
             predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
@@ -130,11 +130,14 @@ class IterativeRecommender(Recommender):
                     # add prediction in order to measure
                 if bThres:
                     if rating > threshold:
-                        itemSet.append((self.dao.id2item[id], rating))
+                        itemSet[self.dao.id2item[id]]= rating
                 else:
-                    itemSet.append((self.dao.id2item[id], rating))
+                    itemSet[self.dao.id2item[id]] = rating
 
-            itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
+            ratedList,ratingList = self.dao.userRated(user)
+            for item in ratedList:
+                del itemSet[self.dao.id2item[item]]
+            itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
             if bTopN:
                 recList[user] = itemSet[0:N]
             elif bThres:

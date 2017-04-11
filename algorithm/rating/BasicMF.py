@@ -10,8 +10,8 @@ class BasicMF(IterativeRecommender):
             self.loss = 0
             for entry in self.dao.trainingData:
                 user, item, rating = entry
-                u = self.dao.getUserId(user)
-                i = self.dao.getItemId(item)
+                u = self.dao.user[user]
+                i = self.dao.item[item]
                 error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u].copy()

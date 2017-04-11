@@ -1,5 +1,6 @@
 from baseclass.SocialRecommender import SocialRecommender
 from tool import config
+import numpy as np
 class RSTE(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
         super(RSTE, self).__init__(conf,trainingSet,testSet,relation,fold)
@@ -56,3 +57,22 @@ class RSTE(SocialRecommender):
                 return self.P[u].dot(self.Q[i])
         else:
             return self.dao.globalMean
+
+    def predictForRanking(self,u):
+        if self.dao.containsUser(u):
+            fPred = 0
+            denom = 0
+            relations = self.sao.getFollowees(u)
+            for followee in relations:
+                weight = relations[followee]
+                uf = self.dao.getUserId(followee)
+                if uf <> -1 and self.dao.containsUser(followee):  # followee is in rating set
+                    fPred += weight * self.Q.dot(self.P[uf])
+                    denom += weight
+            u = self.dao.user[u]
+            if denom <> 0:
+                return self.alpha * self.Q.dot(self.P[u]) + (1 - self.alpha) * fPred / denom
+            else:
+                return self.Q.dot(self.P[u])
+        else:
+            return np.array([self.dao.globalMean] * len(self.dao.item))

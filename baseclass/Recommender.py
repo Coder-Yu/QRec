@@ -101,13 +101,17 @@ class Recommender(object):
         res = []  # used to contain the text of the result
         N = 0
         threshold = 0
+        bThres = False
+        bTopN = False
         if self.ranking.contains('-topN'):
+            bTopN = True
             N = int(self.ranking['-topN'])
-            if N>100 or N<0:
+            if N > 100 or N < 0:
                 print 'N can not be larger than 100! It has been reassigned with 100'
-                N=100
+                N = 100
         elif self.ranking.contains('-threshold'):
             threshold = float(self.ranking['-threshold'])
+            bThres = True
         else:
             print 'No correct evaluation metric is specified!'
             exit(-1)
@@ -118,27 +122,29 @@ class Recommender(object):
         userN = {}
         userCount = len(self.dao.testSet_u)
         for i,user in enumerate(self.dao.testSet_u):
-            itemSet = []
+            itemSet ={}
             line = user+':'
 
             for item in self.dao.item:
-                if not self.dao.rating(user,item):
-                    # predict
-                    prediction = self.predict(user, item)
-                    # denormalize
+                # predict
+                prediction = self.predict(user, item)
+                # denormalize
 
-                    prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+                prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
 
-                    #prediction = self.checkRatingBoundary(prediction)
-                    #pred = self.checkRatingBoundary(prediction)
-                    #####################################
-                    # add prediction in order to measure
-                    if self.ranking.contains('-threshold'):
-                        if prediction > threshold:
-                            itemSet.append((item,prediction))
-                    else:
-                        itemSet.append((item,prediction))
+                #prediction = self.checkRatingBoundary(prediction)
+                #pred = self.checkRatingBoundary(prediction)
+                #####################################
+                # add prediction in order to measure
+                if bThres:
+                    if prediction > threshold:
+                        itemSet[self.dao.id2item[id]] = prediction
+                else:
+                    itemSet[self.dao.id2item[id]] = prediction
 
+            ratedList, ratingList = self.dao.userRated(user)
+            for item in ratedList:
+                del itemSet[self.dao.id2item[item]]
             itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
             if self.ranking.contains('-topN'):
                 recList[user] = itemSet[0:N]

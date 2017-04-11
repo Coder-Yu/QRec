@@ -53,6 +53,6 @@ class EE(IterativeRecommender):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
             u = self.dao.getUserId(u)
-            return (self.Y-self.X[u]).dot(self.X[u])+self.Bi+self.Bu[u]
+            return (self.Y-self.X[u]).dot(self.X[u])+self.Bi+self.Bu[u]+self.dao.globalMean
         else:
             return np.array([self.dao.globalMean]*len(self.dao.item))
