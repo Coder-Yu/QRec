@@ -17,6 +17,22 @@ def common(x1,x2):
     new_x2 = x2[common]
     return new_x1,new_x2
 
+def cosine_sp(x1,x2):
+    'x1,x2 are dicts,this version is for sparse representation'
+    total = 0
+    denom1 = 0
+    denom2 =0
+    for k in x1:
+        if x2.has_key(k):
+            total+=x1[k]*x2[k]
+            denom1+=x1[k]**2
+            denom2+=x2[k]**2
+    try:
+        return (total + 0.0) / (sqrt(denom1) * sqrt(denom2))
+    except ZeroDivisionError:
+        return 0
+
+
 def cosine(x1,x2):
     #find common ratings
     new_x1, new_x2 = common(x1,x2)
@@ -67,7 +83,7 @@ def similarity(x1,x2,sim):
     if sim == 'euclidean':
         return euclidean(x1,x2)
     else:
-        return cosine(x1, x2)
+        return cosine_sp(x1, x2)
 
 
 def normalize(vec,maxVal,minVal):

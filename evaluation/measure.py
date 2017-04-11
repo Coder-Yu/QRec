@@ -13,44 +13,58 @@ class Measure(object):
         return measure
 
     @staticmethod
+    def hits(origin,res):
+        hitCount = {}
+        for user in origin:
+            items = origin[user].keys()
+            predicted = [item[0] for item in res[user]]
+            hitCount[user] = len(set(items).intersection(set(predicted)))
+        return hitCount
+
+    @staticmethod
+    def hits_threshold(origin,res):
+        hits = {}
+        for user in origin:
+            if len(origin[user]) > 0:
+                items = origin[user].keys()
+                predicted = [item[0] for item in res[user] if item[0]]
+                hits[user] = len(set(items).intersection(set(predicted)))
+        return hits
+
+
+    @staticmethod
     def rankingMeasure(origin,res,N):
         measure = []
         if len(origin)!= len(res):
             print 'Lengths do not match!'
             exit(-1)
-        hits={}
-        for user in origin:
-            items = [key for key in origin[user]]
-            predicted = [item[0] for item in res[user]]
-            hits[user] = len(set(items).intersection(set(predicted)))
+        hits = Measure.hits(origin,res)
         prec = Measure.precision(hits,N)
         measure.append('Precision:' + str(prec)+'\n')
         recall = Measure.recall(hits,origin)
         measure.append('Recall:' + str(recall)+'\n')
         F1 = Measure.F1(prec,recall)
         measure.append('F1:' + str(F1) + '\n')
+        MAP = Measure.MAP(origin,res,N)
+        measure.append('MAP:' + str(MAP) + '\n')
         return measure
 
     @staticmethod
-    def rankingMeasure_threshold(origin,res,list_N,threshold):
+    def rankingMeasure_threshold(origin,res,list_N):
         measure = []
         if len(origin) != len(res):
             print 'Lengths do not match!'
             exit(-1)
-        hits = {}
-        for user in origin:
-            if len(origin[user]) > 0:
-                items = [key for key in origin[user]]
-                predicted = [item[0] for item in res[user] if item[0]]
-                hits[user] = len(set(items).intersection(set(predicted)))
+        hits = Measure.hits_threshold(origin,res)
         prec = Measure.precision_threshold(hits, list_N)
         measure.append('Precision:' + str(prec) + '\n')
         recall = Measure.recall(hits, origin)
         measure.append('Recall:' + str(recall) + '\n')
         F1 = Measure.F1(prec, recall)
         measure.append('F1:' + str(F1) + '\n')
+        #MAP = Measure.MAP(origin, res)
+        #measure.append('MAP:' + str(MAP) + '\n')
         return measure
-
 
 
     @staticmethod
@@ -79,6 +93,7 @@ class Measure(object):
     def precision(hits,N):
         prec = sum([hits[user] for user in hits])
         return float(prec)/(len(hits)*N)
+
     @staticmethod
     def precision_threshold(hits,list_N):
         sum  = 0
@@ -89,6 +104,21 @@ class Measure(object):
         if denom < 0:
             return 0
         return float(sum)/denom
+
+
+    @staticmethod
+    def MAP(origin,res,N):
+        sum_prec = 0
+        for user in res:
+            hits = 0
+            precision = 0
+            for n,item in enumerate(res[user]):
+                if origin[user].has_key(item[0]):
+                    hits+=1
+                    precision+=hits/(n+1.0)
+            sum_prec+=precision
+        return sum_prec/(float(len(res))*N)
+
 
     @staticmethod
     def recall(hits,origin):

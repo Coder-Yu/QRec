@@ -111,7 +111,7 @@ class Recommender(object):
             print 'No correct evaluation metric is specified!'
             exit(-1)
 
-        res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item is matched\n')
+        res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
         # predict
         recList = {}
         userN = {}
@@ -128,7 +128,7 @@ class Recommender(object):
 
                     prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
 
-                    prediction = self.checkRatingBoundary(prediction)
+                    #prediction = self.checkRatingBoundary(prediction)
                     #pred = self.checkRatingBoundary(prediction)
                     #####################################
                     # add prediction in order to measure
@@ -157,6 +157,7 @@ class Recommender(object):
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
+            fileName=''
             outDir = self.output['-dir']
             if self.ranking.contains('-topN'):
                 fileName = self.config['recommender'] + '@' + currentTime + '-top-'+str(N)+'items' + self.foldInfo + '.txt'
@@ -177,7 +178,7 @@ class Recommender(object):
                     if origin[user][item] >= threshold:
                         temp[item] = threshold
                 origin[user] = temp
-            self.measure = Measure.rankingMeasure_threshold(origin, recList, userN, threshold)
+            self.measure = Measure.rankingMeasure_threshold(origin, recList, userN)
         FileIO.writeFile(outDir, fileName, self.measure)
 
     def execute(self):

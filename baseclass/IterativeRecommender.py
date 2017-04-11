@@ -53,6 +53,10 @@ class IterativeRecommender(Recommender):
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             return self.P[self.dao.getUserId(u)].dot(self.Q[self.dao.getItemId(i)])
+        elif self.dao.containsUser(u) and not self.dao.containsItem(i):
+            return self.dao.userMeans[u]
+        elif not self.dao.containsUser(u) and self.dao.containsItem(i):
+            return self.dao.itemMeans[i]
         else:
             return self.dao.globalMean
 

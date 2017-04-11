@@ -11,8 +11,10 @@ class RatingDAO(object):
     def __init__(self,config,trainingSet = list(), testSet = list()):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
-        self.user = {} #used to store the order of users
-        self.item = {} #used to store the order of items
+        self.user = {} #used to store the order of users in the training set
+        self.item = {} #used to store the order of items in the training set
+        self.all_Item = {}
+        self.all_User = {}
         self.userMeans = {} #used to store the mean values of users's ratings
         self.itemMeans = {} #used to store the mean values of items's ratings
         self.trainingData = [] #training data
@@ -60,14 +62,16 @@ class RatingDAO(object):
             triple.append([self.user[userId], self.item[itemId], rating])
         self.trainingMatrix = new_sparseMatrix.SparseMatrix(triple)
 
+        self.all_User.update(self.user)
+        self.all_Item.update(self.item)
         for entry in self.testData:
             userId, itemId, rating = entry
-            # # order the user
-            # if not self.user.has_key(userId):
-            #     self.user[userId] = len(self.user)
-            # # order the item
-            # if not self.item.has_key(itemId):
-            #     self.item[itemId] = len(self.item)
+            # order the user
+            if not self.user.has_key(userId):
+                self.all_User[userId] = len(self.all_User)
+            # order the item
+            if not self.item.has_key(itemId):
+                self.all_Item[itemId] = len(self.all_Item)
 
             if not self.testSet_u.has_key(userId):
                 self.testSet_u[userId] = {}
@@ -164,6 +168,12 @@ class RatingDAO(object):
 
     def col(self,c):
         return self.trainingMatrix.col(self.getItemId(c))
+
+    def sRow(self,u):
+        return self.trainingMatrix.sRow(self.getUserId(u))
+
+    def sCol(self,c):
+        return self.trainingMatrix.sCol(self.getItemId(c))
 
     def rating(self,u,c):
         return self.trainingMatrix.elem(self.getUserId(u),self.getItemId(c))
