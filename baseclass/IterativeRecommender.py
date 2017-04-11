@@ -96,13 +96,17 @@ class IterativeRecommender(Recommender):
         res = []  # used to contain the text of the result
         N = 0
         threshold = 0
+        bThres = False
+        bTopN = False
         if self.ranking.contains('-topN'):
+            bTopN = True
             N = int(self.ranking['-topN'])
             if N > 100 or N < 0:
                 print 'N can not be larger than 100! It has been reassigned with 100'
                 N = 100
         elif self.ranking.contains('-threshold'):
             threshold = float(self.ranking['-threshold'])
+            bThres = True
         else:
             print 'No correct evaluation metric is specified!'
             exit(-1)
@@ -119,21 +123,21 @@ class IterativeRecommender(Recommender):
             predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
 
             for id,rating in enumerate(predictedItems):
-                if not self.dao.rating(user, self.dao.id2item[id]):
+                #if not self.dao.rating(user, self.dao.id2item[id]):
                     # prediction = self.checkRatingBoundary(prediction)
                     # pred = self.checkRatingBoundary(prediction)
                     #####################################
                     # add prediction in order to measure
-                    if self.ranking.contains('-threshold'):
-                        if rating > threshold:
-                            itemSet.append((self.dao.id2item[id], rating))
-                    else:
+                if bThres:
+                    if rating > threshold:
                         itemSet.append((self.dao.id2item[id], rating))
+                else:
+                    itemSet.append((self.dao.id2item[id], rating))
 
             itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
-            if self.ranking.contains('-topN'):
+            if bTopN:
                 recList[user] = itemSet[0:N]
-            elif self.ranking.contains('-threshold'):
+            elif bThres:
                 recList[user] = itemSet[:]
                 userN[user] = len(itemSet)
 
