@@ -59,6 +59,7 @@ class Recommender(object):
     def predict(self,u,i):
         pass
 
+
     def checkRatingBoundary(self,prediction):
         if prediction > self.dao.rScale[-1]:
             return self.dao.rScale[-1]

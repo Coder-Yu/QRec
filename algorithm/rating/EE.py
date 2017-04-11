@@ -48,3 +48,11 @@ class EE(IterativeRecommender):
             return self.dao.globalMean + self.Bi[i] + self.Bu[u] - (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
         else:
             return self.dao.globalMean
+
+    def predictForRanking(self,u):
+        'invoked to rank all the items for the user'
+        if self.dao.containsUser(u):
+            u = self.dao.getUserId(u)
+            return (self.Y-self.X[u]).dot(self.X[u])+self.Bi+self.Bu[u]
+        else:
+            return np.array([self.dao.globalMean]*len(self.dao.item))
