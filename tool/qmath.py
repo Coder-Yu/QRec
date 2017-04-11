@@ -46,6 +46,22 @@ def cosine(x1,x2):
 
     #return cosine_similarity(x1,x2)[0][0]
 
+def pearson_sp(x1,x2):
+    total = 0
+    denom1 = 0
+    denom2 = 0
+    try:
+        mean1 = sum(x1.values())/(len(x1)+0.0)
+        mean2 = sum(x2.values()) / (len(x2) + 0.0)
+        for k in x1:
+            if x2.has_key(k):
+                total += (x1[k]-mean1) * (x2[k]-mean2)
+                denom1 += (x1[k]-mean1) ** 2
+                denom2 += (x2[k]-mean2) ** 2
+
+            return (total + 0.0) / (sqrt(denom1) * sqrt(denom2))
+    except ZeroDivisionError:
+        return 0
 
 def euclidean(x1,x2):
     #find common ratings
@@ -79,7 +95,7 @@ def pearson(x1,x2):
 
 def similarity(x1,x2,sim):
     if sim == 'pcc':
-        return pearson(x1,x2)
+        return pearson_sp(x1,x2)
     if sim == 'euclidean':
         return euclidean(x1,x2)
     else:
