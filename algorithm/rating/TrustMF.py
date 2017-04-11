@@ -109,8 +109,16 @@ class TrustMF(SocialRecommender):
 
     def predict(self, u, i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
+            u = self.dao.user[u]
+            i = self.dao.item[i]
             return (self.Br[u] + self.We[u]).dot(self.Vr[i] + self.Ve[i]) * 0.25
         else:
             return self.dao.globalMean
+
+    def predictForRanking(self, u):
+        'invoked to rank all the items for the user'
+        if self.dao.containsUser(u):
+            u = self.dao.user[u]
+            return (self.Vr + self.Ve).dot(self.Br[u] + self.We[u]) * 0.25
+        else:
+            return np.array([self.dao.globalMean] * len(self.dao.item))

@@ -67,8 +67,8 @@ class SVDPlusPlus(IterativeRecommender):
             itemIndexs,rating = self.dao.userRated(u)
             w = len(itemIndexs)
             # w = math.sqrt(len(itemIndexs))
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
+            u = self.dao.user[u]
+            i = self.dao.item[i]
             sum = 0
             if w> 0:
                 for j in itemIndexs:
@@ -78,4 +78,22 @@ class SVDPlusPlus(IterativeRecommender):
 
         else:
             pred = self.dao.globalMean
+        return pred
+
+    def predictForRanking(self,u):
+        pred = 0
+        if self.dao.containsUser(u):
+            itemIndexs, rating = self.dao.userRated(u)
+            w = len(itemIndexs)
+            # w = math.sqrt(len(itemIndexs))
+            u = self.dao.user[u]
+            sum = 0
+            if w > 0:
+                for j in itemIndexs:
+                    sum += self.Y[j]
+                pred += self.Q.dot(sum / w)
+            pred += self.Q(self.P[u]) + self.dao.globalMean + self.Bi + self.Bu[u]
+
+        else:
+            pred = np.array([self.dao.globalMean] * len(self.dao.item))
         return pred

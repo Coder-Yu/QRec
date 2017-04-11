@@ -36,8 +36,16 @@ class SVD(IterativeRecommender):
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
+            u = self.dao.user[u]
+            i = self.dao.item[i]
             return self.P[u].dot(self.Q[i])+self.dao.globalMean+self.Bi[i]+self.Bu[u]
         else:
             return self.dao.globalMean
+
+    def predictForRanking(self,u):
+        'invoked to rank all the items for the user'
+        if self.dao.containsUser(u):
+            u = self.dao.getUserId(u)
+            return self.Q.dot(self.P[u])+self.dao.globalMean + self.Bi + self.Bu[u]
+        else:
+            return np.array([self.dao.globalMean] * len(self.dao.item))
