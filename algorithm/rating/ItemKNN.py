@@ -60,7 +60,7 @@ class ItemKNN(Recommender):
                 if i1 <> i2:
                     if self.itemSim.contains(i1,i2):
                         continue
-                    sim = qmath.similarity(self.dao.col(i1),self.dao.col(i2),self.sim)
+                    sim = qmath.similarity(self.dao.sCol(i1),self.dao.sCol(i2),self.sim)
                     self.itemSim.set(i1,i2,sim)
             print 'item '+i1+' finished.'
         print 'The item correlation has been figured out.'

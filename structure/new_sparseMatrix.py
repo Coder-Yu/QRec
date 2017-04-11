@@ -1,4 +1,5 @@
 import numpy as np
+#class Triple(object):
 
 
 class SparseMatrix():
@@ -15,6 +16,20 @@ class SparseMatrix():
             self.matrix_Item[item[1]][item[0]]=item[2]
         self.elemNum = len(triple)
         self.size = (len(self.matrix_User),len(self.matrix_Item))
+
+    def sRow(self,r):
+        if not self.matrix_User.has_key(r):
+            return {}
+        else:
+            return self.matrix_User[r]
+
+    def sCol(self,c):
+        if not self.matrix_Item.has_key(c):
+            return {}
+        else:
+            return self.matrix_Item[c]
+
+
 
     def row(self,r):
         if not self.matrix_User.has_key(r):

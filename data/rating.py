@@ -169,6 +169,12 @@ class RatingDAO(object):
     def col(self,c):
         return self.trainingMatrix.col(self.getItemId(c))
 
+    def sRow(self,u):
+        return self.trainingMatrix.sRow(self.getUserId(u))
+
+    def sCol(self,c):
+        return self.trainingMatrix.sCol(self.getItemId(c))
+
     def rating(self,u,c):
         return self.trainingMatrix.elem(self.getUserId(u),self.getItemId(c))
 
