@@ -51,6 +51,7 @@ class UserKNN(Recommender):
         pred = self.dao.userMeans[u]+sum/float(denom)
         return pred
 
+
     def computeCorr(self):
         'compute correlation among users'
         print 'Computing user correlation...'
