@@ -59,6 +59,9 @@ class Recommender(object):
     def predict(self,u,i):
         pass
 
+    def predictForRanking(self,u):
+        pass
+
 
     def checkRatingBoundary(self,prediction):
         if prediction > self.dao.rScale[-1]:
@@ -138,14 +141,14 @@ class Recommender(object):
                 # add prediction in order to measure
                 if bThres:
                     if prediction > threshold:
-                        itemSet[self.dao.id2item[id]] = prediction
+                        itemSet[item] = prediction
                 else:
-                    itemSet[self.dao.id2item[id]] = prediction
+                    itemSet[item] = prediction
 
             ratedList, ratingList = self.dao.userRated(user)
             for item in ratedList:
                 del itemSet[self.dao.id2item[item]]
-            itemSet = sorted(itemSet, key=lambda d: d[1], reverse=True)
+            itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
             if self.ranking.contains('-topN'):
                 recList[user] = itemSet[0:N]
             elif self.ranking.contains('-threshold'):
