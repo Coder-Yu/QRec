@@ -116,7 +116,7 @@ class Measure(object):
                 if origin[user].has_key(item[0]):
                     hits+=1
                     precision+=hits/(n+1.0)
-            sum_prec+=precision
+            sum_prec+=precision/(min(len(origin[user]),N)+0.0)
         return sum_prec/(float(len(res))*N)
 
 
