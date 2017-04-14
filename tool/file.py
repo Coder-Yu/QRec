@@ -28,7 +28,7 @@ class FileIO(object):
             remove(filePath)
 
     @staticmethod
-    def loadDataSet(conf, file, bTest=False):
+    def loadDataSet(conf, file, bTest=False,binarized = False, threshold = 3.0):
         trainingData = []
         testData = []
         ratingConfig = LineConfig(conf['ratings.setup'])
@@ -56,12 +56,22 @@ class FileIO(object):
                     rating = 1 #default value
                 else:
                     rating  = items[int(order[2])]
+                if binarized:
+                    if float(items[int(order[2])])<threshold:
+                        rating = 0
+                    else:
+                        rating = 1
             except ValueError:
                 print 'Error! Have you added the option -header to the rating.setup?'
                 exit(-1)
             if not bTest:
                 trainingData.append([userId, itemId, float(rating)])
             else:
+                if binarized:
+                    if rating==1:
+                        testData.append([userId, itemId, float(rating)])
+                    else:
+                        continue
                 testData.append([userId, itemId, float(rating)])
         if not bTest:
             return trainingData
