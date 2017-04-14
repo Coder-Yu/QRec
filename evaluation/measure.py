@@ -105,19 +105,18 @@ class Measure(object):
             return 0
         return float(sum)/denom
 
-
     @staticmethod
-    def MAP(origin,res,N):
+    def MAP(origin, res, N):
         sum_prec = 0
         for user in res:
             hits = 0
             precision = 0
-            for n,item in enumerate(res[user]):
+            for n, item in enumerate(res[user]):
                 if origin[user].has_key(item[0]):
-                    hits+=1
-                    precision+=hits/(n+1.0)
-            sum_prec+=precision
-        return sum_prec/(float(len(res))*N)
+                    hits += 1
+                    precision += hits / (n + 1.0)
+            sum_prec += precision / (min(len(origin[user]), N) + 0.0)
+        return sum_prec / (len(res))
 
 
     @staticmethod
