@@ -74,8 +74,8 @@ class CoFactor(IterativeRecommender):
                 error = rating - self.predict(user,item)
                 u = self.dao.user[user]
                 i = self.dao.item[item]
-                p = self.P[u].copy()
-                q = self.Q[i].copy()
+                p = self.P[u]
+                q = self.Q[i]
                 self.loss += error ** 2 + self.regU*p.dot(p) + self.regI*q.dot(q)
                 #update latent vectors
                 self.P[u] += self.lRate * (error * q - self.regU * p)
@@ -83,7 +83,7 @@ class CoFactor(IterativeRecommender):
             for item in self.SPPMI:
                 i = self.dao.item[item]
                 for context in self.SPPMI[item]:
-                    j = self.dao.getItemId(context)
+                    j = self.dao.item[context]
                     m = self.SPPMI[item][context]
                     g = self.G[j]
                     diff = (m - q.dot(g) - self.w[i] - self.c[j])
