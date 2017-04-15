@@ -1,5 +1,5 @@
 
-![RecQ](http://i2.muimg.com/1949/8e4019ca0f9083d2.png)
+![RecQ](http://i2.muimg.com/1949/44c429091e3bd3d2.png)
 
 Released by School of Software Engineering, Chongqing University
 
