@@ -75,7 +75,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
       -ap ratio   (ap means that the ratings is automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)<br>
       -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)<br>
       Secondary option:-b <br>
-      -b val （binarzing the rating values. Ratings larger than val will be changed into 1, and ratings lower than vali will be changed into 0. e.g. -b 3.0）
+      -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than vali will be changed into 0. e.g. -b 3.0）
      </td>
   </tr>
   <tr>
