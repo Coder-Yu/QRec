@@ -1,5 +1,5 @@
 
-<h1>RecQ</h1>
+![RecQ](http://i2.muimg.com/1949/8e4019ca0f9083d2.png)
 
 Released by School of Software Engineering, Chongqing University
 
