@@ -31,15 +31,15 @@ class SVDPlusPlus(IterativeRecommender):
             self.loss = 0
             for entry in self.dao.trainingData:
                 user, item, rating = entry
-                itemIndexs, rating = self.dao.userRated(user)
+                itemIndexs, ratings = self.dao.userRated(user)
                 w = len(itemIndexs)
                 #w = math.sqrt(len(itemIndexs))
                 error = rating - self.predict(user, item)
-                u = self.dao.getUserId(user)
-                i = self.dao.getItemId(item)
+                u = self.dao.user[user]
+                i = self.dao.item[item]
                 self.loss += error ** 2
-                p = self.P[u].copy()
-                q = self.Q[i].copy()
+                p = self.P[u]
+                q = self.Q[i]
                 self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
                 bu = self.Bu[u]
                 bi = self.Bi[i]

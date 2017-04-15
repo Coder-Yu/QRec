@@ -21,20 +21,20 @@ class SoReg(SocialRecommender):
     def initModel(self):
         super(SoReg, self).initModel()
         # compute similarity
-        self.Sim = {}
+        from collections import defaultdict
+        self.Sim = defaultdict(dict)
         print 'constructing similarity matrix...'
-        for entry in self.dao.trainingData:
-            user, item, rating = entry
-            if self.sao.getFollowees(user):
-                for f in self.sao.getFollowees(user):
-                    if not self.Sim.has_key(user):
-                        self.Sim[user]={}
+        for user in self.dao.user:
+            for f in self.sao.getFollowees(user):
+                if self.Sim.has_key(user) and self.Sim[user].has_key(f):
+                    pass
+                else:
                     self.Sim[user][f]=self.sim(user,f)
-
+                    self.Sim[f][user]=self.Sim[user][f]
 
 
     def sim(self,u,v):
-        return (qmath.pearson(self.dao.row(u), self.dao.row(v))+1)/2.0
+        return (qmath.pearson_sp(self.dao.sRow(u), self.dao.sRow(v))+self.sao.weight(u,v))/2.0
 
     def buildModel(self):
         iteration = 0
@@ -42,21 +42,21 @@ class SoReg(SocialRecommender):
             self.loss = 0
             for entry in self.dao.trainingData:
                 user, item, rating = entry
-                uid = self.dao.getUserId(user)
-                id = self.dao.getItemId(item)
+                uid = self.dao.user[user]
+                id = self.dao.item[item]
                 simSumf = 0
                 simSum2 = 0
                 # add the followees' influence
                 if self.sao.getFollowees(user):
                     for f in self.sao.getFollowees(user):
                         if self.dao.containsUser(f):
-                            fid = self.dao.getUserId(f)
+                            fid = self.dao.user[f]
                             simSumf += self.Sim[user][f]*(self.P[uid]-self.P[fid])
                             simSum2 += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
 
                 error = rating - self.P[uid].dot(self.Q[id])
-                p = self.P[uid].copy()
-                q = self.Q[id].copy()
+                p = self.P[uid]
+                q = self.Q[id]
 
                 self.loss += error**2 + self.alpha*simSum2 + self.regU * p.dot(p) + self.regI * q.dot(q)
 

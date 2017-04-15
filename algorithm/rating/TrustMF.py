@@ -46,8 +46,8 @@ class TrustMF(SocialRecommender):
         for entry in self.dao.trainingData:
             user, item, rating = entry
             mbu = len(self.sao.getFollowees(user))
-            uid = self.dao.getUserId(user)
-            iid = self.dao.getItemId(item)
+            uid = self.dao.user[user]
+            iid = self.dao.item[item]
             error = self.truserPredict(user, item) - rating
             nbu = len(self.dao.userRated(user)[0])
             nvi = len(self.dao.itemRated(item)[0])
@@ -58,8 +58,9 @@ class TrustMF(SocialRecommender):
             if len(relations)==0:
                 for followee in relations:
                     weight = relations[followee]
-                    uf = self.dao.getUserId(followee)
-                    if uf != -1 and self.dao.containsUser(followee):  # followee is in rating set
+
+                    if self.dao.containsUser(followee):  # followee is in rating set
+                        uf = self.dao.user[followee]
                         error1 = self.Br[uid].dot(self.Wr[uf]) - weight
                         mwk = len(self.sao.getFollowers(followee))
                         self.loss += self.regT * error1**2 + self.regB * mwk * self.Wr[uf].dot(self.Wr[uf])
@@ -71,8 +72,8 @@ class TrustMF(SocialRecommender):
         for entry in self.dao.trainingData:
             user, item, rating = entry
             mwu = len(self.sao.getFollowers(user))
-            uid = self.dao.getUserId(user)
-            iid = self.dao.getItemId(item)
+            uid = self.dao.user[user]
+            iid = self.dao.item[item]
             error = self.truseePredict(user, item) - rating
             nwu = len(self.dao.userRated(user)[0])
             nvi = len(self.dao.itemRated(item)[0])
@@ -83,9 +84,9 @@ class TrustMF(SocialRecommender):
             if len(relations) == 0:
                 for follower in relations:
                     weight = relations[follower]
-                    uf = self.dao.getUserId(follower)
-                    if uf != -1 and self.dao.containsUser(follower):  # follower is in rating set
-                        error1 = self.Be[uf].dot(self.We[u]) - weight
+                    if self.dao.containsUser(follower):  # follower is in rating set
+                        uf = self.dao.getUserId(follower)
+                        error1 = self.Be[uf].dot(self.We[uid]) - weight
                         mbk = len(self.sao.getFollowees(follower))
                         self.loss += self.regT * error1**2 + self.regB * mbk * self.Be[uf].dot(self.Be[uf])
                         self.We[uid] = self.We[uid] - self.lRate * (error * self.Vr[iid] + self.regB * (mwu + nwu) * self.We[uid] + self.regT * error1 * self.Be[uf])
@@ -93,16 +94,16 @@ class TrustMF(SocialRecommender):
 
     def truserPredict(self, u, i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
+            u = self.dao.user[u]
+            i = self.dao.item[i]
             return self.Br[u].dot(self.Vr[i])
         else:
             return self.dao.globalMean
 
     def truseePredict(self, u, i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
+            u = self.dao.user[u]
+            i = self.dao.item[i]
             return self.We[u].dot(self.Ve[i])
         else:
             return self.dao.globalMean
