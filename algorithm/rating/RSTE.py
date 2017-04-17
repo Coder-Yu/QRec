@@ -26,11 +26,11 @@ class RSTE(SocialRecommender):
             for entry in self.dao.trainingData:
                 user, item, rating = entry
                 error = rating - self.predict(user,item)
-                i = self.dao.getItemId(item)
-                u = self.dao.getUserId(user)
+                i = self.dao.item[item]
+                u = self.dao.user[user]
                 self.loss += error ** 2
-                p = self.P[u].copy()
-                q = self.Q[i].copy()
+                p = self.P[u]
+                q = self.Q[i]
                 self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
                 # update latent vectors
                 self.P[u] += self.lRate * (self.alpha*error * q - self.regU * p)
@@ -46,11 +46,12 @@ class RSTE(SocialRecommender):
             relations = self.sao.getFollowees(u)
             for followee in relations:
                 weight = relations[followee]
-                uf = self.dao.getUserId(followee)
-                if uf <> -1 and self.dao.containsUser(followee):  # followee is in rating set
+
+                if  self.dao.containsUser(followee):  # followee is in rating set
+                    uf = self.dao.user[followee]
                     fPred += weight * (self.P[uf].dot(self.Q[i]))
                     denom += weight
-            u = self.dao.getUserId(u)
+            u = self.dao.user[u]
             if denom <> 0:
                 return self.alpha * self.P[u].dot(self.Q[i])+(1-self.alpha)*fPred / denom
             else:
@@ -65,8 +66,8 @@ class RSTE(SocialRecommender):
             relations = self.sao.getFollowees(u)
             for followee in relations:
                 weight = relations[followee]
-                uf = self.dao.getUserId(followee)
-                if uf <> -1 and self.dao.containsUser(followee):  # followee is in rating set
+                if self.dao.containsUser(followee):  # followee is in rating set
+                    uf = self.dao.user[followee]
                     fPred += weight * self.Q.dot(self.P[uf])
                     denom += weight
             u = self.dao.user[u]

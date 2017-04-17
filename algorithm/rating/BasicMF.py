@@ -14,8 +14,8 @@ class BasicMF(IterativeRecommender):
                 i = self.dao.item[item]
                 error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
-                p = self.P[u].copy()
-                q = self.Q[i].copy()
+                p = self.P[u]
+                q = self.Q[i]
 
                 #update latent vectors
                 self.P[u] += self.lRate*error*q

@@ -16,8 +16,8 @@ class SocialMF(SocialRecommender ):
             for entry in self.dao.trainingData:
                 user, item, rating = entry
                 followees = self.sao.getFollowees(user)
-                u = self.dao.getUserId(user)
-                i = self.dao.getItemId(item)
+                u = self.dao.user[user]
+                i = self.dao.item[item]
                 error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u].copy()
@@ -27,8 +27,8 @@ class SocialMF(SocialRecommender ):
                 relationLoss = np.zeros(self.k)
                 for followee in followees:
                     weight= followees[followee]
-                    uf = self.dao.getUserId(followee)
-                    if uf <> -1 and self.dao.containsUser(followee):
+                    if self.dao.containsUser(followee):
+                        uf = self.dao.user[followee]
                         fPred += weight * self.P[uf]
                         denom += weight
                 if denom <> 0:
