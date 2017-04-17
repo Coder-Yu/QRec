@@ -49,7 +49,7 @@ class TrustMF(SocialRecommender):
             u = self.dao.user[user]
             j = self.dao.item[item]
             error = self.truserPredict(user, item) - rating
-            mbu = len(self.sao.getFollowers(user))
+            mbu = len(self.sao.getFollowees(user))
             nbu = len(self.dao.userRated(user)[0])
             nvj = len(self.dao.itemRated(item)[0])
             self.loss += error**2 + self.regB * ((mbu + nbu) * self.Br[u].dot(self.Br[u]) + nvj * self.Vr[j].dot(self.Vr[j]))
