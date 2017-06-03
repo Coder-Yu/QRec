@@ -71,7 +71,7 @@ class RecQ(object):
             if self.evaluation.contains('-b'):
                 binarized = True
 
-            for train,test in DataSplit.crossValidation(self.trainingData,k,binarized):
+            for train,test in DataSplit.crossValidation(self.trainingData,k,binarized=binarized):
                 fold = '['+str(i)+']'
                 if self.config.contains('social'):
                     recommender = self.config['recommender'] + "(self.config,train,test,self.relation,fold)"
