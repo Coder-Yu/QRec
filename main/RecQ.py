@@ -6,6 +6,7 @@ from evaluation.dataSplit import *
 from multiprocessing import Process,Manager
 from tool.file import FileIO
 from time import strftime,localtime,time
+import mkl
 class RecQ(object):
     def __init__(self,config):
         self.trainingData = []  # training data
@@ -61,6 +62,7 @@ class RecQ(object):
             k = int(self.evaluation['-cv'])
             if k <= 1 or k > 10:
                 k = 3
+            mkl.set_num_threads(max(1,mkl.get_max_threads()/k))
             #create the manager used to communication in multiprocess
             manager = Manager()
             m = manager.dict()
