@@ -48,4 +48,4 @@ class SVD(IterativeRecommender):
             u = self.dao.getUserId(u)
             return self.Q.dot(self.P[u])+self.dao.globalMean + self.Bi + self.Bu[u]
         else:
-            return np.array([self.dao.globalMean] * len(self.dao.item))
+            return [self.dao.globalMean] * len(self.dao.item)

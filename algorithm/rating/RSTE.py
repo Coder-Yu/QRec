@@ -76,4 +76,4 @@ class RSTE(SocialRecommender):
             else:
                 return self.Q.dot(self.P[u])
         else:
-            return np.array([self.dao.globalMean] * len(self.dao.item))
+            return [self.dao.globalMean] * len(self.dao.item)

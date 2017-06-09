@@ -71,7 +71,7 @@ class IterativeRecommender(Recommender):
         if self.dao.containsUser(u):
             return (self.Q).dot(self.P[self.dao.user[u]])
         else:
-            return np.array([self.dao.globalMean]*len(self.dao.item))
+            return [self.dao.globalMean]*len(self.dao.item)
 
     def isConverged(self,iter):
         from math import isnan
