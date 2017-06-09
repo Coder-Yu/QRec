@@ -147,7 +147,7 @@ class Recommender(object):
 
             ratedList, ratingList = self.dao.userRated(user)
             for item in ratedList:
-                del itemSet[self.dao.id2item[item]]
+                del itemSet[item]
             itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
             if self.ranking.contains('-topN'):
                 recList[user] = itemSet[0:N]

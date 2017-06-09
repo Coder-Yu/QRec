@@ -137,7 +137,7 @@ class IterativeRecommender(Recommender):
 
             ratedList,ratingList = self.dao.userRated(user)
             for item in ratedList:
-                del itemSet[self.dao.id2item[item]]
+                del itemSet[item]
 
             Nrecommendations = []
             for item in itemSet:

@@ -16,13 +16,19 @@ class SlopeOne(Recommender,):
             freq_sub = {}
             diffAverage_sub = {}
             for item2 in self.dao.item:
-                new_x1,new_x2 = qmath.common(self.dao.col(item),self.dao.col(item2))
-                diff = new_x1 - new_x2
-                if len(diff)==0:
-                    diffAverage_sub.setdefault(self.dao.item[item2], 0)
+                x1 = self.dao.sCol(item)
+                x2 = self.dao.sCol(item2)
+                diff = 0.0
+                commonItem = 0
+                for key in x1:
+                    if x2.has_key(key):
+                        diff+=x1[key]-x2[key]
+                        commonItem+=1
+                if commonItem==0:
+                    diffAverage_sub.setdefault(item2, 0)
                 else:
-                    diffAverage_sub.setdefault(self.dao.item[item2],diff.mean())
-                freq_sub.setdefault(self.dao.item[item2],len(diff))
+                    diffAverage_sub.setdefault(item2,diff/commonItem)
+                freq_sub.setdefault(item2,commonItem)
             print 'item '+ item +" finished."
             self.diffAverage[item] = diffAverage_sub
             self.freq[item] = freq_sub
