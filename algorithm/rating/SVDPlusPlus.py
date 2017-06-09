@@ -50,6 +50,7 @@ class SVDPlusPlus(IterativeRecommender):
                 sum = 0
                 if w> 0:
                     for j in itemIndexs:
+                        j = self.dao.item[j]
                         y = self.Y[j].copy()
                         self.loss += self.regY * y.dot(y)
                         sum += y
@@ -72,6 +73,7 @@ class SVDPlusPlus(IterativeRecommender):
             sum = 0
             if w> 0:
                 for j in itemIndexs:
+                    j = self.dao.item[j]
                     sum += self.Y[j]
                 pred+= (sum/w).dot(self.Q[i])
             pred += self.P[u].dot(self.Q[i]) + self.dao.globalMean + self.Bi[i] + self.Bu[u]
@@ -90,6 +92,7 @@ class SVDPlusPlus(IterativeRecommender):
             sum = 0
             if w > 0:
                 for j in itemIndexs:
+                    j = self.dao.item[j]
                     sum += self.Y[j]
                 pred += self.Q.dot(sum / w)
             pred += self.Q(self.P[u]) + self.dao.globalMean + self.Bi + self.Bu[u]
