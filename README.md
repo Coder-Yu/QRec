@@ -185,12 +185,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
     <td scope="row">SocialMF</td>
     <td>Jamali and Ester, A Matrix Factorization Technique with Trust Propagation for Recommendation in Social Networks, RecSys 2010.
      </td>
-  </tr> 
-  <tr>
-    <td scope="row">TrustMF</td>
-    <td>Yang et al., Social Collaborative Filtering by Trust, IJCAI 2013.
-     </td>
-  </tr> 
+  </tr>
   <tr>
     <td scope="row">RSTE</td>
     <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
