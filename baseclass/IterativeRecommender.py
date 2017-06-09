@@ -7,7 +7,7 @@ from tool.file import FileIO
 from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
-
+from bisect import bisect
 
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -104,6 +104,8 @@ class IterativeRecommender(Recommender):
             if N > 100 or N < 0:
                 print 'N can not be larger than 100! It has been reassigned with 100'
                 N = 100
+            if N>len(self.dao.item):
+                N = len(self.dao.item)
         elif self.ranking.contains('-threshold'):
             threshold = float(self.ranking['-threshold'])
             bThres = True
@@ -120,29 +122,66 @@ class IterativeRecommender(Recommender):
             itemSet = {}
             line = user + ':'
             predictedItems = self.predictForRanking(user)
-            predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
-
+            #predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
             for id,rating in enumerate(predictedItems):
                 #if not self.dao.rating(user, self.dao.id2item[id]):
                     # prediction = self.checkRatingBoundary(prediction)
                     # pred = self.checkRatingBoundary(prediction)
                     #####################################
                     # add prediction in order to measure
-                if bThres:
-                    if rating > threshold:
-                        itemSet[self.dao.id2item[id]]= rating
-                else:
-                    itemSet[self.dao.id2item[id]] = rating
+                # if bThres:
+                #     if rating > threshold:
+                #         itemSet[self.dao.id2item[id]]= rating
+                # else:
+                itemSet[self.dao.id2item[id]] = rating
 
             ratedList,ratingList = self.dao.userRated(user)
             for item in ratedList:
                 del itemSet[self.dao.id2item[item]]
-            itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
-            if bTopN:
-                recList[user] = itemSet[0:N]
-            elif bThres:
-                recList[user] = itemSet[:]
-                userN[user] = len(itemSet)
+
+            Nrecommendations = []
+            for item in itemSet:
+                if len(Nrecommendations)<N:
+                    Nrecommendations.append((item,itemSet[item]))
+                else:
+                    break
+
+            Nrecommendations.sort(key=lambda d:d[1],reverse=True)
+            recommendations = [item[1] for item in Nrecommendations]
+            resNames = [item[0] for item in Nrecommendations]
+
+            #itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
+            #if bTopN:
+                # find the K biggest scores
+            for item in itemSet:
+                ind = N
+                l =0
+                r = N-1
+
+                if recommendations[r]<itemSet[item]:
+                    while True:
+
+                        mid = (l+r)/2
+                        if recommendations[mid]>=itemSet[item]:
+                            l = mid+1
+                        elif recommendations[mid]<itemSet[item]:
+                            r = mid-1
+                        else:
+                            ind = mid
+                            break
+                        if r<l:
+                            ind = r
+                            break
+                #ind = bisect(recommendations, itemSet[item])
+
+                if ind < N-1:
+                    recommendations[ind + 1] = itemSet[item]
+                    resNames[ind + 1] = item
+            recList[user] = zip(resNames,recommendations)
+            # elif bThres:
+            #     itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
+            #     recList[user] = itemSet[:]
+            #     userN[user] = len(itemSet)
 
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
@@ -171,13 +210,13 @@ class IterativeRecommender(Recommender):
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         if self.ranking.contains('-topN'):
             self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, N)
-        elif self.ranking.contains('-threshold'):
-            origin = self.dao.testSet_u.copy()
-            for user in origin:
-                temp = {}
-                for item in origin[user]:
-                    if origin[user][item] >= threshold:
-                        temp[item] = threshold
-                origin[user] = temp
-            self.measure = Measure.rankingMeasure_threshold(origin, recList, userN)
+        # elif self.ranking.contains('-threshold'):
+        #     origin = self.dao.testSet_u.copy()
+        #     for user in origin:
+        #         temp = {}
+        #         for item in origin[user]:
+        #             if origin[user][item] >= threshold:
+        #                 temp[item] = threshold
+        #         origin[user] = temp
+        #     self.measure = Measure.rankingMeasure_threshold(origin, recList, userN)
         FileIO.writeFile(outDir, fileName, self.measure)
