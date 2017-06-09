@@ -101,6 +101,7 @@ class RecQ(object):
             outDir = LineConfig(self.config['output.setup'])['-dir']
             fileName = self.config['recommender'] +'@'+currentTime+'-'+str(k)+'-fold-cv' + '.txt'
             FileIO.writeFile(outDir,fileName,res)
+            print 'The result of %d-fold cross validation:\n%s' %(k,''.join(res))
 
 
         else:

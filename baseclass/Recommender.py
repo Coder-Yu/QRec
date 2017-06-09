@@ -93,12 +93,13 @@ class Recommender(object):
             outDir = self.output['-dir']
             fileName = self.config['recommender']+'@'+currentTime+'-rating-predictions'+self.foldInfo+'.txt'
             FileIO.writeFile(outDir,fileName,res)
-            print 'The Result has been output to ',abspath(outDir),'.'
+            print 'The result has been output to ',abspath(outDir),'.'
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
         self.measure = Measure.ratingMeasure(self.dao.testData)
         FileIO.writeFile(outDir, fileName, self.measure)
+        print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
@@ -174,7 +175,7 @@ class Recommender(object):
             elif self.ranking.contains('-threshold'):
                 fileName = self.config['recommender'] + '@' + currentTime + '-threshold-' + str(threshold)  + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
-            print 'The Result has been output to ', abspath(outDir), '.'
+            print 'The result has been output to ', abspath(outDir), '.'
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
@@ -190,6 +191,7 @@ class Recommender(object):
                 origin[user] = temp
             self.measure = Measure.rankingMeasure_threshold(origin, recList, userN)
         FileIO.writeFile(outDir, fileName, self.measure)
+        print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
     def execute(self):
         self.readConfiguration()
@@ -248,5 +250,6 @@ class Recommender(object):
         # outDir = self.output['-dir']
         # fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         self.measure = Measure.ratingMeasure(res)
+
         return self.measure
         #FileIO.writeFile(outDir, fileName, self.measure)
