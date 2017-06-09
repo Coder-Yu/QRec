@@ -98,5 +98,5 @@ class SVDPlusPlus(IterativeRecommender):
             pred += self.Q(self.P[u]) + self.dao.globalMean + self.Bi + self.Bu[u]
 
         else:
-            pred = np.array([self.dao.globalMean] * len(self.dao.item))
+            pred = [self.dao.globalMean] * len(self.dao.item)
         return pred

@@ -55,4 +55,4 @@ class EE(IterativeRecommender):
             u = self.dao.user[u]
             return (self.Y-self.X[u]).dot(self.X[u])+self.Bi+self.Bu[u]+self.dao.globalMean
         else:
-            return np.array([self.dao.globalMean]*len(self.dao.item))
+            return [self.dao.globalMean]*len(self.dao.item)
