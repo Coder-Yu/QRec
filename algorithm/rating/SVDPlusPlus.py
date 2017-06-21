@@ -40,10 +40,9 @@ class SVDPlusPlus(IterativeRecommender):
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
-                self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
                 bu = self.Bu[u]
                 bi = self.Bi[i]
-                self.loss += self.regB * bu ** 2 + self.regB * bi ** 2
+
                 #update latent vectors
                 self.Bu[u] += self.lRate*(error-self.regB*bu)
                 self.Bi[i] += self.lRate*(error-self.regB*bi)
@@ -52,7 +51,6 @@ class SVDPlusPlus(IterativeRecommender):
                     for j in itemIndexs:
                         j = self.dao.item[j]
                         y = self.Y[j].copy()
-                        self.loss += self.regY * y.dot(y)
                         sum += y
                         self.Y[j] += self.lRate * (error * q / w - self.regY * y)
                     self.Q[i] += self.lRate * error * sum/w
@@ -61,6 +59,10 @@ class SVDPlusPlus(IterativeRecommender):
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
             iteration += 1
             self.isConverged(iteration)
+
+    def penaltyLoss(self):
+        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() \
+               + self.regY*(self.Y*self.Y).sum() + self.regB*((self.Bu*self.Bu).sum()+(self.Bi*self.Bi).sum())
 
     def predict(self,u,i):
         pred = 0

@@ -37,7 +37,7 @@ class SoRec(SocialRecommender ):
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
-                self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
+
                 # update latent vectors
                 self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
@@ -58,12 +58,16 @@ class SoRec(SocialRecommender ):
                     self.loss += self.regS * (euv ** 2)
                     p = self.P[u]
                     z = self.Z[v]
-                    self.loss += self.regZ * z.dot(z)
+
                     # update latent vectors
                     self.P[u] += self.lRate * (self.regS * euv * z)
                     self.Z[v] += self.lRate * (self.regS * euv * p - self.regZ * z)
                 else:
                     continue
+            self.loss += self.penaltyLoss()
             iteration += 1
             if self.isConverged(iteration):
                 break
+
+    def penaltyLoss(self):
+        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() + self.regZ*(self.Z*self.Z).sum()

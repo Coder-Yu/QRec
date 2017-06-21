@@ -63,6 +63,9 @@ class Recommender(object):
         pass
 
 
+    def penaltyLoss(self):
+        return 0
+
     def checkRatingBoundary(self,prediction):
         if prediction > self.dao.rScale[-1]:
             return self.dao.rScale[-1]

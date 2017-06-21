@@ -31,12 +31,16 @@ class RSTE(SocialRecommender):
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
-                self.loss += self.regU * p.dot(p) + self.regI * q.dot(q)
+
                 # update latent vectors
                 self.P[u] += self.lRate * (self.alpha*error * q - self.regU * p)
                 self.Q[i] += self.lRate * (self.alpha*error * p - self.regI * q)
+            self.loss+= self.penaltyLoss()
             iteration += 1
             self.isConverged(iteration)
+
+    def penaltyLoss(self):
+        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):   
