@@ -32,12 +32,13 @@ class EE(IterativeRecommender):
                 self.loss += self.regU * (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
                 bu = self.Bu[u]
                 bi = self.Bi[i]
-                self.loss += self.regB * bu ** 2 + self.regB * bi ** 2
+                #self.loss += self.regB * bu ** 2 + self.regB * bi ** 2
                 # update latent vectors
                 self.X[u] -= self.lRate * (error + self.regU) * (self.X[u] - self.Y[i])
                 self.Y[i] += self.lRate * (error + self.regI) * (self.X[u] - self.Y[i])
                 self.Bu[u] += self.lRate * (error - self.regB * bu)
                 self.Bi[i] += self.lRate * (error - self.regB * bi)
+            self.loss+=self.penaltyLoss()
             iteration += 1
             self.isConverged(iteration)
 
@@ -56,3 +57,6 @@ class EE(IterativeRecommender):
             return (self.Y-self.X[u]).dot(self.X[u])+self.Bi+self.Bu[u]+self.dao.globalMean
         else:
             return [self.dao.globalMean]*len(self.dao.item)
+
+    def penaltyLoss(self):
+        return self.regB*(self.Bu*self.Bu).sum()+self.regB*(self.Bi*self.Bi).sum()
