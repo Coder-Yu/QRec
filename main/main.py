@@ -12,13 +12,23 @@ if __name__ == '__main__':
     print '   RecQ: An effective python-based recommender algorithm library.   '
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
-    print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. RSTE'
-    print '6. UserMean       7. ItemMean       8. SVD            9. PMF             10. SocialMF'
-    print '11. CoFactor      12. SoRec         13.SoReg          14.SVD++           15. EE'
-    print '-'*80
+    print '-' * 80
+    print 'Rating-based Recommenders:'
+    print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
+    print '6. PMF            7. SVD++          8. EE'
+
+    print 'Social Recommenders:'
+    print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF'
+
+    print 'Advanced Recommenders:'
+    print '15. CoFactor'
+
+    print 'Baselines:'
+    print 'b1. UserMean      b2. ItemMean'
+    print '='*80
     algor = -1
     conf = -1
-    order = input('please enter the num of the algorithm to run it:')
+    order = raw_input('please enter the num of the algorithm to run it:')
     import time
     s = time.time()
     if order == 0:
@@ -30,52 +40,51 @@ if __name__ == '__main__':
         conf = Config('../config/visual/visual.conf')
         Display(conf).render()
         exit(0)
-    elif order == 1:
+    elif order == '1':
         conf = Config('../config/UserKNN.conf')
 
-    elif order == 2:
+    elif order == '2':
         conf = Config('../config/ItemKNN.conf')
 
-    elif order == 3:
+    elif order == '3':
         conf = Config('../config/BasicMF.conf')
 
-    elif order == 4:
+    elif order == '4':
         conf = Config('../config/SlopeOne.conf')
 
-    elif order == 5:
-        conf = Config('../config/RSTE.conf')
-
-    elif order == 6:
-        conf = Config('../config/UserMean.conf')
-
-    elif order == 7:
-        conf = Config('../config/ItemMean.conf')
-
-    elif order == 8:
+    elif order == '5':
         conf = Config('../config/SVD.conf')
 
-    elif order == 9:
+    elif order == '6':
         conf = Config('../config/PMF.conf')
 
-    elif order == 10:
-        conf = Config('../config/SocialMF.conf')
 
-    elif order == 11:
-        conf = Config('../config/CoFactor.conf')
-
-    elif order == 12:
-        conf = Config('../config/SoRec.conf')
-
-    elif order == 13:
-        conf = Config('../config/SoReg.conf')
-
-    elif order == 14:
+    elif order == '7':
         conf = Config('../config/SVD++.conf')
 
-    elif order == 15:
+    elif order == '8':
         conf = Config('../config/EE.conf')
 
+    elif order == '10':
+        conf = Config('../config/RSTE.conf')
 
+    elif order == '11':
+        conf = Config('../config/SoRec.conf')
+
+    elif order == '12':
+        conf = Config('../config/SoReg.conf')
+
+    elif order == '13':
+        conf = Config('../config/SocialMF.conf')
+
+    elif order == '15':
+        conf = Config('../config/CoFactor.conf')
+
+    elif order == 'b1':
+        conf = Config('../config/UserMean.conf')
+
+    elif order == 'b2':
+        conf = Config('../config/ItemMean.conf')
 
     else:
         print 'Error num!'
