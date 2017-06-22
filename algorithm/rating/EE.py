@@ -7,17 +7,17 @@ class EE(IterativeRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, fold='[1]'):
         super(EE, self).__init__(conf, trainingSet, testSet, fold)
 
-    def readConfiguration(self):
-        super(EE, self).readConfiguration()
-        Dim = config.LineConfig(self.config['EE'])
-        self.Dim = int(Dim['-d'])
+    # def readConfiguration(self):
+    #     super(EE, self).readConfiguration()
+    #     Dim = config.LineConfig(self.config['EE'])
+    #     self.Dim = int(Dim['-d'])
 
     def initModel(self):
         super(EE, self).initModel()
         self.Bu = np.random.rand(self.dao.trainingSize()[0])/10  # bias value of user
         self.Bi = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of item
-        self.X = np.random.rand(self.dao.trainingSize()[0], self.Dim)/10
-        self.Y = np.random.rand(self.dao.trainingSize()[1], self.Dim)/10
+        # self.X = np.random.rand(self.dao.trainingSize()[0], self.Dim)/10
+        # self.Y = np.random.rand(self.dao.trainingSize()[1], self.Dim)/10
 
     def buildModel(self):
         iteration = 0
@@ -29,13 +29,13 @@ class EE(IterativeRecommender):
                 u = self.dao.user[user]
                 i = self.dao.item[item]
                 self.loss += error ** 2
-                self.loss += self.regU * (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
+                self.loss += self.regU * (self.P[u] - self.Q[i]).dot(self.P[u] - self.Q[i])
                 bu = self.Bu[u]
                 bi = self.Bi[i]
                 #self.loss += self.regB * bu ** 2 + self.regB * bi ** 2
                 # update latent vectors
-                self.X[u] -= self.lRate * (error + self.regU) * (self.X[u] - self.Y[i])
-                self.Y[i] += self.lRate * (error + self.regI) * (self.X[u] - self.Y[i])
+                self.P[u] -= self.lRate * (error + self.regU) * (self.P[u] - self.Q[i])
+                self.Q[i] += self.lRate * (error + self.regI) * (self.P[u] - self.Q[i])
                 self.Bu[u] += self.lRate * (error - self.regB * bu)
                 self.Bi[i] += self.lRate * (error - self.regB * bi)
             self.loss+=self.regB*(self.Bu*self.Bu).sum()+self.regB*(self.Bi*self.Bi).sum()
@@ -46,7 +46,7 @@ class EE(IterativeRecommender):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             u = self.dao.user[u]
             i = self.dao.item[i]
-            return self.dao.globalMean + self.Bi[i] + self.Bu[u] - (self.X[u] - self.Y[i]).dot(self.X[u] - self.Y[i])
+            return self.dao.globalMean + self.Bi[i] + self.Bu[u] - (self.P[u] - self.Q[i]).dot(self.P[u] - self.Q[i])
         else:
             return self.dao.globalMean
 
@@ -54,7 +54,8 @@ class EE(IterativeRecommender):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
             u = self.dao.user[u]
-            return (self.Y-self.X[u]).dot(self.X[u])+self.Bi+self.Bu[u]+self.dao.globalMean
+            res = ((self.Q-self.P[u])*(self.Q-self.P[u])).sum(axis=1)+self.Bi+self.Bu[u]+self.dao.globalMean
+            return res
         else:
             return [self.dao.globalMean]*len(self.dao.item)
 

@@ -44,27 +44,32 @@ class SoReg(SocialRecommender):
                 user, item, rating = entry
                 uid = self.dao.user[user]
                 id = self.dao.item[item]
-                simSumf = 0
-                simSum2 = 0
+
                 # add the followees' influence
-                if self.sao.getFollowees(user):
-                    for f in self.sao.getFollowees(user):
-                        if self.dao.containsUser(f):
-                            fid = self.dao.user[f]
-                            simSumf += self.Sim[user][f]*(self.P[uid]-self.P[fid])
-                            simSum2 += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
 
                 error = rating - self.P[uid].dot(self.Q[id])
                 p = self.P[uid]
                 q = self.Q[id]
 
-                self.loss += error**2 + self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
+                self.loss += error**2
 
                 #update latent vectors
-                self.P[uid] += self.lRate*(error*q - self.regU * p - self.alpha*simSumf)
+                self.P[uid] += self.lRate*(error*q - self.regU * p)
                 self.Q[id] += self.lRate*(error*p - self.regI * q)
 
-            self.loss += self.penaltyLoss()
+            for user in self.dao.user:
+                simSumf = 0
+                simSum2 = 0
+                uid = self.dao.user[user]
+                for f in self.sao.getFollowees(user):
+                    if self.dao.containsUser(f):
+                        fid = self.dao.user[f]
+                        simSumf += self.Sim[user][f] * (self.P[uid] - self.P[fid])
+                        simSum2 += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
+                        self.loss += simSum2
+                self.P[uid] += self.lRate * (- self.alpha * simSumf)
+
+            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
