@@ -31,7 +31,8 @@ class SVD(IterativeRecommender):
                 self.Q[i] += self.lRate*(error*p-self.regI*q)
                 self.Bu[u] += self.lRate*(error-self.regB*bu)
                 self.Bi[i] += self.lRate*(error-self.regB*bi)
-            self.loss += self.penaltyLoss()
+            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()\
+               +self.regB*((self.Bu*self.Bu).sum()+(self.Bi*self.Bi).sum())
             iteration += 1
             self.isConverged(iteration)
 
@@ -51,6 +52,3 @@ class SVD(IterativeRecommender):
         else:
             return [self.dao.globalMean] * len(self.dao.item)
 
-    def penaltyLoss(self):
-        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()\
-               +self.regB*((self.Bu*self.Bu).sum()+(self.Bi*self.Bi).sum())

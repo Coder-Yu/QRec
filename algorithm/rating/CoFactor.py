@@ -95,11 +95,8 @@ class CoFactor(IterativeRecommender):
                     self.w[i] += self.lRate * diff
                     self.c[j] += self.lRate * diff
 
-            self.loss += self.penaltyLoss()
+            self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()\
+               + self.regR*(self.G*self.G).sum()
             iteration += 1
             self.isConverged(iteration)
 
-
-    def penaltyLoss(self):
-        return self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()\
-               + self.regR*(self.G*self.G).sum()

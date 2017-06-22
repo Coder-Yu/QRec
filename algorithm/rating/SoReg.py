@@ -58,7 +58,7 @@ class SoReg(SocialRecommender):
                 p = self.P[uid]
                 q = self.Q[id]
 
-                self.loss += error**2 + self.alpha*simSum2
+                self.loss += error**2 + self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
 
                 #update latent vectors
                 self.P[uid] += self.lRate*(error*q - self.regU * p - self.alpha*simSumf)
@@ -68,6 +68,3 @@ class SoReg(SocialRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
-
-    def penaltyLoss(self):
-        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
