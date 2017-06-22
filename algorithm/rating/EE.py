@@ -38,7 +38,7 @@ class EE(IterativeRecommender):
                 self.Y[i] += self.lRate * (error + self.regI) * (self.X[u] - self.Y[i])
                 self.Bu[u] += self.lRate * (error - self.regB * bu)
                 self.Bi[i] += self.lRate * (error - self.regB * bi)
-            self.loss+=self.penaltyLoss()
+            self.loss+=self.regB*(self.Bu*self.Bu).sum()+self.regB*(self.Bi*self.Bi).sum()
             iteration += 1
             self.isConverged(iteration)
 
@@ -58,5 +58,3 @@ class EE(IterativeRecommender):
         else:
             return [self.dao.globalMean]*len(self.dao.item)
 
-    def penaltyLoss(self):
-        return self.regB*(self.Bu*self.Bu).sum()+self.regB*(self.Bi*self.Bi).sum()

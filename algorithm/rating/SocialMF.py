@@ -45,10 +45,7 @@ class SocialMF(SocialRecommender ):
                 self.P[u] -= self.lRate * self.regS * relationLoss
 
 
-            self.loss+=self.penaltyLoss()
+            self.loss+=self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
-
-    def penaltyLoss(self):
-        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()

@@ -64,10 +64,8 @@ class SoRec(SocialRecommender ):
                     self.Z[v] += self.lRate * (self.regS * euv * p - self.regZ * z)
                 else:
                     continue
-            self.loss += self.penaltyLoss()
+            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() + self.regZ*(self.Z*self.Z).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
 
-    def penaltyLoss(self):
-        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() + self.regZ*(self.Z*self.Z).sum()

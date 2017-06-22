@@ -21,10 +21,8 @@ class PMF(IterativeRecommender):
                 self.P[u] += self.lRate*(error*q-self.regU*p)
                 self.Q[i] += self.lRate*(error*p-self.regI*q)
 
-            self.loss += self.penaltyLoss()
+            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
 
-    def penaltyLoss(self):
-        return self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
