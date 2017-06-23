@@ -12,7 +12,7 @@ Released by School of Software Engineering, Chongqing University<br>
 
 ![RecQ Architecture](http://ww3.sinaimg.cn/large/88b98592gw1f9fh8jpencj21d40ouwlf.jpg)
 
-To design it exquisitely, we brought some thoughts from another recommender system library [**LibRec**](https://github.com/guoguibing/librec), which is implemented with Java.
+To design it exquisitely, we refer to the library [**LibRec**](https://github.com/guoguibing/librec), which is implemented with Java.
 
 <h2>Features</h2>
 <ul>
