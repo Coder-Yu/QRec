@@ -161,9 +161,10 @@ To design it exquisitely, we brought some thoughts from another recommender syst
 
 <h2>Algorithms Implemented</h2>
 <div>
+
  <table class="table table-hover table-bordered">
   <tr>
-		<th>Algorithm</th>
+		<th>Rating prediction</th>
 		<th>Paper</th>
   </tr>
   <tr>
@@ -212,4 +213,18 @@ To design it exquisitely, we brought some thoughts from another recommender syst
      </td>
   </tr>
   </table>
+
+  </br>
+  <table class="table table-hover table-bordered">
+  <tr>
+		<th>Item Ranking</th>
+		<th>Paper</th>
+  </tr>
+  <tr>
+	<td scope="row">SBPR</td>
+    <td>Zhao et al., Leveraing Social Connections to Improve Personalized Ranking for Collaborative Filtering, CIKM 2014<br>
+    </td>
+  </tr>
+  </table>
 </div>
+
