@@ -48,13 +48,15 @@ class SVDPlusPlus(IterativeRecommender):
                 self.Bi[i] += self.lRate*(error-self.regB*bi)
                 sum = 0
                 if w> 1:
+                    indexes = []
                     for j in items:
                         j = self.dao.item[j]
-                        if i==j:
-                            continue
-                        y = self.Y[j].copy()
-                        sum += y
-                        self.Y[j] += self.lRate * (error * q / (w-1) - self.regY * y)
+                        if i!=j:
+                            indexes.append(j)
+
+                    y = self.Y[indexes]
+                    sum += y.sum(axis=0)
+                    self.Y[indexes] += self.lRate * (error * q / (w-1) - self.regY * y)
                     self.Q[i] += self.lRate * error * sum/(w-1)
 
                 self.P[u] += self.lRate * (error * q - self.regU * p)
