@@ -18,7 +18,7 @@ if __name__ == '__main__':
     print '6. PMF            7. SVD++          8. EE'
 
     print 'Social Recommenders:'
-    print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF'
+    print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF     14. SBPR'
 
     print 'Advanced Recommenders:'
     print '15. CoFactor'
@@ -76,6 +76,9 @@ if __name__ == '__main__':
 
     elif order == '13':
         conf = Config('../config/SocialMF.conf')
+
+    elif order == '14':
+        conf = Config('../config/SBPR.conf')
 
     elif order == '15':
         conf = Config('../config/CoFactor.conf')
