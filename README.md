@@ -197,6 +197,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
      </td>
   </tr>
+   <tr>
+    <td scope="row">SVD++</td>
+    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
+     </td>
+  </tr>
   <tr>
     <td scope="row">SoReg</td>
     <td>Ma et al., Recommender systems with social regularization, WSDM 2011.
