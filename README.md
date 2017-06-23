@@ -217,7 +217,7 @@ To design it exquisitely, we brought some thoughts from another recommender syst
   </br>
   <table class="table table-hover table-bordered">
   <tr>
-		<th>Rating prediction</th>
+		<th>Item Ranking</th>
 		<th>Paper</th>
   </tr>
   <tr>
