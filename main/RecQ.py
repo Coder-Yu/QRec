@@ -56,8 +56,12 @@ class RecQ(object):
 
     def execute(self):
         #import the algorithm module
-        importStr = 'from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender']
-        exec (importStr)
+        try:
+            importStr = 'from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender']
+            exec (importStr)
+        except ImportError:
+            importStr = 'from algorithm.ranking.' + self.config['recommender'] + ' import ' + self.config['recommender']
+            exec (importStr)
         if self.evaluation.contains('-cv'):
             k = int(self.evaluation['-cv'])
             if k <= 1 or k > 10:
