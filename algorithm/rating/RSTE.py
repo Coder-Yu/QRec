@@ -46,18 +46,23 @@ class RSTE(SocialRecommender):
             fPred = 0
             denom = 0
             relations = self.sao.getFollowees(u)
+            weights = []
+            indexes = []
             for followee in relations:
-                weight = relations[followee]
-
                 if  self.dao.containsUser(followee):  # followee is in rating set
-                    uf = self.dao.user[followee]
-                    fPred += weight * (self.P[uf].dot(self.Q[i]))
-                    denom += weight
+                    indexes.append(self.dao.user[followee])
+                    weights.append(relations[followee])
+            weights = np.array(weights)
+            indexes = np.array(indexes)
+            denom = weights.sum()
             u = self.dao.user[u]
             if denom <> 0:
+                fPred += weights.dot((self.P[indexes].dot(self.Q[i])))
+
                 return self.alpha * self.P[u].dot(self.Q[i])+(1-self.alpha)*fPred / denom
             else:
                 return self.P[u].dot(self.Q[i])
+
         else:
             return self.dao.globalMean
 
