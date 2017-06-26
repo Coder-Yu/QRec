@@ -11,19 +11,19 @@ class BPR(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
         super(BPR, self).__init__(conf,trainingSet,testSet,relation,fold)
 
-    def readConfiguration(self):
-        super(BPR, self).readConfiguration()
+    # def readConfiguration(self):
+    #     super(BPR, self).readConfiguration()
 
     def initModel(self):
         super(BPR, self).initModel()
         self.Bi  = np.random.rand(self.dao.trainingSize()[1]) /5 # bias value of item
-        self.k = int(self.config['num.factors'])
+        #self.k = int(self.config['num.factors'])
 
 
-    def printAlgorConfig(self):
-        super(BPR, self).printAlgorConfig()
-        print 'Specified Arguments of', self.config['recommender'] + ':'
-        print '=' * 80
+    # def printAlgorConfig(self):
+    #     super(BPR, self).printAlgorConfig()
+    #     print 'Specified Arguments of', self.config['recommender'] + ':'
+    #     print '=' * 80
 
 
     def buildModel(self):
