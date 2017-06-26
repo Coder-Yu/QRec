@@ -19,9 +19,10 @@ if __name__ == '__main__':
 
     print 'Social Recommenders:'
     print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF     14. SBPR'
+    print '15. BPR'
 
     print 'Advanced Recommenders:'
-    print '15. CoFactor'
+    print '16. CoFactor'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean'
@@ -81,6 +82,9 @@ if __name__ == '__main__':
         conf = Config('../config/SBPR.conf')
 
     elif order == '15':
+        conf = Config('../config/BPR.conf')
+
+    elif order == '16':
         conf = Config('../config/CoFactor.conf')
 
     elif order == 'b1':
