@@ -15,11 +15,11 @@ if __name__ == '__main__':
     print '-' * 80
     print 'Rating-based Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
-    print '6. PMF            7. SVD++          8. EE'
+    print '6. PMF            7. SVD++          8. EE             9. BPR'
 
     print 'Social Recommenders:'
     print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF     14. SBPR'
-    print '15. BPR'
+
 
     print 'Advanced Recommenders:'
     print '16. CoFactor'
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     elif order == '13':
         conf = Config('../config/SocialMF.conf')
 
-    elif order == '14':
+    elif order == '9':
         conf = Config('../config/SBPR.conf')
 
     elif order == '15':

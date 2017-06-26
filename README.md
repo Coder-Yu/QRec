@@ -225,7 +225,12 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 		<th>Item Ranking</th>
 		<th>Paper</th>
   </tr>
-  <tr>
+    <tr>
+	<td scope="row">BPR</td>
+    <td>Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback, UAI 2009.<br>
+    </td>
+  </tr>
+    <tr>
 	<td scope="row">SBPR</td>
     <td>Zhao et al., Leveraing Social Connections to Improve Personalized Ranking for Collaborative Filtering, CIKM 2014<br>
     </td>
