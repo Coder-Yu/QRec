@@ -32,7 +32,7 @@ if __name__ == '__main__':
     order = raw_input('please enter the num of the algorithm to run it:')
     import time
     s = time.time()
-    if order == 0:
+    if order == '0':
         try:
             import seaborn as sns
         except ImportError:
