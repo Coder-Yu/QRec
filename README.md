@@ -65,18 +65,18 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   <tr>
     <td scope="row">recommender</td>
     <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
-    <td>Set the recommender to use. <br>
+    <td>Set the recommender to use. </br>
     </td>
   </tr>
   <tr>
     <td scope="row">evaluation.setup</td>
     <td>-testSet ../dataset/testset.txt</td>
-    <td>Main option: -testSet, -ap, -cv <br>
-      -testSet path/to/test/file   (need to specify the test set manually)<br>
-      -ap ratio   (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)<br>
-      -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)<br>
+    <td>Main option: -testSet, -ap, -cv </br>
+      -testSet path/to/test/file   (need to specify the test set manually)</br>
+      -ap ratio   (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)</br>
+      -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)</br>
       Secondary option:-b, -p<br>
-      -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）
+      -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）</br>
       -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one)
      </td>
   </tr>
@@ -84,13 +84,13 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td scope="row">item.ranking</td>
     <td>off -topN -1 </td>
     <td>Main option: whether to do item ranking<br>
-      -topN N: the length of the recommendation list for item recommendation, default -1 for full list; <br>
+      -topN N: the length of the recommendation list for item recommendation, default -1 for full list; </br>
     </td>
   </tr>
   <tr>
     <td scope="row">output.setup</td>
     <td>on -dir ./Results/</td>
-    <td>Main option: whether to output recommendation results<br>
+    <td>Main option: whether to output recommendation results</br>
       -dir path: the directory path of output results.
        </td>
   </tr>  
