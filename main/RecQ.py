@@ -90,9 +90,12 @@ class RecQ(object):
             #start the processes
             for p in tasks:
                 p.start()
+                if not self.evaluation.contains('-p'):
+                    p.join()
             #wait until all processes are completed
-            for p in tasks:
-                p.join()
+            if self.evaluation.contains('-p'):
+                for p in tasks:
+                    p.join()
             #compute the mean error of k-fold cross validation
             self.measure = [dict(m)[i] for i in range(1,k+1)]
             res = []

@@ -75,8 +75,9 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
       -testSet path/to/test/file   (need to specify the test set manually)<br>
       -ap ratio   (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)<br>
       -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)<br>
-      Secondary option:-b <br>
+      Secondary option:-b, -p<br>
       -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）
+      -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one)
      </td>
   </tr>
   <tr>
