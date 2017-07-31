@@ -151,7 +151,7 @@ class RatingDAO(object):
         return self.trainSet_u[u].keys(),self.trainSet_u[u].values()
 
     def itemRated(self,i):
-        return self.trainSet_i.keys(),self.trainSet_i.values()
+        return self.trainSet_i[i].keys(),self.trainSet_i[i].values()
 
     # def row(self,u):
     #     return self.trainingMatrix.row(self.getUserId(u))

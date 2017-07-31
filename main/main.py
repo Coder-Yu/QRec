@@ -59,6 +59,8 @@ if __name__ == '__main__':
     elif order == '6':
         conf = Config('../config/PMF.conf')
 
+    elif order == '9':
+        conf = Config('../config/BPR.conf')
 
     elif order == '7':
         conf = Config('../config/SVD++.conf')
@@ -78,11 +80,8 @@ if __name__ == '__main__':
     elif order == '13':
         conf = Config('../config/SocialMF.conf')
 
-    elif order == '9':
+    elif order == '14':
         conf = Config('../config/SBPR.conf')
-
-    elif order == '15':
-        conf = Config('../config/BPR.conf')
 
     elif order == '16':
         conf = Config('../config/CoFactor.conf')
