@@ -37,27 +37,49 @@ class CoFactor(IterativeRecommender):
         D = len(self.dao.item)
         print 'Constructing SPPMI matrix...'
         #for larger data set has many items, the process will be time consuming
-        maxVal = 0
+        occurrence = defaultdict(dict)
+        i=0
         for item1 in self.dao.item:
+            i += 1
+            if i % 100 == 0:
+                print str(i) + '/' + str(len(self.dao.item))
             uList1, rList1 = self.dao.itemRated(item1)
-            if len(uList1)<self.filter:
+
+            if len(uList1) < self.filter:
                 continue
             for item2 in self.dao.item:
-                if item1==item2:
+                if item1 == item2:
                     continue
-                if not self.SPPMI[item1].has_key(item2):
-                    uList2,rList2 = self.dao.itemRated(item2)
-                    if len(uList2)<self.filter:
+                if not occurrence[item1].has_key(item2):
+                    uList2, rList2 = self.dao.itemRated(item2)
+                    if len(uList2) < self.filter:
                         continue
                     count = len(set(uList1).intersection(set(uList2)))
-                    val = 0
-                    if count>0:
-                        val = max([log(float(count*D)/(len(uList1)*len(uList2)),2)-log(self.negCount,2),0])
-                    if val > 0:
-                        if maxVal < val:
-                            maxVal = val
-                        self.SPPMI[item1][item2] = val
-                        self.SPPMI[item2][item1] = self.SPPMI[item1][item2]
+                    if count > self.filter:
+                        occurrence[item1][item2] = count
+                        occurrence[item2][item1] = count
+
+        maxVal = 0
+        frequency = {}
+        for item1 in occurrence:
+            frequency[item1] = sum(occurrence[item1].values()) * 1.0
+        D = sum(frequency.values()) * 1.0
+        # maxx = -1
+        for item1 in occurrence:
+            for item2 in occurrence[item1]:
+                try:
+                    val = max([log(occurrence[item1][item2] * D / (frequency[item1] * frequency[item2]), 2) - log(
+                        self.negCount, 2), 0])
+                except ValueError:
+                    print self.SPPMI[item1][item2]
+                    print self.SPPMI[item1][item2] * D / (frequency[item1] * frequency[item2])
+
+                if val > 0:
+                    if maxVal < val:
+                        maxVal = val
+                    self.SPPMI[item1][item2] = val
+                    self.SPPMI[item2][item1] = self.SPPMI[item1][item2]
+
 
         #normalize
         for item1 in self.SPPMI:
