@@ -219,6 +219,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Liang et al., Factorization Meets the Item Embedding: Regularizing Matrix Factorization with Item Co-occurrence, RecSys2016.
      </td>
   </tr>
+  <tr>
+    <td scope="row">SREE</td>
+    <td>Li et al., Social Recommendation Using Euclidean embedding, IJCNN 2017.
+     </td>
+  </tr>
   </table>
 
   </br>
