@@ -161,6 +161,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- predict()<br>
 
 <h2>Algorithms Implemented</h2>
+<p><b>Note: </b>We use SGD to obtain the local minimum. So, there have some differences between the original papers and the code in terms of fomular presentation.</p> 
 <div>
 
  <table class="table table-hover table-bordered">
