@@ -62,8 +62,7 @@ class SoRec(SocialRecommender ):
                     # update latent vectors
                     self.P[u] += self.lRate * (self.regS * euv * z)
                     self.Z[v] += self.lRate * (self.regS * euv * p - self.regZ * z)
-                else:
-                    continue
+
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() + self.regZ*(self.Z*self.Z).sum()
             iteration += 1
             if self.isConverged(iteration):
