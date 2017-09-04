@@ -21,7 +21,7 @@ class SocialMF(SocialRecommender ):
                 self.loss += error**2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
-                self.P[u] += self.lRate * error * q
+                self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
 
             for user in self.sao.user:
