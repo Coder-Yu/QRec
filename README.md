@@ -196,12 +196,12 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   </tr> 
   <tr>
     <td scope="row">SVD</td>
-    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
+    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, SIGKDD 2009.
      </td>
   </tr>
    <tr>
     <td scope="row">SVD++</td>
-    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, KDD 2009.
+    <td>Koren, Factorization meets the neighborhood: a multifaceted collaborative filtering model, SIGKDD 2008.
      </td>
   </tr>
   <tr>
