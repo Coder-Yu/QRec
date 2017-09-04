@@ -301,5 +301,3 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 <p>[1]. Tang, J., Gao, H., Liu, H.: mtrust:discerning multi-faceted trust in a connected world. In: International Conference on Web Search and Web Data Mining, WSDM 2012, Seattle, Wa, Usa, February. pp. 93–102 (2012)</p>
 <p>[2]. Massa, P., Avesani, P.: Trust-aware recommender systems. In: Proceedings of the 2007 ACM conference on Recommender systems. pp. 17–24. ACM (2007) </p>
 <p>[3].  G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
-<p>[4]. Benevenuto, F., Magno, G., Rodrigues, T., & Almeida, V.: Detecting spammers on twitter. In: Collaboration, electronic messaging, anti-abuse and spam conference (CEAS). Vol. 6, No. 2010, p. 12. 2010. </p>
-<p>[5]. Benevenuto, F., Rodrigues, T., Almeida, V., Almeida, J., & Gonçalves, M.: Detecting spammers and content promoters in online video social networks. In: Proceedings of the 32nd ACM SIGIR conference on Research and development in information retrieval. pp. 620-627. ACM (2009) </p>
