@@ -2,7 +2,7 @@
 ![RecQ](http://i2.muimg.com/1949/44c429091e3bd3d2.png)
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
-**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) <br>
+**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
 Released by School of Software Engineering, Chongqing University<br>
 <h2>Introduction</h2>
 
