@@ -224,6 +224,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Li et al., Social Recommendation Using Euclidean embedding, IJCNN 2017.
      </td>
   </tr>
+    <tr>
+    <td scope="row">CUNE-MF</td>
+    <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
+     </td>
+  </tr>
   </table>
 
   </br>
