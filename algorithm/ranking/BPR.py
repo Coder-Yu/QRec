@@ -1,15 +1,16 @@
-from baseclass.SocialRecommender import SocialRecommender
+#coding:utf8
+from baseclass.IterativeRecommender import IterativeRecommender
 import math
 import numpy as np
 from tool import qmath
 from random import choice
-class BPR(SocialRecommender):
+class BPR(IterativeRecommender):
 
     # BPR：Bayesian Personalized Ranking from Implicit Feedback
     # Steffen Rendle,Christoph Freudenthaler,Zeno Gantner and Lars Schmidt-Thieme
 
-    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
-        super(BPR, self).__init__(conf,trainingSet,testSet,relation,fold)
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(BPR, self).__init__(conf,trainingSet,testSet,fold)
 
     # def readConfiguration(self):
     #     super(BPR, self).readConfiguration()
