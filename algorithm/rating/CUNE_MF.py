@@ -1,5 +1,5 @@
-
 from baseclass.IterativeRecommender import IterativeRecommender
+from tool import config
 
 class Node(object):
     def __init__(self):
@@ -131,7 +131,6 @@ class HuffmanTree(object):
 
 
 
-
 class CUNE_MF(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(CUNE_MF, self).__init__(conf,trainingSet,testSet,fold)
@@ -139,7 +138,51 @@ class CUNE_MF(IterativeRecommender):
         self.leafVec = {}
         self.topKSim = {}
 
+    def readConfiguration(self):
+        super(CUNE_MF, self).readConfiguration()
+        options = config.LineConfig(self.config['CUNE-MF'])
+        self.walks = int(options['-T'])
+        self.walkLength = int(options['-L'])
+        self.dim = int(options['-l'])
+        self.winSize = int(options['-w'])
+
+    def printAlgorConfig(self):
+        super(CUNE_MF, self).printAlgorConfig()
+        print 'Specified Arguments of', self.config['recommender'] + ':'
+        print 'Walks count per user', self.walks
+        print 'Length of each walk', self.walkLength
+        print '='*80
+
     def buildModel(self):
+        #build C-U-NET
+        print 'Build collaborative user network...'
+        #filter isolated nodes and low ratings
+        from collections import defaultdict
+        self.itemNet = {}
+        for item in self.dao.trainSet_i:
+            if len(self.dao.trainSet_i[item])>1:
+                self.itemNet[item] = self.dao.trainSet_i[item]
+
+        self.filteredRatings = defaultdict(list)
+        for item in self.itemNet:
+            for user in self.itemNet[item]:
+                if self.itemNet[item][user]>0.75:
+                    self.filteredRatings[user].append(item)
+
+        self.CUNet = defaultdict(dict)
+        for user1 in self.filteredRatings:
+            for user2 in self.filteredRatings:
+                if user1 <> user2:
+                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+                    if weight > 0:
+                        self.CUNet[user1][user2] = weight
+
+        for user in self.CUNet:
+            print user,self.CUNet[user]
+        #connect users
+        #for user in
+
+
         #build Huffman Tree First
         #get weight
         print 'Building Huffman tree...'
@@ -164,6 +207,10 @@ class CUNE_MF(IterativeRecommender):
 
 
         print 'Generating random deep walks...'
+        for user in self.dao.user:
+            pass
+
+
 
 
         # iteration = 0
