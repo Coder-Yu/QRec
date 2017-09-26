@@ -16,7 +16,7 @@ class SBPR(SocialRecommender):
 
     def initModel(self):
         super(SBPR, self).initModel()
-        self.Bi  = np.random.rand(self.dao.trainingSize()[1]) /5 # bias value of item
+        self.Bi  = np.random.random(self.dao.trainingSize()[1]) /5 # bias value of item
 
 
         # find items rated by trusted neighbors only

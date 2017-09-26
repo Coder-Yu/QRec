@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
 
     print 'Advanced Recommenders:'
-    print '16. CoFactor      17. CUNE-MF'
+    print '16. CoFactor      17. CUNE-MF       18. CUNE-BPR'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean'
@@ -94,6 +94,9 @@ if __name__ == '__main__':
 
     elif order == '17':
         conf = Config('../config/CUNE_MF.conf')
+
+    elif order == '18':
+        conf = Config('../config/CUNE_BPR.conf')
 
     elif order == 'b1':
         conf = Config('../config/UserMean.conf')

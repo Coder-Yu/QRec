@@ -126,25 +126,25 @@ class HuffmanTree(object):
             self.coding(root.left,prefix+'0',hierarchy+1)
             self.coding(root.right,prefix+'1',hierarchy+1)
 
-class CUNE_MF(IterativeRecommender):
+class CUNE_BPR(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(CUNE_MF, self).__init__(conf,trainingSet,testSet,fold)
+        super(CUNE_BPR, self).__init__(conf,trainingSet,testSet,fold)
         self.nonLeafVec = {}
         self.leafVec = {}
 
 
     def readConfiguration(self):
-        super(CUNE_MF, self).readConfiguration()
-        options = config.LineConfig(self.config['CUNE-MF'])
+        super(CUNE_BPR, self).readConfiguration()
+        options = config.LineConfig(self.config['CUNE-BPR'])
         self.walkCount = int(options['-T'])
         self.walkLength = int(options['-L'])
         self.walkDim = int(options['-l'])
         self.winSize = int(options['-w'])
         self.topK = int(options['-k'])
-        self.alpha = float(options['-a'])
+        self.s = float(options['-s'])
 
     def printAlgorConfig(self):
-        super(CUNE_MF, self).printAlgorConfig()
+        super(CUNE_BPR, self).printAlgorConfig()
         print 'Specified Arguments of', self.config['recommender'] + ':'
         print 'Walks count per user', self.walkCount
         print 'Length of each walk', self.walkLength
@@ -155,8 +155,7 @@ class CUNE_MF(IterativeRecommender):
         print 'Kind Note: This method will probably take much time.'
         #build C-U-NET
         print 'Building collaborative user network...'
-        #filter isolated nodes and low ratings
-
+        #filter isolated nodes
         self.itemNet = {}
         for item in self.dao.trainSet_i:
             if len(self.dao.trainSet_i[item])>1:
@@ -165,7 +164,7 @@ class CUNE_MF(IterativeRecommender):
         self.filteredRatings = defaultdict(list)
         for item in self.itemNet:
             for user in self.itemNet[item]:
-                if self.itemNet[item][user]>0.75:
+                if self.itemNet[item][user]>=1:
                     self.filteredRatings[user].append(item)
 
         self.CUNet = defaultdict(list)
@@ -239,7 +238,7 @@ class CUNE_MF(IterativeRecommender):
                             w = self.HTree.vector[prefix]
                             self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
                             self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
-                            loss += -log(sigmoid(w.dot(x)))
+                            loss += -log(sigmoid(w.dot(x)),2)
             print 'iteration:', iteration, 'loss:', loss
             iteration+=1
         print 'User embedding generated.'
@@ -263,36 +262,71 @@ class CUNE_MF(IterativeRecommender):
         print 'Similarity matrix finished.'
         #print self.topKSim
 
-        #matrix decomposition
-        print 'Decomposing...'
+        #prepare Pu set, IPu set, and Nu set
+        print 'Preparing item sets...'
+        self.PositiveSet = defaultdict(dict)
+        self.IPositiveSet = defaultdict(list)
+        self.NegativeSet = defaultdict(list)
 
+        for user in self.topKSim:
+            for item in self.dao.trainSet_u[user]:
+                if self.dao.trainSet_u[user][item]>=1:
+                    self.PositiveSet[user][item]=1
+                else:
+                    self.NegativeSet[user].append(item)
+
+            for friend in self.topKSim[user]:
+                for item in self.dao.trainSet_u[friend[0]]:
+                    if not self.PositiveSet[user].has_key(item):
+                        self.IPositiveSet[user].append(item)
+
+
+        print 'Training...'
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
-                user, item, rating = entry
-                u = self.dao.user[user] #get user id
-                i = self.dao.item[item] #get item id
-                error = rating - self.P[u].dot(self.Q[i])
-                self.loss += error**2
-                p = self.P[u]
-                q = self.Q[i]
 
-                #update latent vectors
-                self.P[u] += self.lRate*(error*q-self.regU*p)
-                self.Q[i] += self.lRate*(error*p-self.regI*q)
-
-            for user in self.CUNet:
-
+            for user in self.PositiveSet:
                 u = self.dao.user[user]
-                friends = self.topKSim[user]
-                for friend in friends:
-                    uf = self.dao.user[friend[0]]
-                    self.P[u] -= self.lRate*(self.P[u]-self.P[uf])*self.alpha
-                    self.loss += self.alpha * (self.P[u]-self.P[uf]).dot(self.P[u]-self.P[uf])
+                for item in self.PositiveSet[user]:
+                    if len(self.IPositiveSet[user])>0:
+                        item_k = self.IPositiveSet[user][randint(0,len(self.IPositiveSet[user])-1)]
+                        i = self.dao.item[item]
+                        k = self.dao.item[item_k]
+                        self.P[u] += self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*(self.Q[i]-self.Q[k])
+                        self.Q[i] += self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*self.P[u]
+                        self.Q[k] -= self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*self.P[u]
+
+                        item_j=''
+                        if len(self.NegativeSet[user])>0:
+                            item_j = self.NegativeSet[user][randint(0,len(self.NegativeSet[user])-1)]
+                        else:
+                            item_j = self.dao.item.keys()[randint(0,len(self.dao.item)-1)]
+                            while(self.PositiveSet[user].has_key(item_j)):
+                                item_j = self.dao.item.keys()[randint(0, len(self.dao.item) - 1)]
+                        j = self.dao.item[item_j]
+                        self.P[u] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*(self.Q[k]-self.Q[j])
+                        self.Q[k] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]
+                        self.Q[j] -= (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]
+
+                        self.P[u] += self.lRate * self.regU * self.P[u]
+                        self.Q[i] += self.lRate * self.regI * self.Q[i]
+                        self.Q[j] += self.lRate * self.regI * self.Q[j]
+                        self.Q[k] += self.lRate * self.regI * self.Q[k]
+
+                        self.loss += log(sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k]))) + \
+                                     log(sigmoid((1/self.s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))))
+
 
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
 
+    def predictForRanking(self, u):
+        'invoked to rank all the items for the user'
+        if self.dao.containsUser(u):
+            u = self.dao.getUserId(u)
+            return self.Q.dot(self.P[u])
+        else:
+            return [self.dao.globalMean] * len(self.dao.item)
