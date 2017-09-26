@@ -247,6 +247,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Zhao et al., Leveraing Social Connections to Improve Personalized Ranking for Collaborative Filtering, CIKM 2014<br>
     </td>
   </tr>
+  <tr>
+    <td scope="row">CUNE-BPR</td>
+    <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
+     </td>
+  </tr>
   </table>
 </div>
 
