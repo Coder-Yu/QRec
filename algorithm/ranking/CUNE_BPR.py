@@ -142,6 +142,7 @@ class CUNE_BPR(IterativeRecommender):
         self.winSize = int(options['-w'])
         self.topK = int(options['-k'])
         self.s = float(options['-s'])
+        self.epoch = int(options['-ep'])
 
     def printAlgorConfig(self):
         super(CUNE_BPR, self).printAlgorConfig()
@@ -224,7 +225,7 @@ class CUNE_BPR(IterativeRecommender):
         #Training get top-k friends
         print 'Generating user embedding...'
         iteration = 1
-        while iteration <= self.maxIter:
+        while iteration <= self.epoch:
             loss = 0
             #slide windows randomly
 

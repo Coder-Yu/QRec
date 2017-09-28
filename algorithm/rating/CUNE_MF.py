@@ -142,6 +142,7 @@ class CUNE_MF(IterativeRecommender):
         self.winSize = int(options['-w'])
         self.topK = int(options['-k'])
         self.alpha = float(options['-a'])
+        self.epoch = int(options['-ep'])
 
     def printAlgorConfig(self):
         super(CUNE_MF, self).printAlgorConfig()
@@ -267,7 +268,7 @@ class CUNE_MF(IterativeRecommender):
         print 'Decomposing...'
 
         iteration = 0
-        while iteration < self.maxIter:
+        while iteration < self.epoch:
             self.loss = 0
             for entry in self.dao.trainingData:
                 user, item, rating = entry
