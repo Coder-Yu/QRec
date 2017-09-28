@@ -1,7 +1,7 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 from tool import config
 from random import randint
-from random import shuffle
+from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid,cosine
@@ -208,10 +208,10 @@ class CUNE_BPR(IterativeRecommender):
                 currentNode = user
                 path = [user]
                 for i in range(1,self.walkLength):
-                    nextNode = self.CUNet[user][randint(0,len(self.CUNet[user]))-1]
+                    nextNode = choice(self.CUNet[user])
                     count=0
                     while(self.visited[user].has_key(nextNode)):
-                        nextNode = self.CUNet[randint(0, len(self.CUNet[user]))-1]
+                        nextNode = choice(self.CUNet[user])
                         #break infinite loop
                         count+=1
                         if count==10:
@@ -226,19 +226,26 @@ class CUNE_BPR(IterativeRecommender):
         iteration = 1
         while iteration <= self.maxIter:
             loss = 0
-            for walk in self.walks:
-                for user in walk:
-                    centerUser = walk[len(walk)/2]
-                    if user <> centerUser:
-                        code = self.HTree.code[user]
-                        centerCode = self.HTree.code[centerUser]
-                        x = self.HTree.vector[centerCode]
-                        for i in range(1,len(code)):
-                            prefix = code[0:i]
-                            w = self.HTree.vector[prefix]
-                            self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
-                            self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
-                            loss += -log(sigmoid(w.dot(x)),2)
+            #slide windows randomly
+
+            for n in range(self.walkLength/self.winSize):
+
+                for walk in self.walks:
+                    center = randint(0, len(walk)-1)
+                    s = max(0,center-self.winSize/2)
+                    e = min(center+self.winSize/2,len(walk)-1)
+                    for user in walk[s:e]:
+                        centerUser = walk[center]
+                        if user <> centerUser:
+                            code = self.HTree.code[user]
+                            centerCode = self.HTree.code[centerUser]
+                            x = self.HTree.vector[centerCode]
+                            for i in range(1,len(code)):
+                                prefix = code[0:i]
+                                w = self.HTree.vector[prefix]
+                                self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
+                                self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
+                                loss += -log(sigmoid(w.dot(x)),2)
             print 'iteration:', iteration, 'loss:', loss
             iteration+=1
         print 'User embedding generated.'
@@ -285,12 +292,12 @@ class CUNE_BPR(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-
+            itemList = self.dao.item.keys()
             for user in self.PositiveSet:
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     if len(self.IPositiveSet[user])>0:
-                        item_k = self.IPositiveSet[user][randint(0,len(self.IPositiveSet[user])-1)]
+                        item_k = choice(self.IPositiveSet[user])
                         i = self.dao.item[item]
                         k = self.dao.item[item_k]
                         self.P[u] += self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*(self.Q[i]-self.Q[k])
@@ -299,22 +306,22 @@ class CUNE_BPR(IterativeRecommender):
 
                         item_j=''
                         if len(self.NegativeSet[user])>0:
-                            item_j = self.NegativeSet[user][randint(0,len(self.NegativeSet[user])-1)]
+                            item_j = choice(self.NegativeSet[user])
                         else:
-                            item_j = self.dao.item.keys()[randint(0,len(self.dao.item)-1)]
+                            item_j = choice(itemList)
                             while(self.PositiveSet[user].has_key(item_j)):
-                                item_j = self.dao.item.keys()[randint(0, len(self.dao.item) - 1)]
+                                item_j = choice(itemList)
                         j = self.dao.item[item_j]
                         self.P[u] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*(self.Q[k]-self.Q[j])
                         self.Q[k] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]
                         self.Q[j] -= (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]
 
-                        self.P[u] += self.lRate * self.regU * self.P[u]
-                        self.Q[i] += self.lRate * self.regI * self.Q[i]
-                        self.Q[j] += self.lRate * self.regI * self.Q[j]
-                        self.Q[k] += self.lRate * self.regI * self.Q[k]
+                        self.P[u] -= self.lRate * self.regU * self.P[u]
+                        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+                        self.Q[j] -= self.lRate * self.regI * self.Q[j]
+                        self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += log(sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k]))) + \
+                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k]))) - \
                                      log(sigmoid((1/self.s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))))
 
 
