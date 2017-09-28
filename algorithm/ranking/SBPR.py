@@ -16,7 +16,6 @@ class SBPR(SocialRecommender):
 
     def initModel(self):
         super(SBPR, self).initModel()
-        self.Bi  = np.random.random(self.dao.trainingSize()[1]) /5 # bias value of item
 
 
         # find items rated by trusted neighbors only
@@ -95,17 +94,6 @@ class SBPR(SocialRecommender):
                     socialNegGradient = qmath.sigmoid(-socialNegDiffValue)
 
 
-                    # update bi, bk, bj
-                    posItemBiasValue = self.Bi[posItemId]
-                    self.Bi[posItemId] += self.lRate * (posSocialGradient / (1 + socialWeight) - self.regB * posItemBiasValue)
-                    self.loss += self.regB * posItemBiasValue * posItemBiasValue
-                    socialItemBiasValue = self.Bi[socialItemId]
-                    self.Bi[socialItemId] += self.lRate * (-posSocialGradient / (1 + socialWeight) + socialNegGradient - self.regB * socialItemBiasValue)
-                    self.loss += self.regB * socialItemBiasValue * socialItemBiasValue
-                    negItemBiasValue = self.Bi[negItemId]
-                    self.Bi[negItemId] += self.lRate * (-socialNegGradient - self.regB * negItemBiasValue)
-                    self.loss += self.regB * negItemBiasValue * negItemBiasValue
-
                     # update P, Q
                     for factorIdx in range(self.k):
                         userFactorValue = self.P[userId][factorIdx]
@@ -128,13 +116,7 @@ class SBPR(SocialRecommender):
                     self.loss +=  -math.log(qmath.sigmoid(posNegDiffValue))
                     posNegGradient = qmath.sigmoid(-posNegDiffValue)
 
-                    # update bi, bj
-                    posItemBiasValue = self.Bi[posItemId]
-                    self.Bi[posItemId] += self.lRate * (posNegGradient - self.regB * posItemBiasValue)
-                    self.loss += self.regB * posItemBiasValue * posItemBiasValue
-                    negItemBiasValue = self.Bi[negItemId]
-                    self.Bi[negItemId]  += self.lRate * (-posNegGradient - self.regB * negItemBiasValue)
-                    self.loss += self.regB * negItemBiasValue * negItemBiasValue
+
 
                     #update user factors, item factors
                     for factorIdx in range(self.k):
@@ -157,7 +139,7 @@ class SBPR(SocialRecommender):
         if self.dao.containsUser(user) and self.dao.containsItem(item):
             u = self.dao.getUserId(user)
             i = self.dao.getItemId(item)
-            predictRating = self.Q[i].dot(self.P[u]) + self.Bi[i]
+            predictRating = self.Q[i].dot(self.P[u])
             return predictRating
         else:
             return self.dao.globalMean
@@ -166,7 +148,7 @@ class SBPR(SocialRecommender):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
             u = self.dao.getUserId(u)
-            return self.Q.dot(self.P[u])+self.Bi
+            return self.Q.dot(self.P[u])
         else:
             return [self.dao.globalMean] * len(self.dao.item)
 
