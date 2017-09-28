@@ -273,14 +273,14 @@ class CUNE_BPR(IterativeRecommender):
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
         self.IPositiveSet = defaultdict(list)
-        self.NegativeSet = defaultdict(list)
+        #self.NegativeSet = defaultdict(list)
 
         for user in self.topKSim:
             for item in self.dao.trainSet_u[user]:
                 if self.dao.trainSet_u[user][item]>=1:
                     self.PositiveSet[user][item]=1
-                else:
-                    self.NegativeSet[user].append(item)
+                # else:
+                #     self.NegativeSet[user].append(item)
 
             for friend in self.topKSim[user]:
                 for item in self.dao.trainSet_u[friend[0]]:
@@ -305,12 +305,12 @@ class CUNE_BPR(IterativeRecommender):
                         self.Q[k] -= self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*self.P[u]
 
                         item_j=''
-                        if len(self.NegativeSet[user])>0:
-                            item_j = choice(self.NegativeSet[user])
-                        else:
+                        # if len(self.NegativeSet[user])>0:
+                        #     item_j = choice(self.NegativeSet[user])
+                        # else:
+                        item_j = choice(itemList)
+                        while(self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
-                            while(self.PositiveSet[user].has_key(item_j)):
-                                item_j = choice(itemList)
                         j = self.dao.item[item_j]
                         self.P[u] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*(self.Q[k]-self.Q[j])
                         self.Q[k] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]

@@ -26,14 +26,14 @@ class BPR(IterativeRecommender):
 
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.NegativeSet = defaultdict(list)
+        #self.NegativeSet = defaultdict(list)
 
         for user in self.dao.user:
             for item in self.dao.trainSet_u[user]:
                 if self.dao.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
-                else:
-                    self.NegativeSet[user].append(item)
+                # else:
+                #     self.NegativeSet[user].append(item)
         print 'training...'
         iteration = 0
         itemList = self.dao.item.keys()
@@ -43,12 +43,12 @@ class BPR(IterativeRecommender):
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    if len(self.NegativeSet[user]) > 0:
-                        item_j = choice(self.NegativeSet[user])
-                    else:
+                    # if len(self.NegativeSet[user]) > 0:
+                    #     item_j = choice(self.NegativeSet[user])
+                    # else:
+                    item_j = choice(itemList)
+                    while (self.PositiveSet[user].has_key(item_j)):
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
-                            item_j = choice(itemList)
                     j = self.dao.item[item_j]
                     s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
                     self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
