@@ -139,10 +139,10 @@ class SBPR(SocialRecommender):
         if self.dao.containsUser(user) and self.dao.containsItem(item):
             u = self.dao.getUserId(user)
             i = self.dao.getItemId(item)
-            predictRating = self.Q[i].dot(self.P[u])
+            predictRating = qmath.sigmoid(self.Q[i].dot(self.P[u]))
             return predictRating
         else:
-            return self.dao.globalMean
+            return qmath.sigmoid(self.dao.globalMean)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
