@@ -1,7 +1,6 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 from tool import config
-from random import randint
-from random import shuffle
+from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid,cosine
@@ -172,9 +171,11 @@ class CUNE_MF(IterativeRecommender):
         self.CUNet = defaultdict(list)
 
         for user1 in self.filteredRatings:
+            s1 = set(self.filteredRatings[user1])
             for user2 in self.filteredRatings:
                 if user1 <> user2:
-                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+                    s2 = set(self.filteredRatings[user2])
+                    weight = len(s1.intersection(s2))
                     if weight > 0:
                         self.CUNet[user1]+=[user2]*weight
 
@@ -207,18 +208,18 @@ class CUNE_MF(IterativeRecommender):
         self.visited = defaultdict(dict)
         for user in self.CUNet:
             for t in range(self.walkCount):
-                currentNode = user
                 path = [user]
                 for i in range(1,self.walkLength):
-                    nextNode = self.CUNet[user][randint(0,len(self.CUNet[user]))-1]
+                    nextNode = choice(self.CUNet[user])
                     count=0
                     while(self.visited[user].has_key(nextNode)):
-                        nextNode = self.CUNet[randint(0, len(self.CUNet[user]))-1]
+                        nextNode = choice(self.CUNet[user])
                         #break infinite loop
                         count+=1
                         if count==10:
                             break
                     path.append(nextNode)
+                    self.visited[user][nextNode]=1
                 self.walks.append(path)
                 #print path
         shuffle(self.walks)

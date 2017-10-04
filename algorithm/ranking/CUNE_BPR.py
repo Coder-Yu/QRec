@@ -171,9 +171,11 @@ class CUNE_BPR(IterativeRecommender):
         self.CUNet = defaultdict(list)
 
         for user1 in self.filteredRatings:
+            s1 = set(self.filteredRatings[user1])
             for user2 in self.filteredRatings:
                 if user1 <> user2:
-                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+                    s2 = set(self.filteredRatings[user2])
+                    weight = len(s1.intersection(s2))
                     if weight > 0:
                         self.CUNet[user1]+=[user2]*weight
 
@@ -206,7 +208,6 @@ class CUNE_BPR(IterativeRecommender):
         self.visited = defaultdict(dict)
         for user in self.CUNet:
             for t in range(self.walkCount):
-                currentNode = user
                 path = [user]
                 for i in range(1,self.walkLength):
                     nextNode = choice(self.CUNet[user])
@@ -218,6 +219,7 @@ class CUNE_BPR(IterativeRecommender):
                         if count==10:
                             break
                     path.append(nextNode)
+                    self.visited[user][nextNode] = 1
                 self.walks.append(path)
                 #print path
         shuffle(self.walks)
