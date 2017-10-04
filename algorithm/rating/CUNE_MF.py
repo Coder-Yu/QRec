@@ -227,7 +227,7 @@ class CUNE_MF(IterativeRecommender):
         #Training get top-k friends
         print 'Generating user embedding...'
         iteration = 1
-        while iteration <= self.maxIter:
+        while iteration <= self.epoch:
             loss = 0
             for walk in self.walks:
                 for user in walk:
