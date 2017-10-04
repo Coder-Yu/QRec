@@ -269,7 +269,7 @@ class CUNE_MF(IterativeRecommender):
         print 'Decomposing...'
 
         iteration = 0
-        while iteration < self.epoch:
+        while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
                 user, item, rating = entry
