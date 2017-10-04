@@ -1,7 +1,7 @@
-from baseclass.IterativeRecommender import IterativeRecommender
+from baseclass.SocialRecommender import SocialRecommender
 from tool import config
 from random import randint
-from random import shuffle
+from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid,cosine
@@ -126,9 +126,9 @@ class HuffmanTree(object):
             self.coding(root.left,prefix+'0',hierarchy+1)
             self.coding(root.right,prefix+'1',hierarchy+1)
 
-class MPE_MF(IterativeRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(MPE_MF, self).__init__(conf,trainingSet,testSet,fold)
+class MPE_MF(SocialRecommender):
+    def __init__(self,conf,trainingSet=None,testSet=None,relation= None,fold='[1]'):
+        super(MPE_MF, self).__init__(conf,trainingSet,testSet,relation,fold)
         self.nonLeafVec = {}
         self.leafVec = {}
 
@@ -154,73 +154,95 @@ class MPE_MF(IterativeRecommender):
 
     def buildModel(self):
         print 'Kind Note: This method will probably take much time.'
-        #build C-U-NET
-        print 'Building collaborative user network...'
+        #build U-F-NET
+        print 'Building weighted user-friend network...'
         #filter isolated nodes and low ratings
+        #Definition of Meta-Path
+        p1 = 'UIU'
+        p2 = 'UFU'
+        p3 = 'UFIU'
+        #p4 = ''
+        mPaths = [p1,p2,p3]
 
-        self.itemNet = {}
+        self.G = np.random.rand(self.dao.trainingSize()[1], self.k)/10
+
+        self.fItems = {} #filtered item set
         for item in self.dao.trainSet_i:
             if len(self.dao.trainSet_i[item])>1:
-                self.itemNet[item] = self.dao.trainSet_i[item]
+                self.fItems[item] = self.dao.trainSet_i[item]
 
-        self.filteredRatings = defaultdict(list)
-        for item in self.itemNet:
-            for user in self.itemNet[item]:
-                if self.itemNet[item][user]>0.75:
-                    self.filteredRatings[user].append(item)
+        self.fBuying = defaultdict(list) #filtered buying set
+        for user in self.dao.trainSet_u:
+            for item in self.dao.trainSet_u[user]:
+                if self.fItems.has_key(item):
+                    self.fBuying[user].append(item)
+        # self.filteredRatings = defaultdict(list)
+        # for item in self.fItems:
+        #     for user in self.fItems[item]:
+        #         if self.fItems[item][user]>0.75:
+        #             self.filteredRatings[user].append(item)
 
-        self.CUNet = defaultdict(list)
+        self.UFNet = defaultdict(list)
 
-        for user1 in self.filteredRatings:
-            for user2 in self.filteredRatings:
-                if user1 <> user2:
-                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
-                    if weight > 0:
-                        self.CUNet[user1]+=[user2]*weight
+        for user1 in self.sao.user:
+            s1 = set(self.sao.followees[user1])
+            for user2 in self.sao.followees[user1]:
+                if user1 <> user2:                    
+                    s2 = set(self.sao.followees[user2])
+                    weight = len(s1.intersection(s2))
+                    self.UFNet[user1]+=[user2]*(weight+1)
+                    
 
 
         #build Huffman Tree First
         #get weight
-        print 'Building Huffman tree...'
-        #To accelerate the method, the weight is estimated roughly
-        nodes = {}
-        for user in self.CUNet:
-            nodes[user] = len(self.CUNet[user])
-        nodes = sorted(nodes.iteritems(),key=lambda d:d[1])
-        nodes = [HTreeNode(None,None,user[1],user[0]) for user in nodes]
-        nodeList = OrderedLinkList()
-        for node in nodes:
-            listNode = Node()
-            listNode.val = node
-            try:
-                nodeList.insert(listNode)
-            except AttributeError:
-                pass
-        self.HTree = HuffmanTree(vecLength=self.walkDim)
-        self.HTree.buildTree(nodeList)
-        print 'Coding for all users...'
-        self.HTree.coding(self.HTree.root,'',0)
+        # print 'Building Huffman tree...'
+        # #To accelerate the method, the weight is estimated roughly
+        # nodes = {}
+        # for user in self.UFNet:
+        #     nodes[user] = len(self.UFNet[user])
+        # nodes = sorted(nodes.iteritems(),key=lambda d:d[1])
+        # nodes = [HTreeNode(None,None,user[1],user[0]) for user in nodes]
+        # nodeList = OrderedLinkList()
+        # for node in nodes:
+        #     listNode = Node()
+        #     listNode.val = node
+        #     try:
+        #         nodeList.insert(listNode)
+        #     except AttributeError:
+        #         pass
+        # self.HTree = HuffmanTree(vecLength=self.walkDim)
+        # self.HTree.buildTree(nodeList)
+        # print 'Coding for all users...'
+        # self.HTree.coding(self.HTree.root,'',0)
 
 
-        print 'Generating random deep walks...'
+        print 'Generating random meta-path random walks...'
         self.walks = []
         self.visited = defaultdict(dict)
-        for user in self.CUNet:
+        for user in self.dao.user:
             for t in range(self.walkCount):
-                currentNode = user
                 path = [user]
-                for i in range(1,self.walkLength):
-                    nextNode = self.CUNet[user][randint(0,len(self.CUNet[user]))-1]
-                    count=0
-                    while(self.visited[user].has_key(nextNode)):
-                        nextNode = self.CUNet[randint(0, len(self.CUNet[user]))-1]
-                        #break infinite loop
-                        count+=1
-                        if count==10:
-                            break
-                    path.append(nextNode)
-                self.walks.append(path)
-                #print path
+                lastNode = user
+                for mp in mPaths:
+                    for i in range(1,self.walkLength/len(mp)):
+                        for tp in mp[1:]:
+                            if tp == 'I':
+                                nextNode = choice(self.fBuying[lastNode])
+                                path.append(nextNode)
+
+
+                        nextNode = self.UFNet[user][randint(0,len(self.UFNet[user]))-1]
+                        count=0
+                        while(self.visited[user].has_key(nextNode)):
+                            nextNode = self.UFNet[randint(0, len(self.UFNet[user]))-1]
+                            #break infinite loop
+                            count+=1
+                            if count==10:
+                                break
+                        path.append(nextNode)
+                    self.walks.append(path)
+                    #print path
         shuffle(self.walks)
 
         #Training get top-k friends
@@ -245,23 +267,23 @@ class MPE_MF(IterativeRecommender):
             iteration+=1
         print 'User embedding generated.'
 
-        print 'Constructing similarity matrix...'
-        self.Sim = SymmetricMatrix(len(self.CUNet))
-        for user1 in self.CUNet:
-            for user2 in self.CUNet:
-                if user1 <> user2:
-                    prefix1 = self.HTree.code[user1]
-                    vec1 = self.HTree.vector[prefix1]
-                    prefix2 = self.HTree.code[user2]
-                    vec2 = self.HTree.vector[prefix2]
-                    if self.Sim.contains(user1, user2):
-                        continue
-                    sim = cosine(vec1,vec2)
-                    self.Sim.set(user1, user2, sim)
-        self.topKSim = {}
-        for user in self.CUNet:
-            self.topKSim[user]= sorted(self.Sim[user].iteritems(),key=lambda d:d[1],reverse=True)[:self.topK]
-        print 'Similarity matrix finished.'
+        # print 'Constructing similarity matrix...'
+        # self.Sim = SymmetricMatrix(len(self.UFNet))
+        # for user1 in self.UFNet:
+        #     for user2 in self.UFNet:
+        #         if user1 <> user2:
+        #             prefix1 = self.HTree.code[user1]
+        #             vec1 = self.HTree.vector[prefix1]
+        #             prefix2 = self.HTree.code[user2]
+        #             vec2 = self.HTree.vector[prefix2]
+        #             if self.Sim.contains(user1, user2):
+        #                 continue
+        #             sim = cosine(vec1,vec2)
+        #             self.Sim.set(user1, user2, sim)
+        # self.topKSim = {}
+        # for user in self.UFNet:
+        #     self.topKSim[user]= sorted(self.Sim[user].iteritems(),key=lambda d:d[1],reverse=True)[:self.topK]
+        # print 'Similarity matrix finished.'
         #print self.topKSim
 
         #matrix decomposition
@@ -283,7 +305,7 @@ class MPE_MF(IterativeRecommender):
                 self.P[u] += self.lRate*(error*q-self.regU*p)
                 self.Q[i] += self.lRate*(error*p-self.regI*q)
 
-            for user in self.CUNet:
+            for user in self.UFNet:
 
                 u = self.dao.user[user]
                 friends = self.topKSim[user]
