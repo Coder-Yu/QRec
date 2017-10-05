@@ -143,6 +143,7 @@ class CUNE_MF(IterativeRecommender):
         self.topK = int(options['-k'])
         self.alpha = float(options['-a'])
         self.epoch = int(options['-ep'])
+        self.rate = float(options['-r'])
 
     def printAlgorConfig(self):
         super(CUNE_MF, self).printAlgorConfig()
@@ -238,8 +239,8 @@ class CUNE_MF(IterativeRecommender):
                         for i in range(1,len(code)):
                             prefix = code[0:i]
                             w = self.HTree.vector[prefix]
-                            self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
-                            self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
+                            self.HTree.vector[prefix] += self.rate*(1-sigmoid(w.dot(x)))*x
+                            self.HTree.vector[centerCode] += self.rate*(1-sigmoid(w.dot(x)))*w
                             loss += -log(sigmoid(w.dot(x)))
             print 'iteration:', iteration, 'loss:', loss
             iteration+=1
