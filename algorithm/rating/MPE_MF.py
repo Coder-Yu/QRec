@@ -408,10 +408,11 @@ class MPE_MF(SocialRecommender):
                     # vec1 = self.HTree.vector[prefix1]
                     # prefix2 = self.HTree.code[user2]
                     # vec2 = self.HTree.vector[prefix2]
-                    vec1 = self.W[self.dao.user[user1]]
-                    vec2 = self.W[self.dao.user[user2]]
                     if self.Sim.contains(user1, user2):
                         continue
+                    vec1 = self.W[self.dao.user[user1]]
+                    vec2 = self.W[self.dao.user[user2]]
+
                     sim = cosine(vec1, vec2)
                     self.Sim.set(user1, user2, sim)
         self.topKSim = {}

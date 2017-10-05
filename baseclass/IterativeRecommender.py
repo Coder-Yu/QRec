@@ -48,7 +48,7 @@ class IterativeRecommender(Recommender):
     def updateLearningRate(self,iter):
         if iter > 1:
             if abs(self.lastLoss) > abs(self.loss):
-                self.lRate *= 1.05
+                self.lRate *= 1.02
             else:
                 self.lRate *= 0.5
 
