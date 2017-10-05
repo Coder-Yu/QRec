@@ -137,6 +137,7 @@ class MPE_MF(SocialRecommender):
         self.nonLeafVec = {}
         self.leafVec = {}
 
+
     def readConfiguration(self):
         super(MPE_MF, self).readConfiguration()
         options = config.LineConfig(self.config['CUNE-MF'])
@@ -352,7 +353,7 @@ class MPE_MF(SocialRecommender):
                                 else:
                                     self.G[self.dao.item[center]] -= self.alpha * self.rate * (
                                         1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-                                loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
+                                #loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
                                 # negSamples.append(choice)
                         elif tp == 'I' and center <> entity:
                             currentVec = self.G[self.dao.item[entity]]
@@ -379,7 +380,7 @@ class MPE_MF(SocialRecommender):
                                 else:
                                     self.G[self.dao.item[center]] -= self.alpha * self.rate * (
                                         1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-                                loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
+                                #loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
             shuffle(self.walks)
             #     for walk in self.walks:
             #         for user in walk:
