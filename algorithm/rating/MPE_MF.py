@@ -168,7 +168,10 @@ class MPE_MF(SocialRecommender):
         for pair in cleanPair:
             if self.sao.followees.has_key(pair[0]):
                 del self.sao.followees[pair[0]][pair[1]]
-
+        li = self.sao.followees.keys()
+        for u in li:
+            if len(self.sao.followees[u])<=1:
+                del self.sao.followees[u]
         print 'Kind Note: This method will probably take much time.'
         #build U-F-NET
         print 'Building weighted user-friend network...'
@@ -244,38 +247,45 @@ class MPE_MF(SocialRecommender):
             for t in range(self.walkCount):
 
                 for mp in mPaths:
-                    path = []
-                    lastNode = ''
-                    nextNode = ''
-                    lastType = ''
+
+                    path = [(user,'U')]
+                    lastNode = user
+                    nextNode = user
+                    lastType = 'U'
                     for i in range(self.walkLength/len(mp)):
-                        for tp in mp:
-                            if tp == 'I':
-                                if not self.fBuying.has_key(lastNode):
-                                    path = []
-                                    break
-                                nextNode = choice(self.fBuying[lastNode])
-
-                            if tp == 'U':
-                                if lastType=='':
-                                    nextNode = user
-                                elif lastType == 'I':
-                                    nextNode = choice(self.fItems[lastNode])
-                                elif lastType == 'F':
+                        try:
+                            for tp in mp[1:]:
+                                if tp == 'I':
+                                    if not self.fBuying.has_key(lastNode):
+                                        path = []
+                                        break
                                     nextNode = choice(self.fBuying[lastNode])
-                                    while not self.dao.user.has_key(nextNode):
-                                        nextNode = choice(self.fBuying[lastNode])
 
-                            if tp == 'F':
-                                if not self.UFNet.has_key(lastNode):
-                                    path = []
-                                    break
-                                nextNode = choice(self.UFNet[lastNode])
-                                while not self.dao.user.has_key(nextNode):
+                                if tp == 'U':
+                                    # if lastType=='':
+                                    #     nextNode = user
+                                    if lastType == 'I':
+                                        nextNode = choice(self.fItems[lastNode])
+                                    elif lastType == 'F':
+                                        nextNode = choice(self.UFNet[lastNode])
+                                        while not self.dao.user.has_key(nextNode):
+                                            nextNode = choice(self.UFNet[lastNode])
+
+                                if tp == 'F':
+                                    if not self.UFNet.has_key(lastNode):
+                                        path = []
+                                        break
                                     nextNode = choice(self.UFNet[lastNode])
+                                    while not self.dao.user.has_key(nextNode):
+                                        nextNode = choice(self.UFNet[lastNode])
 
-                            path.append(nextNode)
-                            lastNode = nextNode
+                                path.append((nextNode,tp))
+                                lastNode = nextNode
+                                lastType = tp
+
+                        except (KeyError,IndexError):
+                            path = []
+                            break
 
 
                         # nextNode = choice(self.UFNet[user])
@@ -289,31 +299,33 @@ class MPE_MF(SocialRecommender):
                         # path.append(nextNode)
                     if path:
                         self.walks.append(path)
-                        print path
+                        #print path
+                        #if mp == 'UFIU':
+                            #pass
         shuffle(self.walks)
 
         #Training get top-k friends
-        print 'Generating user embedding...'
-        iteration = 1
-        while iteration <= self.epoch:
-            loss = 0
-            for walk in self.walks:
-                for user in walk:
-                    pass
-                    # centerUser = walk[len(walk)/2]
-                    # if user <> centerUser:
-                    #     code = self.HTree.code[user]
-                    #     centerCode = self.HTree.code[centerUser]
-                    #     x = self.HTree.vector[centerCode]
-                    #     for i in range(1,len(code)):
-                    #         prefix = code[0:i]
-                    #         w = self.HTree.vector[prefix]
-                    #         self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
-                    #         self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
-                    #         loss += -log(sigmoid(w.dot(x)))
-            print 'iteration:', iteration, 'loss:', loss
-            iteration+=1
-        print 'User embedding generated.'
+        # print 'Generating user embedding...'
+        # iteration = 1
+        # while iteration <= self.epoch:
+        #     loss = 0
+        #     for walk in self.walks:
+        #         for user in walk:
+        #             pass
+        #             # centerUser = walk[len(walk)/2]
+        #             # if user <> centerUser:
+        #             #     code = self.HTree.code[user]
+        #             #     centerCode = self.HTree.code[centerUser]
+        #             #     x = self.HTree.vector[centerCode]
+        #             #     for i in range(1,len(code)):
+        #             #         prefix = code[0:i]
+        #             #         w = self.HTree.vector[prefix]
+        #             #         self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
+        #             #         self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
+        #             #         loss += -log(sigmoid(w.dot(x)))
+        #     print 'iteration:', iteration, 'loss:', loss
+        #     iteration+=1
+        # print 'User embedding generated.'
 
         # print 'Constructing similarity matrix...'
         # self.Sim = SymmetricMatrix(len(self.UFNet))
@@ -352,6 +364,71 @@ class MPE_MF(SocialRecommender):
                 #update latent vectors
                 self.P[u] += self.lRate*(error*q-self.regU*p)
                 self.Q[i] += self.lRate*(error*p-self.regI*q)
+
+            userList = self.dao.user.keys()
+            itemList = self.dao.item.keys()
+            for walk in self.walks:
+                for i,node in enumerate(walk):
+                    neighbors = walk[max(0,i-self.winSize/2):min(len(walk)-1,i+self.winSize/2)]
+                    center,ctp = walk[i]
+                    centerVec =''
+                    if ctp == 'U' or ctp =='F':
+                        centerVec = self.P[self.dao.user[center]]
+                    else:
+                        centerVec = self.G[self.dao.item[center]]
+                    for entity, tp in neighbors:
+                        #negSamples = []
+                        currentVec = ''
+                        if tp == 'U' or tp =='F' and center<>entity:
+                            currentVec = self.P[self.dao.user[entity]]
+                            self.P[self.dao.user[entity]]+=self.alpha*self.lRate*(1-sigmoid(currentVec.dot(centerVec)))*centerVec
+                            if ctp == 'U' or ctp == 'F':
+                                self.P[self.dao.user[center]] += self.alpha*self.lRate * (
+                                1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            else:
+                                self.G[self.dao.item[center]] += self.alpha*self.lRate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            self.loss += -self.alpha*log(sigmoid(currentVec.dot(centerVec)))
+                            for i in range(5):
+                                sample = choice(userList)
+                                while sample == entity:
+                                    sample = choice(userList)
+                                sampleVec = self.P[self.dao.user[sample]]
+                                self.P[self.dao.user[sample]]+=self.alpha*self.lRate*(1-sigmoid(sampleVec.dot(centerVec)))*centerVec
+                                if ctp == 'U' or ctp =='F':
+                                    self.P[self.dao.user[center]]+=self.alpha*self.lRate*(1-sigmoid(sampleVec.dot(centerVec)))*sampleVec
+                                else:
+                                    self.G[self.dao.item[center]] += self.alpha*self.lRate * (
+                                    1 - sigmoid(sampleVec.dot(centerVec))) * sampleVec
+                                #self.loss += 1-sigmoid(-sampleVec.dot(centerVec))
+                                #negSamples.append(choice)
+                        elif tp == 'I' and center<>entity:
+                            currentVec = self.G[self.dao.item[entity]]
+                            self.G[self.dao.user[entity]] += self.alpha*self.lRate * (
+                            1 - sigmoid(currentVec.dot(centerVec))) * centerVec
+                            if ctp == 'U' or ctp == 'F':
+                                self.P[self.dao.user[center]] += self.alpha*self.lRate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            else:
+                                self.G[self.dao.item[center]] += self.alpha*self.lRate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            self.loss += -self.alpha*sigmoid(currentVec.dot(centerVec))
+                            for i in range(5):
+                                sample = choice(itemList)
+                                while sample == entity:
+                                    sample = choice(itemList)
+                                #negSamples.append(choice)
+                                sampleVec = self.G[self.dao.item[sample]]
+                                self.G[self.dao.item[sample]] += self.lRate * (
+                                1 - sigmoid(currentVec.dot(centerVec))) * centerVec
+                                if ctp == 'U' or ctp =='F':
+                                    self.P[self.dao.user[center]]+=self.alpha*self.lRate*(1-sigmoid(sampleVec.dot(centerVec)))*sampleVec
+                                else:
+                                    self.G[self.dao.item[center]] += self.alpha*self.lRate * (
+                                    1 - sigmoid(sampleVec.dot(centerVec))) * sampleVec
+                                #self.loss += log(1-sigmoid(-sampleVec.dot(centerVec)))
+
+
 
             # for user in self.UFNet:
             #
