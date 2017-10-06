@@ -35,10 +35,10 @@ def cosine_sp(x1,x2):
 
 def cosine(x1,x2):
     #find common ratings
-    new_x1, new_x2 = common(x1,x2)
+    #new_x1, new_x2 = common(x1,x2)
     #compute the cosine similarity between two vectors
-    sum = new_x1.dot(new_x2)
-    denom = sqrt(new_x1.dot(new_x1)*new_x2.dot(new_x2))
+    sum = x1.dot(x2)
+    denom = sqrt(x1.dot(x1)*x2.dot(x2))
     try:
         return float(sum)/denom
     except ZeroDivisionError:
@@ -77,15 +77,15 @@ def euclidean(x1,x2):
 
 def pearson(x1,x2):
     #find common ratings
-    new_x1, new_x2 = common(x1, x2)
+    #new_x1, new_x2 = common(x1, x2)
     #compute the pearson similarity between two vectors
-    ind1 = new_x1 > 0
-    ind2 = new_x2 > 0
+    #ind1 = new_x1 > 0
+    #ind2 = new_x2 > 0
     try:
-        mean_x1 = float(new_x1.sum())/ind1.sum()
-        mean_x2 = float(new_x2.sum())/ind2.sum()
-        new_x1 = new_x1 - mean_x1
-        new_x2 = new_x2 - mean_x2
+        mean_x1 = float(x1.sum())/len(x1)
+        mean_x2 = float(x2.sum())/len(x2)
+        new_x1 = x1 - mean_x1
+        new_x2 = x2 - mean_x2
         sum = new_x1.dot(new_x2)
         denom = sqrt((new_x1.dot(new_x1))*(new_x2.dot(new_x2)))
         return float(sum) / denom
