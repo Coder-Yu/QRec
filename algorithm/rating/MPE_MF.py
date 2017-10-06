@@ -407,6 +407,7 @@ class MPE_MF(SocialRecommender):
             i+=1
             if i%200==0:
                 print i,'/',len(self.fBuying)
+            vec1 = self.W[self.dao.user[user1]]
             for user2 in self.fBuying:
                 if user1 <> user2:
                     # prefix1 = self.HTree.code[user1]
@@ -415,9 +416,7 @@ class MPE_MF(SocialRecommender):
                     # vec2 = self.HTree.vector[prefix2]
                     if self.Sim.contains(user1, user2):
                         continue
-                    vec1 = self.W[self.dao.user[user1]]
                     vec2 = self.W[self.dao.user[user2]]
-
                     sim = cosine(vec1, vec2)
                     self.Sim.set(user1, user2, sim)
         self.topKSim = {}
