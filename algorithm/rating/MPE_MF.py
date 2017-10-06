@@ -401,8 +401,12 @@ class MPE_MF(SocialRecommender):
         print 'User embedding generated.'
 
         print 'Constructing similarity matrix...'
+        i = 0
         self.Sim = SymmetricMatrix(len(self.UFNet))
         for user1 in self.fBuying:
+            i+=1
+            if i%200==0:
+                print i,'/',len(self.fBuying)
             for user2 in self.fBuying:
                 if user1 <> user2:
                     # prefix1 = self.HTree.code[user1]
@@ -417,7 +421,11 @@ class MPE_MF(SocialRecommender):
                     sim = cosine(vec1, vec2)
                     self.Sim.set(user1, user2, sim)
         self.topKSim = {}
+        i = 0
         for user in self.fBuying:
+            i += 1
+            if i % 200 == 0:
+                print 'sorting:',i, '/', len(self.fBuying)
             self.topKSim[user] = sorted(self.Sim[user].iteritems(), key=lambda d: d[1], reverse=True)[:self.topK]
         print 'Similarity matrix finished.'
         #print self.topKSim
