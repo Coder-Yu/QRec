@@ -25,4 +25,19 @@ class PMF(IterativeRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
-
+        import matplotlib.pyplot as plt
+        x = []
+        y = []
+        for user in self.dao.user:
+            x.append(self.P[self.dao.user[user]][2])
+            y.append(self.P[self.dao.user[user]][4])
+        print len(x)
+        plt.scatter(x, y, marker='*', color='red')
+        x = []
+        y = []
+        for item in self.dao.item:
+            x.append(self.Q[self.dao.item[item]][2])
+            y.append(self.Q[self.dao.item[item]][4])
+        print len(x)
+        plt.scatter(x, y, marker='o', color='green')
+        plt.show()
