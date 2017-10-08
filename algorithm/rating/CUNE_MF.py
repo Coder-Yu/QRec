@@ -270,7 +270,7 @@ class CUNE_MF(IterativeRecommender):
         import pickle
         from time import localtime, time, strftime
         recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        similarity = open('CUNE-sim'+self.foldInfo+'-'+recordTime+'.pkl', 'wb')
+        similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
         #vectors = open('vec'+recordTime+'.pkl', 'wb')
         #Pickle dictionary using protocol 0.
 
