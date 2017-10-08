@@ -267,7 +267,17 @@ class CUNE_MF(IterativeRecommender):
 
         print 'Similarity matrix finished.'
         #print self.topKSim
+        import pickle
+        from time import localtime, time, strftime
+        recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        similarity = open('CUNE-sim'+self.foldInfo+'-'+recordTime+'.pkl', 'wb')
+        #vectors = open('vec'+recordTime+'.pkl', 'wb')
+        #Pickle dictionary using protocol 0.
 
+        pickle.dump(self.topKSim, similarity)
+        #pickle.dump((self.W,self.G),vectors)
+        similarity.close()
+        #vectors.close()
         #matrix decomposition
         print 'Decomposing...'
 
