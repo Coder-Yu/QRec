@@ -1,7 +1,6 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 from tool import config
-from random import randint
-from random import shuffle
+from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid,cosine
@@ -143,7 +142,6 @@ class CUNE_MF(IterativeRecommender):
         self.topK = int(options['-k'])
         self.alpha = float(options['-a'])
         self.epoch = int(options['-ep'])
-        self.rate = float(options['-r'])
 
     def printAlgorConfig(self):
         super(CUNE_MF, self).printAlgorConfig()
@@ -173,9 +171,11 @@ class CUNE_MF(IterativeRecommender):
         self.CUNet = defaultdict(list)
 
         for user1 in self.filteredRatings:
+            s1 = set(self.filteredRatings[user1])
             for user2 in self.filteredRatings:
                 if user1 <> user2:
-                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+                    s2 = set(self.filteredRatings[user2])
+                    weight = len(s1.intersection(s2))
                     if weight > 0:
                         self.CUNet[user1]+=[user2]*weight
 
@@ -208,18 +208,18 @@ class CUNE_MF(IterativeRecommender):
         self.visited = defaultdict(dict)
         for user in self.CUNet:
             for t in range(self.walkCount):
-                currentNode = user
                 path = [user]
                 for i in range(1,self.walkLength):
-                    nextNode = self.CUNet[user][randint(0,len(self.CUNet[user]))-1]
+                    nextNode = choice(self.CUNet[user])
                     count=0
                     while(self.visited[user].has_key(nextNode)):
-                        nextNode = self.CUNet[randint(0, len(self.CUNet[user]))-1]
+                        nextNode = choice(self.CUNet[user])
                         #break infinite loop
                         count+=1
                         if count==10:
                             break
                     path.append(nextNode)
+                    self.visited[user][nextNode]=1
                 self.walks.append(path)
                 #print path
         shuffle(self.walks)
@@ -239,8 +239,8 @@ class CUNE_MF(IterativeRecommender):
                         for i in range(1,len(code)):
                             prefix = code[0:i]
                             w = self.HTree.vector[prefix]
-                            self.HTree.vector[prefix] += self.rate*(1-sigmoid(w.dot(x)))*x
-                            self.HTree.vector[centerCode] += self.rate*(1-sigmoid(w.dot(x)))*w
+                            self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
+                            self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
                             loss += -log(sigmoid(w.dot(x)))
             print 'iteration:', iteration, 'loss:', loss
             iteration+=1
@@ -248,20 +248,23 @@ class CUNE_MF(IterativeRecommender):
 
         print 'Constructing similarity matrix...'
         self.Sim = SymmetricMatrix(len(self.CUNet))
+        self.topKSim = {}
+        i = 0
         for user1 in self.CUNet:
+            prefix1 = self.HTree.code[user1]
+            vec1 = self.HTree.vector[prefix1]
+            sims = []
             for user2 in self.CUNet:
                 if user1 <> user2:
-                    prefix1 = self.HTree.code[user1]
-                    vec1 = self.HTree.vector[prefix1]
                     prefix2 = self.HTree.code[user2]
                     vec2 = self.HTree.vector[prefix2]
-                    if self.Sim.contains(user1, user2):
-                        continue
                     sim = cosine(vec1,vec2)
-                    self.Sim.set(user1, user2, sim)
-        self.topKSim = {}
-        for user in self.CUNet:
-            self.topKSim[user]= sorted(self.Sim[user].iteritems(),key=lambda d:d[1],reverse=True)[:self.topK]
+                    sims.append((user2,sim))
+            self.topKSim[user1] = sorted(sims,key=lambda d:d[1],reverse=True)[:self.topK]
+            i+=1
+            if i%200==0:
+                print 'progress:',i,'/',len(self.CUNet)
+
         print 'Similarity matrix finished.'
         #print self.topKSim
 
