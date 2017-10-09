@@ -48,7 +48,7 @@ class IterativeRecommender(Recommender):
     def updateLearningRate(self,iter):
         if iter > 1:
             if abs(self.lastLoss) > abs(self.loss):
-                self.lRate -= (self.lRate)/(100.0)
+                self.lRate -= (self.lRate)/(500.0)
             else:
                 self.lRate *= 0.5
 
@@ -118,7 +118,11 @@ class IterativeRecommender(Recommender):
         recList = {}
         userN = {}
         userCount = len(self.dao.testSet_u)
+        testedUser = []
         for i, user in enumerate(self.dao.testSet_u):
+            if i>500:
+                break
+            testedUser.append(user)
             itemSet = {}
             line = user + ':'
             predictedItems = self.predictForRanking(user)
@@ -209,7 +213,10 @@ class IterativeRecommender(Recommender):
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         if self.ranking.contains('-topN'):
-            self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, N)
+            testSet_u = {}
+            for user in testedUser:
+                testSet_u[user] = self.dao.testSet_u[user]
+            self.measure = Measure.rankingMeasure(testSet_u, recList, N)
         # elif self.ranking.contains('-threshold'):
         #     origin = self.dao.testSet_u.copy()
         #     for user in origin:
