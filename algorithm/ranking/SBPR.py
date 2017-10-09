@@ -13,7 +13,6 @@ class SBPR(SocialRecommender):
 
     def readConfiguration(self):
         super(SBPR, self).readConfiguration()
-        options = config.LineConfig(self.config['SBPR'])
 
     def initModel(self):
         super(SBPR, self).initModel()
