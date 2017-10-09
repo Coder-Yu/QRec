@@ -297,33 +297,53 @@ class CUNE_BPR(IterativeRecommender):
             for user in self.PositiveSet:
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
-                    if len(self.IPositiveSet[user])>0:
+                    if len(self.IPositiveSet[user]) > 0:
                         item_k = choice(self.IPositiveSet[user])
                         i = self.dao.item[item]
                         k = self.dao.item[item_k]
-                        self.P[u] += self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*(self.Q[i]-self.Q[k])
-                        self.Q[i] += self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*self.P[u]
-                        self.Q[k] -= self.lRate*(1-sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k])))*self.P[u]
+                        self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
+                        self.Q[i] - self.Q[k])
+                        self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
+                                     self.P[u]
+                        self.Q[k] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
+                                     self.P[u]
 
-                        item_j=''
+                        item_j = ''
                         # if len(self.NegativeSet[user])>0:
                         #     item_j = choice(self.NegativeSet[user])
                         # else:
                         item_j = choice(itemList)
-                        while(self.PositiveSet[user].has_key(item_j)):
+                        while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
                         j = self.dao.item[item_j]
-                        self.P[u] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*(self.Q[k]-self.Q[j])
-                        self.Q[k] += (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]
-                        self.Q[j] -= (1/self.s)*self.lRate*(1-sigmoid((1/self.s)*(self.P[u].dot(self.Q[k])-self.P[u].dot(self.Q[j]))))*self.P[u]
+                        self.P[u] += (1 / self.s) * self.lRate * (
+                        1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
+                                     self.Q[k] - self.Q[j])
+                        self.Q[k] += (1 / self.s) * self.lRate * (
+                        1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
+                        self.Q[j] -= (1 / self.s) * self.lRate * (
+                        1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
 
                         self.P[u] -= self.lRate * self.regU * self.P[u]
                         self.Q[i] -= self.lRate * self.regI * self.Q[i]
                         self.Q[j] -= self.lRate * self.regI * self.Q[j]
                         self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i])-self.P[u].dot(self.Q[k]))) - \
-                                     log(sigmoid((1/self.s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))))
+                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
+                                     log(sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
+                    else:
+                        item_j = choice(itemList)
+                        while (self.PositiveSet[user].has_key(item_j)):
+                            item_j = choice(itemList)
+                        j = self.dao.item[item_j]
+                        self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
+                            self.Q[i] - self.Q[j])
+                        self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
+                                     self.P[u]
+                        self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
+                                     self.P[u]
+
+                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
 
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
