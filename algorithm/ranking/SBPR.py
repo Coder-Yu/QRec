@@ -86,7 +86,7 @@ class SBPR(SocialRecommender):
                         #     item_j = choice(self.NegativeSet[user])
                         # else:
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                        while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
                             item_j = choice(itemList)
                         j = self.dao.item[item_j]
                         self.P[u] +=  self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (self.Q[k] - self.Q[j])

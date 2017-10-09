@@ -37,7 +37,7 @@ class UserKNN(Recommender):
         for n in range(userCount):
             #if user n has rating on item i
             similarUser = topUsers[n][0]
-            if self.dao.rating(similarUser,i) != 0:
+            if self.dao.rating(similarUser,i) != -1:
                 similarity = topUsers[n][1]
                 rating = self.dao.rating(similarUser,i)
                 sum += similarity*(rating-self.dao.userMeans[similarUser])
