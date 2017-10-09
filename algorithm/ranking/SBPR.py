@@ -98,7 +98,7 @@ class SBPR(SocialRecommender):
                         self.Q[j] -= self.lRate * self.regI * self.Q[j]
                         self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
+                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k])(Suk+1))) - \
                                      log(sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))
                     else:
                         item_j = choice(itemList)
