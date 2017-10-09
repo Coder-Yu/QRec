@@ -1,15 +1,15 @@
 from baseclass.SocialRecommender import SocialRecommender
-import math
+from math import log
 import numpy as np
 from tool import config
-from tool import qmath
+from tool.qmath import sigmoid
 from random import choice
 from collections import defaultdict
 class SBPR(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
         super(SBPR, self).__init__(conf,trainingSet,testSet,relation,fold)
         self.userSocialItemsSetList = defaultdict(list)
-        self.k = int(self.config['num.factors'])
+
 
     def readConfiguration(self):
         super(SBPR, self).readConfiguration()
@@ -40,95 +40,81 @@ class SBPR(SocialRecommender):
 
 
     def buildModel(self):
+        print 'Preparing item sets...'
+        self.PositiveSet = defaultdict(dict)
+        self.IPositiveSet = defaultdict(dict)
+        # self.NegativeSet = defaultdict(list)
+
+        for user in self.dao.user:
+            for item in self.dao.trainSet_u[user]:
+                if self.dao.trainSet_u[user][item] >= 1:
+                    self.PositiveSet[user][item] = 1
+                    # else:
+                    #     self.NegativeSet[user].append(item)
+            if self.sao.user.has_key(user):
+                for friend in self.sao.getFollowees(user):
+                    if self.dao.user.has_key(friend):
+                        for item in self.dao.trainSet_u[friend[0]]:
+                            if not self.PositiveSet[user].has_key(item):
+                                if not self.IPositiveSet[user].has_key(item):
+                                    self.IPositiveSet[user][item] = 1
+                                else:
+                                    self.IPositiveSet[user][item] += 1
+
+        print 'Training...'
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for sample in range(len(self.dao.user)):
-                while True:
-                    userIdx = choice(self.dao.user.keys())
-                    ratedItems = self.dao.trainSet_u[userIdx]
-                    if len(ratedItems) != 0:
-                        break
+            itemList = self.dao.item.keys()
+            for user in self.PositiveSet:
+                u = self.dao.user[user]
+                for item in self.PositiveSet[user]:
+                    i = self.dao.item[item]
+                    kItems = self.IPositiveSet[user].keys()
+                    if len(self.IPositiveSet[user]) > 0:
+                        item_k = choice(kItems)
+                        k = self.dao.item[item_k]
+                        Suk = self.IPositiveSet[user][item_k]
+                        self.P[u] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * (
+                            self.Q[i] - self.Q[k])
+                        self.Q[i] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * \
+                                     self.P[u]
+                        self.Q[k] -= (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * self.P[u]
 
-                #positive item index
-                posItemIdx = choice(ratedItems.keys())
-                posPredictRating = self.predict(userIdx, posItemIdx)
+                        item_j = ''
+                        # if len(self.NegativeSet[user])>0:
+                        #     item_j = choice(self.NegativeSet[user])
+                        # else:
+                        item_j = choice(itemList)
+                        while (self.PositiveSet[user].has_key(item_j)):
+                            item_j = choice(itemList)
+                        j = self.dao.item[item_j]
+                        self.P[u] +=  self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (self.Q[k] - self.Q[j])
+                        self.Q[k] += self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
+                        self.Q[j] -= self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
 
-                # social Items List
-                socialItemsList = self.userSocialItemsSetList[userIdx]
+                        self.P[u] -= self.lRate * self.regU * self.P[u]
+                        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+                        self.Q[j] -= self.lRate * self.regI * self.Q[j]
+                        self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                # negative item index
-                while True:
-                    negItemIdx = choice(self.dao.item.keys())
-                    if  not(negItemIdx in ratedItems.keys()) and not(negItemIdx in socialItemsList):
-                        break
-                negPredictRating = self.predict(userIdx, negItemIdx)
+                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k])/(Suk+1))) - \
+                                     log(sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))
+                    else:
+                        item_j = choice(itemList)
+                        while (self.PositiveSet[user].has_key(item_j)):
+                            item_j = choice(itemList)
+                        j = self.dao.item[item_j]
+                        self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
+                            self.Q[i] - self.Q[j])
+                        self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
+                                     self.P[u]
+                        self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
+                                     self.P[u]
 
-                userId = self.dao.getUserId(userIdx)
-                posItemId = self.dao.getItemId(posItemIdx)
-                negItemId = self.dao.getItemId(negItemIdx)
+                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
-
-                if len(socialItemsList) > 0:
-                    socialItemIdx = choice(socialItemsList)
-                    socialItemId = self.dao.getItemId(socialItemIdx)
-                    socialPredictRating = self.predict(userIdx, socialItemIdx)
-
-
-                    trustedUsers = self.sao.getFollowees(userId)
-
-                    socialWeight = 0
-
-
-                    for trustedUserIdx in trustedUsers:
-                        socialRating = self.dao.rating(trustedUserIdx,socialItemIdx)
-                        if socialRating > 0:
-                            socialWeight += 1
-
-                    posSocialDiffValue = (posPredictRating - socialPredictRating) / (1 + socialWeight)
-                    socialNegDiffValue = socialPredictRating - negPredictRating
-                    error = -math.log(qmath.sigmoid(posSocialDiffValue)) - math.log(qmath.sigmoid(socialNegDiffValue))
-                    self.loss += error
-
-                    posSocialGradient = qmath.sigmoid(-posSocialDiffValue)
-                    socialNegGradient = qmath.sigmoid(-socialNegDiffValue)
-
-
-                    # update P, Q
-                    for factorIdx in range(self.k):
-                        userFactorValue = self.P[userId][factorIdx]
-                        posItemFactorValue = self.Q[posItemId][factorIdx]
-                        socialItemFactorValue = self.Q[socialItemId][factorIdx]
-                        negItemFactorValue = self.Q[negItemId][factorIdx]
-
-
-                        delta_puf = posSocialGradient * (posItemFactorValue - socialItemFactorValue) / (1 + socialWeight)+ socialNegGradient * (socialItemFactorValue - negItemFactorValue)
-                        self.P[userId][factorIdx] += self.lRate * (delta_puf - self.regU * userFactorValue)
-                        self.Q[posItemId][factorIdx] += self.lRate * (posSocialGradient * userFactorValue / (1 + socialWeight) - self.regI  * posItemFactorValue)
-                        delta_qkf = posSocialGradient * (-userFactorValue / (1 + socialWeight)) + socialNegGradient * userFactorValue
-                        self.Q[socialItemId][factorIdx] += self.lRate * (delta_qkf - self.regI  * socialItemFactorValue)
-                        self.Q[negItemId][factorIdx] += self.lRate * (socialNegGradient * (-userFactorValue) -self.regI  * negItemFactorValue)
-                        self.loss += self.regU * userFactorValue * userFactorValue + self.regI  * posItemFactorValue * posItemFactorValue + self.regI  * negItemFactorValue * negItemFactorValue + self.regI  * socialItemFactorValue * socialItemFactorValue
-                else:
-                    #if no social neighbors, the same as BPR
-
-                    posNegDiffValue = posPredictRating - negPredictRating
-                    self.loss +=  -math.log(qmath.sigmoid(posNegDiffValue))
-                    posNegGradient = qmath.sigmoid(-posNegDiffValue)
-
-
-
-                    #update user factors, item factors
-                    for factorIdx in range(self.k):
-                        userFactorValue = self.P[self.dao.getUserId(userIdx)][factorIdx]
-                        posItemFactorValue = self.Q[self.dao.getItemId(posItemIdx)][factorIdx]
-                        negItemFactorValue = self.Q[self.dao.getItemId(negItemIdx)][factorIdx]
-                        self.P[userId][factorIdx] += self.lRate * (posNegGradient * (posItemFactorValue - negItemFactorValue) - self.regU * userFactorValue)
-                        self.Q[posItemId][factorIdx] += self.lRate * (posNegGradient * userFactorValue - self.regI  * posItemFactorValue)
-                        self.Q[negItemId][factorIdx] +=  self.lRate * (posNegGradient * (-userFactorValue) - self.regI  * negItemFactorValue)
-                        self.loss += self.regU * userFactorValue * userFactorValue + self.regI * posItemFactorValue * posItemFactorValue +  self.regI  * negItemFactorValue * negItemFactorValue
-
-
+            self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
@@ -139,10 +125,10 @@ class SBPR(SocialRecommender):
         if self.dao.containsUser(user) and self.dao.containsItem(item):
             u = self.dao.getUserId(user)
             i = self.dao.getItemId(item)
-            predictRating = qmath.sigmoid(self.Q[i].dot(self.P[u]))
+            predictRating = sigmoid(self.Q[i].dot(self.P[u]))
             return predictRating
         else:
-            return qmath.sigmoid(self.dao.globalMean)
+            return sigmoid(self.dao.globalMean)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
