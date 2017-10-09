@@ -54,7 +54,7 @@ class SBPR(SocialRecommender):
             if self.sao.user.has_key(user):
                 for friend in self.sao.getFollowees(user):
                     if self.dao.user.has_key(friend):
-                        for item in self.dao.trainSet_u[friend[0]]:
+                        for item in self.dao.trainSet_u[friend]:
                             if not self.PositiveSet[user].has_key(item):
                                 if not self.IPositiveSet[user].has_key(item):
                                     self.IPositiveSet[user][item] = 1
