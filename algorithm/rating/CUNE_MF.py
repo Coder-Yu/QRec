@@ -273,7 +273,9 @@ class CUNE_MF(IterativeRecommender):
         similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
         #vectors = open('vec'+recordTime+'.pkl', 'wb')
         #Pickle dictionary using protocol 0.
-
+        # matrix decomposition
+        # pkl_file = open('MPE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
+        # self.topKSim = pickle.load(pkl_file)
         pickle.dump(self.topKSim, similarity)
         #pickle.dump((self.W,self.G),vectors)
         similarity.close()

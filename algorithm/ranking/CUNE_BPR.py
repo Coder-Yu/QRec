@@ -251,24 +251,38 @@ class CUNE_BPR(IterativeRecommender):
             iteration+=1
         print 'User embedding generated.'
 
-        print 'Constructing similarity matrix...'
-        self.Sim = SymmetricMatrix(len(self.CUNet))
+        self.topKSim = {}
+        i = 0
         for user1 in self.CUNet:
+            prefix1 = self.HTree.code[user1]
+            vec1 = self.HTree.vector[prefix1]
+            sims = []
             for user2 in self.CUNet:
                 if user1 <> user2:
-                    prefix1 = self.HTree.code[user1]
-                    vec1 = self.HTree.vector[prefix1]
                     prefix2 = self.HTree.code[user2]
                     vec2 = self.HTree.vector[prefix2]
-                    if self.Sim.contains(user1, user2):
-                        continue
                     sim = cosine(vec1,vec2)
-                    self.Sim.set(user1, user2, sim)
-        self.topKSim = {}
-        for user in self.CUNet:
-            self.topKSim[user]= sorted(self.Sim[user].iteritems(),key=lambda d:d[1],reverse=True)[:self.topK]
+                    sims.append((user2,sim))
+            self.topKSim[user1] = sorted(sims,key=lambda d:d[1],reverse=True)[:self.topK]
+            i+=1
+            if i%200==0:
+                print 'progress:',i,'/',len(self.CUNet)
+
         print 'Similarity matrix finished.'
         #print self.topKSim
+        import pickle
+        from time import localtime, time, strftime
+        recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
+        #vectors = open('vec'+recordTime+'.pkl', 'wb')
+        #Pickle dictionary using protocol 0.
+
+        pickle.dump(self.topKSim, similarity)
+        #pickle.dump((self.W,self.G),vectors)
+        similarity.close()
+        #vectors.close()
+        #matrix decomposition
+        print 'Decomposing...'
 
         #prepare Pu set, IPu set, and Nu set
         print 'Preparing item sets...'
