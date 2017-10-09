@@ -14,7 +14,6 @@ class SBPR(SocialRecommender):
     def readConfiguration(self):
         super(SBPR, self).readConfiguration()
         options = config.LineConfig(self.config['SBPR'])
-        self.s = float(options['-s'])
 
     def initModel(self):
         super(SBPR, self).initModel()
@@ -44,7 +43,7 @@ class SBPR(SocialRecommender):
     def buildModel(self):
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.IPositiveSet = defaultdict(list)
+        self.IPositiveSet = defaultdict(dict)
         # self.NegativeSet = defaultdict(list)
 
         for user in self.dao.user:
@@ -58,7 +57,10 @@ class SBPR(SocialRecommender):
                     if self.dao.user.has_key(friend):
                         for item in self.dao.trainSet_u[friend[0]]:
                             if not self.PositiveSet[user].has_key(item):
-                                self.IPositiveSet[user].append(item)
+                                if not self.IPositiveSet[user].has_key(item):
+                                    self.IPositiveSet[user][item] = 1
+                                else:
+                                    self.IPositiveSet[user][item] += 1
 
         print 'Training...'
         iteration = 0
@@ -69,14 +71,16 @@ class SBPR(SocialRecommender):
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
+                    kItems = self.IPositiveSet[user].keys()
                     if len(self.IPositiveSet[user]) > 0:
-                        item_k = choice(self.IPositiveSet[user])
+                        item_k = choice(kItems)
                         k = self.dao.item[item_k]
-                        self.P[u] += (1 / (self.s+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (self.s+1))) * (
+                        Suk = self.IPositiveSet[user][item_k]
+                        self.P[u] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * (
                             self.Q[i] - self.Q[k])
-                        self.Q[i] += (1 / (self.s+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (self.s+1))) * \
+                        self.Q[i] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * \
                                      self.P[u]
-                        self.Q[k] -= (1 / (self.s+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (self.s+1))) * self.P[u]
+                        self.Q[k] -= (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * self.P[u]
 
                         item_j = ''
                         # if len(self.NegativeSet[user])>0:
