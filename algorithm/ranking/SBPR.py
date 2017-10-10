@@ -11,34 +11,6 @@ class SBPR(SocialRecommender):
         self.userSocialItemsSetList = defaultdict(list)
 
 
-    def readConfiguration(self):
-        super(SBPR, self).readConfiguration()
-
-    def initModel(self):
-        super(SBPR, self).initModel()
-
-
-        # find items rated by trusted neighbors only
-        for userIdx in self.dao.user:
-            userRatedItems = self.dao.trainSet_u[userIdx]
-            if userRatedItems == None:
-                continue   #user  userIdx have not rated items
-            trustedUsers = self.sao.getFollowees(self.dao.getUserId(userIdx))
-            items = []
-            for trustedUser in trustedUsers:
-                trustedRatedItems = self.dao.trainSet_u[trustedUser]
-                for trustedRatedItemIdx in trustedRatedItems.keys():
-                    if not (trustedRatedItemIdx in userRatedItems.keys())and not(trustedRatedItemIdx in items):
-                        items.append(trustedRatedItemIdx)
-            self.userSocialItemsSetList[userIdx] = items
-
-
-    def printAlgorConfig(self):
-        super(SBPR, self).printAlgorConfig()
-        print 'Specified Arguments of', self.config['recommender'] + ':'
-        print '=' * 80
-
-
     def buildModel(self):
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
