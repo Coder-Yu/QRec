@@ -104,6 +104,9 @@ if __name__ == '__main__':
     elif order == 'b2':
         conf = Config('../config/ItemMean.conf')
 
+    elif order == 'b3':
+        conf = Config('../config/MostPopular.conf')
+
     else:
         print 'Error num!'
         exit(-1)
