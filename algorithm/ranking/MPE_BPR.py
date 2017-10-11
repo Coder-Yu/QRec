@@ -284,7 +284,7 @@ class MPE_BPR(SocialRecommender):
         # vectors.close()
 
         # matrix decomposition
-        pkl_file = open('MPE-Ciao-sim'+self.foldInfo+'.pkl', 'rb')
+        pkl_file = open('MPE-Epinions-sim'+self.foldInfo+'.pkl', 'rb')
 
         self.topKSim = pickle.load(pkl_file)
         print 'Decomposing...'
@@ -303,7 +303,7 @@ class MPE_BPR(SocialRecommender):
                     #     self.NegativeSet[user].append(item)
 
 
-            for friend in self.topKSim[user]:
+            for friend in self.topKSim[user][:self.topK]:
                 if self.dao.user.has_key(friend[0]):
                     for item in self.dao.trainSet_u[friend[0]]:
                         if not self.PositiveSet[user].has_key(item):
