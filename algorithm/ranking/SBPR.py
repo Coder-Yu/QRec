@@ -12,6 +12,7 @@ class SBPR(SocialRecommender):
 
 
     def buildModel(self):
+        self.b = np.random.random(self.dao.trainingSize()[1])
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
         self.IPositiveSet = defaultdict(dict)
@@ -47,12 +48,13 @@ class SBPR(SocialRecommender):
                         item_k = choice(kItems)
                         k = self.dao.item[item_k]
                         Suk = self.IPositiveSet[user][item_k]
-                        self.P[u] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * (
-                            self.Q[i] - self.Q[k])
+                        self.P[u] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1)))\
+                                     * (self.Q[i] - self.Q[k])
                         self.Q[i] += (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * \
                                      self.P[u]
                         self.Q[k] -= (1 / (Suk+1)) *self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) * self.P[u]
-
+                        self.b[i] += (1 / (Suk + 1)) * self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k])) / (Suk + 1)))
+                        self.b[k] -= (1 / (Suk + 1)) * self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k])) / (Suk + 1)))
                         item_j = ''
                         # if len(self.NegativeSet[user])>0:
                         #     item_j = choice(self.NegativeSet[user])
@@ -64,14 +66,16 @@ class SBPR(SocialRecommender):
                         self.P[u] +=  self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (self.Q[k] - self.Q[j])
                         self.Q[k] += self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
                         self.Q[j] -= self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
+                        self.b[k] += self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
+                        self.b[j] -= self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
 
                         self.P[u] -= self.lRate * self.regU * self.P[u]
                         self.Q[i] -= self.lRate * self.regI * self.Q[i]
                         self.Q[j] -= self.lRate * self.regI * self.Q[j]
                         self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k])(Suk+1))) - \
-                                     log(sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))
+                        self.loss += -log(sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/(Suk+1))) \
+                                     - log(sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))
                     else:
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
@@ -83,10 +87,12 @@ class SBPR(SocialRecommender):
                                      self.P[u]
                         self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
                                      self.P[u]
+                        self.b[i] += self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))))
+                        self.b[j] -= self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))))
 
                         self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
-            self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
+            self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()+self.b.dot(self.b)
             iteration += 1
             if self.isConverged(iteration):
                 break
@@ -97,7 +103,7 @@ class SBPR(SocialRecommender):
         if self.dao.containsUser(user) and self.dao.containsItem(item):
             u = self.dao.getUserId(user)
             i = self.dao.getItemId(item)
-            predictRating = sigmoid(self.Q[i].dot(self.P[u]))
+            predictRating = sigmoid(self.Q[i].dot(self.P[u])+self.b[i])
             return predictRating
         else:
             return sigmoid(self.dao.globalMean)
@@ -106,7 +112,7 @@ class SBPR(SocialRecommender):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
             u = self.dao.getUserId(u)
-            return self.Q.dot(self.P[u])
+            return self.Q.dot(self.P[u])+self.b
         else:
             return [self.dao.globalMean] * len(self.dao.item)
 
