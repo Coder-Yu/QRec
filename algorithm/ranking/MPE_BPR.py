@@ -284,7 +284,7 @@ class MPE_BPR(SocialRecommender):
         # vectors.close()
 
         # matrix decomposition
-        pkl_file = open('MPE-Epinions-sim'+self.foldInfo+'.pkl', 'rb')
+        pkl_file = open('MPE-Ciao-sim'+self.foldInfo+'.pkl', 'rb')
 
         self.topKSim = pickle.load(pkl_file)
         print 'Decomposing...'

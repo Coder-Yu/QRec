@@ -182,103 +182,103 @@ class CUNE_MF(IterativeRecommender):
 
         #build Huffman Tree First
         #get weight
-        print 'Building Huffman tree...'
-        #To accelerate the method, the weight is estimated roughly
-        nodes = {}
-        for user in self.CUNet:
-            nodes[user] = len(self.CUNet[user])
-        nodes = sorted(nodes.iteritems(),key=lambda d:d[1])
-        nodes = [HTreeNode(None,None,user[1],user[0]) for user in nodes]
-        nodeList = OrderedLinkList()
-        for node in nodes:
-            listNode = Node()
-            listNode.val = node
-            try:
-                nodeList.insert(listNode)
-            except AttributeError:
-                pass
-        self.HTree = HuffmanTree(vecLength=self.walkDim)
-        self.HTree.buildTree(nodeList)
-        print 'Coding for all users...'
-        self.HTree.coding(self.HTree.root,'',0)
-
-
-        print 'Generating random deep walks...'
-        self.walks = []
-        self.visited = defaultdict(dict)
-        for user in self.CUNet:
-            for t in range(self.walkCount):
-                path = [user]
-                for i in range(1,self.walkLength):
-                    nextNode = choice(self.CUNet[user])
-                    count=0
-                    while(self.visited[user].has_key(nextNode)):
-                        nextNode = choice(self.CUNet[user])
-                        #break infinite loop
-                        count+=1
-                        if count==10:
-                            break
-                    path.append(nextNode)
-                    self.visited[user][nextNode]=1
-                self.walks.append(path)
-                #print path
-        shuffle(self.walks)
-
-        #Training get top-k friends
-        print 'Generating user embedding...'
-        iteration = 1
-        while iteration <= self.epoch:
-            loss = 0
-            for walk in self.walks:
-                for user in walk:
-                    centerUser = walk[len(walk)/2]
-                    if user <> centerUser:
-                        code = self.HTree.code[user]
-                        centerCode = self.HTree.code[centerUser]
-                        x = self.HTree.vector[centerCode]
-                        for i in range(1,len(code)):
-                            prefix = code[0:i]
-                            w = self.HTree.vector[prefix]
-                            self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
-                            self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
-                            loss += -log(sigmoid(w.dot(x)))
-            print 'iteration:', iteration, 'loss:', loss
-            iteration+=1
-        print 'User embedding generated.'
-
-        print 'Constructing similarity matrix...'
-        self.Sim = SymmetricMatrix(len(self.CUNet))
-        self.topKSim = {}
-        i = 0
-        for user1 in self.CUNet:
-            prefix1 = self.HTree.code[user1]
-            vec1 = self.HTree.vector[prefix1]
-            sims = []
-            for user2 in self.CUNet:
-                if user1 <> user2:
-                    prefix2 = self.HTree.code[user2]
-                    vec2 = self.HTree.vector[prefix2]
-                    sim = cosine(vec1,vec2)
-                    sims.append((user2,sim))
-            self.topKSim[user1] = sorted(sims,key=lambda d:d[1],reverse=True)[:self.topK]
-            i+=1
-            if i%200==0:
-                print 'progress:',i,'/',len(self.CUNet)
-
-        print 'Similarity matrix finished.'
+        # print 'Building Huffman tree...'
+        # #To accelerate the method, the weight is estimated roughly
+        # nodes = {}
+        # for user in self.CUNet:
+        #     nodes[user] = len(self.CUNet[user])
+        # nodes = sorted(nodes.iteritems(),key=lambda d:d[1])
+        # nodes = [HTreeNode(None,None,user[1],user[0]) for user in nodes]
+        # nodeList = OrderedLinkList()
+        # for node in nodes:
+        #     listNode = Node()
+        #     listNode.val = node
+        #     try:
+        #         nodeList.insert(listNode)
+        #     except AttributeError:
+        #         pass
+        # self.HTree = HuffmanTree(vecLength=self.walkDim)
+        # self.HTree.buildTree(nodeList)
+        # print 'Coding for all users...'
+        # self.HTree.coding(self.HTree.root,'',0)
+        #
+        #
+        # print 'Generating random deep walks...'
+        # self.walks = []
+        # self.visited = defaultdict(dict)
+        # for user in self.CUNet:
+        #     for t in range(self.walkCount):
+        #         path = [user]
+        #         for i in range(1,self.walkLength):
+        #             nextNode = choice(self.CUNet[user])
+        #             count=0
+        #             while(self.visited[user].has_key(nextNode)):
+        #                 nextNode = choice(self.CUNet[user])
+        #                 #break infinite loop
+        #                 count+=1
+        #                 if count==10:
+        #                     break
+        #             path.append(nextNode)
+        #             self.visited[user][nextNode]=1
+        #         self.walks.append(path)
+        #         #print path
+        # shuffle(self.walks)
+        #
+        # #Training get top-k friends
+        # print 'Generating user embedding...'
+        # iteration = 1
+        # while iteration <= self.epoch:
+        #     loss = 0
+        #     for walk in self.walks:
+        #         for user in walk:
+        #             centerUser = walk[len(walk)/2]
+        #             if user <> centerUser:
+        #                 code = self.HTree.code[user]
+        #                 centerCode = self.HTree.code[centerUser]
+        #                 x = self.HTree.vector[centerCode]
+        #                 for i in range(1,len(code)):
+        #                     prefix = code[0:i]
+        #                     w = self.HTree.vector[prefix]
+        #                     self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
+        #                     self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
+        #                     loss += -log(sigmoid(w.dot(x)))
+        #     print 'iteration:', iteration, 'loss:', loss
+        #     iteration+=1
+        # print 'User embedding generated.'
+        #
+        # print 'Constructing similarity matrix...'
+        # self.Sim = SymmetricMatrix(len(self.CUNet))
+        # self.topKSim = {}
+        # i = 0
+        # for user1 in self.CUNet:
+        #     prefix1 = self.HTree.code[user1]
+        #     vec1 = self.HTree.vector[prefix1]
+        #     sims = []
+        #     for user2 in self.CUNet:
+        #         if user1 <> user2:
+        #             prefix2 = self.HTree.code[user2]
+        #             vec2 = self.HTree.vector[prefix2]
+        #             sim = cosine(vec1,vec2)
+        #             sims.append((user2,sim))
+        #     self.topKSim[user1] = sorted(sims,key=lambda d:d[1],reverse=True)[:self.topK]
+        #     i+=1
+        #     if i%200==0:
+        #         print 'progress:',i,'/',len(self.CUNet)
+        #
+        # print 'Similarity matrix finished.'
         #print self.topKSim
         import pickle
-        from time import localtime, time, strftime
-        recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
+        #from time import localtime, time, strftime
+        #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        #similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
         #vectors = open('vec'+recordTime+'.pkl', 'wb')
         #Pickle dictionary using protocol 0.
         # matrix decomposition
-        # pkl_file = open('MPE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
-        # self.topKSim = pickle.load(pkl_file)
-        pickle.dump(self.topKSim, similarity)
+        pkl_file = open('CUNE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
+        self.topKSim = pickle.load(pkl_file)
+        #pickle.dump(self.topKSim, similarity)
         #pickle.dump((self.W,self.G),vectors)
-        similarity.close()
+        #similarity.close()
         #vectors.close()
         #matrix decomposition
         print 'Decomposing...'
