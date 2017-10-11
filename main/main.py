@@ -26,7 +26,7 @@ if __name__ == '__main__':
     print '16. CoFactor      17. CUNE-MF       18. CUNE-BPR'
 
     print 'Baselines:'
-    print 'b1. UserMean      b2. ItemMean'
+    print 'b1. UserMean      b2. ItemMean      b3. MostPopular'
     print '='*80
     algor = -1
     conf = -1
