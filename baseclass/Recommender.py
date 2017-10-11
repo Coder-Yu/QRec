@@ -235,9 +235,8 @@ class Recommender(object):
             # denormalize
             prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
             #####################################
-            pred = self.checkRatingBoundary(prediction)
             # add prediction in order to measure
-            res.append([user,item,rating,pred])
+            res.append([user,item,rating,prediction])
             #res.append(user + ' ' + item + ' ' + str(rating) + ' ' + str(pred) + '\n')
         #currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
