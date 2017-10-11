@@ -58,7 +58,7 @@ class FileIO(object):
                     rating  = items[int(order[2])]
                 if binarized:
                     if float(items[int(order[2])])<threshold:
-                        rating = 0
+                        continue
                     else:
                         rating = 1
             except ValueError:

@@ -26,7 +26,7 @@ if __name__ == '__main__':
     print '16. CoFactor      17. CUNE-MF       18. CUNE-BPR'
 
     print 'Baselines:'
-    print 'b1. UserMean      b2. ItemMean      b3. MostPopular'
+    print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
     print '='*80
     algor = -1
     conf = -1
@@ -106,6 +106,9 @@ if __name__ == '__main__':
 
     elif order == 'b3':
         conf = Config('../config/MostPopular.conf')
+
+    elif order == 'b4':
+        conf = Config('../config/rand.conf')
 
     else:
         print 'Error num!'
