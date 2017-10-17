@@ -1,4 +1,5 @@
 from baseclass.IterativeRecommender import IterativeRecommender
+from baseclass.SocialRecommender import SocialRecommender
 from tool import config
 from random import randint
 from random import shuffle,choice
@@ -126,9 +127,9 @@ class HuffmanTree(object):
             self.coding(root.left,prefix+'0',hierarchy+1)
             self.coding(root.right,prefix+'1',hierarchy+1)
 
-class CUNE_BPR(IterativeRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(CUNE_BPR, self).__init__(conf,trainingSet,testSet,fold)
+class CUNE_BPR(SocialRecommender):
+    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
+        super(CUNE_BPR, self).__init__(conf,trainingSet,testSet,relation,fold)
         self.nonLeafVec = {}
         self.leafVec = {}
 
@@ -154,28 +155,28 @@ class CUNE_BPR(IterativeRecommender):
 
     def buildModel(self):
         print 'Kind Note: This method will probably take much time.'
-        # #build C-U-NET
-        # print 'Building collaborative user network...'
-        # #filter isolated nodes
-        # self.itemNet = {}
-        # for item in self.dao.trainSet_i:
-        #     if len(self.dao.trainSet_i[item])>1:
-        #         self.itemNet[item] = self.dao.trainSet_i[item]
-        #
-        # self.filteredRatings = defaultdict(list)
-        # for item in self.itemNet:
-        #     for user in self.itemNet[item]:
-        #         if self.itemNet[item][user]>=1:
-        #             self.filteredRatings[user].append(item)
-        #
-        # self.CUNet = defaultdict(list)
-        #
-        # for user1 in self.filteredRatings:
-        #     for user2 in self.filteredRatings:
-        #         if user1 <> user2:
-        #             weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
-        #             if weight > 0:
-        #                 self.CUNet[user1]+=[user2]*weight
+        #build C-U-NET
+        print 'Building collaborative user network...'
+        #filter isolated nodes
+        self.itemNet = {}
+        for item in self.dao.trainSet_i:
+            if len(self.dao.trainSet_i[item])>1:
+                self.itemNet[item] = self.dao.trainSet_i[item]
+
+        self.filteredRatings = defaultdict(list)
+        for item in self.itemNet:
+            for user in self.itemNet[item]:
+                if self.itemNet[item][user]>=1:
+                    self.filteredRatings[user].append(item)
+
+        self.CUNet = defaultdict(list)
+
+        for user1 in self.filteredRatings:
+            for user2 in self.filteredRatings:
+                if user1 <> user2:
+                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+                    if weight > 0:
+                        self.CUNet[user1]+=[user2]*weight
 
 
         #build Huffman Tree First
@@ -221,6 +222,12 @@ class CUNE_BPR(IterativeRecommender):
         #         self.walks.append(path)
         #         #print path
         # shuffle(self.walks)
+        # print 'walk count',len(self.walks)
+        # UserCovered = {}
+        # for walk in self.walks:
+        #     for user in walk:
+        #         UserCovered[user] = 1
+        # print 'user coverage',float(len(UserCovered))/len(self.dao.user)
         #
         # #Training get top-k friends
         # print 'Generating user embedding...'
@@ -249,6 +256,78 @@ class CUNE_BPR(IterativeRecommender):
         #                         loss += -log(sigmoid(w.dot(x)),2)
         #     print 'iteration:', iteration, 'loss:', loss
         #     iteration+=1
+        #     # self.topKSim={}
+        #     # i = 0
+        #     # for user1 in self.filteredRatings:
+        #     #     uSim = []
+        #     #     i += 1
+        #     #     if i % 200 == 0:
+        #     #         print i, '/', len(self.filteredRatings)
+        #     #         break
+        #     #     code = self.HTree.code[user1]
+        #     #     vec1 = self.HTree.vector[code]
+        #     #     for user2 in self.filteredRatings:
+        #     #         if user1 <> user2:
+        #     #             code2 = self.HTree.code[user2]
+        #     #             vec2 = self.HTree.vector[code2]
+        #     #             sim = cosine(vec1, vec2)
+        #     #             uSim.append((user2, sim))
+        #     #
+        #     #     self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
+        #     #
+        #     # es = 0
+        #     # rs = 0
+        #     # xxs = 0
+        #     # count = 0
+        #     # overlap = 0
+        #     # for user in self.topKSim:
+        #     #     li = self.dao.trainSet_u[user].keys()
+        #     #     for f, s in self.topKSim[user]:
+        #     #         # print 'embedding similarity',f,s
+        #     #         # print 'preference similarity',f,cosine_sp(self.dao.trainSet_u[user],self.dao.trainSet_u[f])
+        #     #         # os.system('pause')
+        #     #
+        #     #         li1 = self.dao.trainSet_u[f].keys()
+        #     #         overlap += len(set(li).intersection(set(li1)))
+        #     #         count += 1
+        #     # print 'embedding overlap', float(overlap) / count
+        #     #
+        #     # es = 0
+        #     # rs = 0
+        #     # xxs = 0
+        #     # count = 0
+        #     # overlap = 0
+        #     # for user in self.topKSim:
+        #     #     li = self.dao.trainSet_u[user].keys()
+        #     #     if self.sao.followees.has_key(user):
+        #     #         for f in self.sao.followees[user]:
+        #     #             # print 'embedding similarity',f,s
+        #     #             # print 'preference similarity',f,cosine_sp(self.dao.trainSet_u[user],self.dao.trainSet_u[f])
+        #     #             # os.system('pause')
+        #     #
+        #     #             li1 = self.dao.trainSet_u[f].keys()
+        #     #             overlap += len(set(li).intersection(set(li1)))
+        #     #             count += 1
+        #     # print 'friend overlap', float(overlap) / count
+        #     #
+        #     # es = 0
+        #     # rs = 0
+        #     # xxs = 0
+        #     # count = 0
+        #     # overlap = 0
+        #     # userList = self.filteredRatings.keys()
+        #     # for user in self.topKSim:
+        #     #     li = self.dao.trainSet_u[user].keys()
+        #     #     for f, s in self.topKSim[user]:
+        #     #         # print 'embedding similarity',f,s
+        #     #         # print 'preference similarity',f,cosine_sp(self.dao.trainSet_u[user],self.dao.trainSet_u[f])
+        #     #         # os.system('pause')
+        #     #         user2 = choice(userList)
+        #     #         li1 = self.dao.trainSet_u[user2].keys()
+        #     #         overlap += len(set(li).intersection(set(li1)))
+        #     #         count += 1
+        #     #
+        #     # print 'random overlap', float(overlap) / count
         # print 'User embedding generated.'
         #
         # self.topKSim = {}
@@ -267,19 +346,19 @@ class CUNE_BPR(IterativeRecommender):
         #     i+=1
         #     if i%200==0:
         #         print 'progress:',i,'/',len(self.CUNet)
-
-        print 'Similarity matrix finished.'
+        #
+        # print 'Similarity matrix finished.'
         # #print self.topKSim
         import pickle
         # from time import localtime, time, strftime
         # recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
+        #similarity = open('CUNE-Ciao-sim'+self.foldInfo+'.pkl', 'wb')
         # #vectors = open('vec'+recordTime+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
-        # pickle.dump(self.topKSim, similarity)
+        #pickle.dump(self.topKSim, similarity)
         # #pickle.dump((self.W,self.G),vectors)
-        # similarity.close()
+        #similarity.close()
         # #vectors.close()
         # #matrix decomposition
         pkl_file = open('CUNE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
