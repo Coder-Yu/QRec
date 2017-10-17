@@ -47,6 +47,8 @@ class Measure(object):
         measure.append('F1:' + str(F1) + '\n')
         MAP = Measure.MAP(origin,res,N)
         measure.append('MAP:' + str(MAP) + '\n')
+        AUC = Measure.AUC(origin,res)
+        measure.append('AUC:' + str(AUC) + '\n')
         return measure
 
     @staticmethod
@@ -117,6 +119,39 @@ class Measure(object):
                     precision += hits / (n + 1.0)
             sum_prec += precision / (min(len(origin[user]), N) + 0.0)
         return sum_prec / (len(res))
+
+    @staticmethod
+    def AUC(origin,res):
+
+        # from random import choice
+        # Eu = []
+        # while len(Eu) < 0.01*len(res):
+        #     Eu.append(choice(itemList))
+        sum_AUC = 0
+
+        for user in res:
+            hit = []
+            notHit = []
+            resDict = {}
+            count = 0
+            larger = 0
+            for item in res[user]:
+                if not origin.has_key(item[0]):
+                    notHit.append(item[0])
+                else:
+                    hit.append(item[0])
+                resDict[item[0]]=item[1]
+            for item1 in hit:
+                for item2 in notHit:
+                    count+=1
+                    if resDict[item1]>resDict[item2]:
+                        larger+=1
+            if count:
+                sum_AUC+=float(larger)/count
+
+        return float(sum_AUC)/len(origin)
+
+
 
 
     @staticmethod
