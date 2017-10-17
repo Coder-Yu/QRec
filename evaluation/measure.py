@@ -126,9 +126,6 @@ class Measure(object):
         from random import choice
         sum_AUC = 0
         for user in origin:
-            hit = []
-            notHit = []
-            resDict = {}
             count = 0
             larger = 0
             itemList = rawRes[user].keys()
