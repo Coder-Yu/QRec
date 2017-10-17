@@ -127,6 +127,7 @@ class Recommender(object):
         recList = {}
         userN = {}
         userCount = len(self.dao.testSet_u)
+        rawRes = {}
         for i, user in enumerate(self.dao.testSet_u):
             itemSet = {}
             line = user + ':'
@@ -148,6 +149,7 @@ class Recommender(object):
             for item in ratedList:
                 del itemSet[item]
 
+            rawRes[user] = itemSet
             Nrecommendations = []
             for item in itemSet:
                 if len(Nrecommendations) < N:
@@ -218,7 +220,7 @@ class Recommender(object):
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         if self.ranking.contains('-topN'):
-            self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, N)
+            self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, rawRes,N)
         # elif self.ranking.contains('-threshold'):
         #     origin = self.dao.testSet_u.copy()
         #     for user in origin:
