@@ -39,11 +39,13 @@ class SBPR(SocialRecommender):
         while iteration < self.maxIter:
             self.loss = 0
             itemList = self.dao.item.keys()
+
             for user in self.PositiveSet:
+                kItems = self.IPositiveSet[user].keys()
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    kItems = self.IPositiveSet[user].keys()
+
                     if len(self.IPositiveSet[user]) > 0:
                         item_k = choice(kItems)
                         k = self.dao.item[item_k]

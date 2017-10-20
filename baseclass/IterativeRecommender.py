@@ -101,10 +101,10 @@ class IterativeRecommender(Recommender):
         if self.ranking.contains('-topN'):
             bTopN = True
             N = int(self.ranking['-topN'])
-            if N > 100 or N < 0:
+            if N < 0:
                 print 'N can not be larger than 100! It has been reassigned with 100'
-                N = 100
-            if N>len(self.dao.item):
+                N = 10
+            if N > len(self.dao.item):
                 N = len(self.dao.item)
         elif self.ranking.contains('-threshold'):
             threshold = float(self.ranking['-threshold'])
@@ -118,70 +118,68 @@ class IterativeRecommender(Recommender):
         recList = {}
         userN = {}
         userCount = len(self.dao.testSet_u)
-        testedUser = []
+        rawRes = {}
         for i, user in enumerate(self.dao.testSet_u):
-            if i>500:
-                break
-            testedUser.append(user)
             itemSet = {}
             line = user + ':'
             predictedItems = self.predictForRanking(user)
-            #predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
-            for id,rating in enumerate(predictedItems):
-                #if not self.dao.rating(user, self.dao.id2item[id]):
-                    # prediction = self.checkRatingBoundary(prediction)
-                    # pred = self.checkRatingBoundary(prediction)
-                    #####################################
-                    # add prediction in order to measure
+            # predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
+            for id, rating in enumerate(predictedItems):
+                # if not self.dao.rating(user, self.dao.id2item[id]):
+                # prediction = self.checkRatingBoundary(prediction)
+                # pred = self.checkRatingBoundary(prediction)
+                #####################################
+                # add prediction in order to measure
                 # if bThres:
                 #     if rating > threshold:
                 #         itemSet[self.dao.id2item[id]]= rating
                 # else:
                 itemSet[self.dao.id2item[id]] = rating
 
-            ratedList,ratingList = self.dao.userRated(user)
+            ratedList, ratingList = self.dao.userRated(user)
             for item in ratedList:
                 del itemSet[item]
 
+            rawRes[user] = itemSet
             Nrecommendations = []
             for item in itemSet:
-                if len(Nrecommendations)<N:
-                    Nrecommendations.append((item,itemSet[item]))
+                if len(Nrecommendations) < N:
+                    Nrecommendations.append((item, itemSet[item]))
                 else:
                     break
 
-            Nrecommendations.sort(key=lambda d:d[1],reverse=True)
+            Nrecommendations.sort(key=lambda d: d[1], reverse=True)
             recommendations = [item[1] for item in Nrecommendations]
             resNames = [item[0] for item in Nrecommendations]
 
-            #itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
-            #if bTopN:
-                # find the K biggest scores
+            # itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
+            # if bTopN:
+            # find the K biggest scores
             for item in itemSet:
                 ind = N
-                l =0
-                r = N-1
+                l = 0
+                r = N - 1
 
-                if recommendations[r]<itemSet[item]:
+                if recommendations[r] < itemSet[item]:
                     while True:
 
-                        mid = (l+r)/2
-                        if recommendations[mid]>=itemSet[item]:
-                            l = mid+1
-                        elif recommendations[mid]<itemSet[item]:
-                            r = mid-1
+                        mid = (l + r) / 2
+                        if recommendations[mid] >= itemSet[item]:
+                            l = mid + 1
+                        elif recommendations[mid] < itemSet[item]:
+                            r = mid - 1
                         else:
                             ind = mid
                             break
-                        if r<l:
+                        if r < l:
                             ind = r
                             break
-                #ind = bisect(recommendations, itemSet[item])
+                # ind = bisect(recommendations, itemSet[item])
 
-                if ind < N-1:
+                if ind < N - 1:
                     recommendations[ind + 1] = itemSet[item]
                     resNames[ind + 1] = item
-            recList[user] = zip(resNames,recommendations)
+            recList[user] = zip(resNames, recommendations)
             # elif bThres:
             #     itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
             #     recList[user] = itemSet[:]
@@ -196,6 +194,8 @@ class IterativeRecommender(Recommender):
 
             line += '\n'
             res.append(line)
+            if i==1000:
+                break
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
@@ -213,10 +213,10 @@ class IterativeRecommender(Recommender):
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         if self.ranking.contains('-topN'):
-            testSet_u = {}
-            for user in testedUser:
-                testSet_u[user] = self.dao.testSet_u[user]
-            self.measure = Measure.rankingMeasure(testSet_u, recList, N)
+            origin = {}
+            for user in recList:
+                origin[user] = self.dao.testSet_u[user]
+            self.measure = Measure.rankingMeasure(origin, recList, rawRes,N)
         # elif self.ranking.contains('-threshold'):
         #     origin = self.dao.testSet_u.copy()
         #     for user in origin:

@@ -352,17 +352,17 @@ class CUNE_BPR(SocialRecommender):
         import pickle
         # from time import localtime, time, strftime
         # recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        #similarity = open('CUNE-Ciao-sim'+self.foldInfo+'.pkl', 'wb')
-        # #vectors = open('vec'+recordTime+'.pkl', 'wb')
-        # #Pickle dictionary using protocol 0.
-        #
-        #pickle.dump(self.topKSim, similarity)
-        # #pickle.dump((self.W,self.G),vectors)
-        #similarity.close()
-        # #vectors.close()
+        similarity = open('CUNE-Ciao-sim'+self.foldInfo+'.pkl', 'wb')
+        #vectors = open('vec'+recordTime+'.pkl', 'wb')
+        #Pickle dictionary using protocol 0.
+
+        pickle.dump(self.topKSim, similarity)
+        #pickle.dump((self.W,self.G),vectors)
+        similarity.close()
+        #vectors.close()
         # #matrix decomposition
-        pkl_file = open('CUNE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
-        self.topKSim = pickle.load(pkl_file)
+        # pkl_file = open('CUNE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
+        # self.topKSim = pickle.load(pkl_file)
         print 'Decomposing...'
 
         #prepare Pu set, IPu set, and Nu set
@@ -371,17 +371,17 @@ class CUNE_BPR(SocialRecommender):
         self.IPositiveSet = defaultdict(list)
         #self.NegativeSet = defaultdict(list)
 
-        for user in self.topKSim:
+        for user in self.dao.user:
             for item in self.dao.trainSet_u[user]:
                 if self.dao.trainSet_u[user][item]>=1:
                     self.PositiveSet[user][item]=1
                 # else:
                 #     self.NegativeSet[user].append(item)
-
-            for friend in self.topKSim[user]:
-                for item in self.dao.trainSet_u[friend[0]]:
-                    if not self.PositiveSet[user].has_key(item):
-                        self.IPositiveSet[user].append(item)
+            if self.topKSim.has_key(user):
+                for friend in self.topKSim[user]:
+                    for item in self.dao.trainSet_u[friend[0]]:
+                        if not self.PositiveSet[user].has_key(item):
+                            self.IPositiveSet[user].append(item)
 
 
         print 'Training...'
