@@ -77,7 +77,8 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
       -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)</br>
       Secondary option:-b, -p<br>
       -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）</br>
-      -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one)
+      -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one) </br>
+      -cold threshold (evaluation on cold-start users, users in training set with ratings more than threshold will be removed from the test set)
      </td>
   </tr>
   <tr>
