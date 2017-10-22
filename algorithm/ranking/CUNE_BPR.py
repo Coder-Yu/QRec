@@ -352,17 +352,17 @@ class CUNE_BPR(SocialRecommender):
         import pickle
         # from time import localtime, time, strftime
         # recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        similarity = open('CUNE-Ciao-sim'+self.foldInfo+'.pkl', 'wb')
+        #similarity = open('CUNE-Ciao-sim'+self.foldInfo+'.pkl', 'wb')
         #vectors = open('vec'+recordTime+'.pkl', 'wb')
         #Pickle dictionary using protocol 0.
 
-        pickle.dump(self.topKSim, similarity)
+        #pickle.dump(self.topKSim, similarity)
         #pickle.dump((self.W,self.G),vectors)
-        similarity.close()
+        #similarity.close()
         #vectors.close()
         # #matrix decomposition
-        # pkl_file = open('CUNE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
-        # self.topKSim = pickle.load(pkl_file)
+        pkl_file = open('CUNE-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
+        self.topKSim = pickle.load(pkl_file)
         print 'Decomposing...'
 
         #prepare Pu set, IPu set, and Nu set

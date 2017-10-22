@@ -46,18 +46,18 @@ class FileIO(object):
 
         for lineNo, line in enumerate(ratings):
             items = split(' |,|\t', line.strip())
-            if not bTest and len(order) < 3:
+            if not bTest and len(order) < 2:
                 print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
                 exit(-1)
             try:
                 userId = items[int(order[0])]
                 itemId = items[int(order[1])]
-                if bTest and len(order)<3:
+                if len(order)<3:
                     rating = 1 #default value
                 else:
                     rating  = items[int(order[2])]
                 if binarized:
-                    if float(items[int(order[2])])<threshold:
+                    if len(order)>=3 and float(items[int(order[2])])<threshold:
                         continue
                     else:
                         rating = 1
