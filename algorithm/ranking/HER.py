@@ -40,37 +40,37 @@ class HER(SocialRecommender):
 
     def buildModel(self):
         self.b = np.random.random(self.dao.trainingSize()[1])
-        # data clean
-        # cleanList = []
-        # cleanPair = []
-        # for user in self.sao.followees:
-        #     if not self.dao.user.has_key(user):
-        #         cleanList.append(user)
-        #     for u2 in self.sao.followees[user]:
-        #         if not self.dao.user.has_key(u2):
-        #             cleanPair.append((user, u2))
-        # for u in cleanList:
-        #     del self.sao.followees[u]
-        #
-        # for pair in cleanPair:
-        #     if self.sao.followees.has_key(pair[0]):
-        #         del self.sao.followees[pair[0]][pair[1]]
-        #
-        # cleanList = []
-        # cleanPair = []
-        # for user in self.sao.followers:
-        #     if not self.dao.user.has_key(user):
-        #         cleanList.append(user)
-        #     for u2 in self.sao.followers[user]:
-        #         if not self.dao.user.has_key(u2):
-        #             cleanPair.append((user, u2))
-        # for u in cleanList:
-        #     del self.sao.followers[u]
-        #
-        # for pair in cleanPair:
-        #     if self.sao.followers.has_key(pair[0]):
-        #         del self.sao.followers[pair[0]][pair[1]]
-        #
+        #data clean
+        cleanList = []
+        cleanPair = []
+        for user in self.sao.followees:
+            if not self.dao.user.has_key(user):
+                cleanList.append(user)
+            for u2 in self.sao.followees[user]:
+                if not self.dao.user.has_key(u2):
+                    cleanPair.append((user, u2))
+        for u in cleanList:
+            del self.sao.followees[u]
+
+        for pair in cleanPair:
+            if self.sao.followees.has_key(pair[0]):
+                del self.sao.followees[pair[0]][pair[1]]
+
+        cleanList = []
+        cleanPair = []
+        for user in self.sao.followers:
+            if not self.dao.user.has_key(user):
+                cleanList.append(user)
+            for u2 in self.sao.followers[user]:
+                if not self.dao.user.has_key(u2):
+                    cleanPair.append((user, u2))
+        for u in cleanList:
+            del self.sao.followers[u]
+
+        for pair in cleanPair:
+            if self.sao.followers.has_key(pair[0]):
+                del self.sao.followers[pair[0]][pair[1]]
+
         # li = self.sao.followees.keys()
         #
         # print 'Kind Note: This method will probably take much time.'
@@ -83,7 +83,7 @@ class HER(SocialRecommender):
         # p3 = 'UTU'
         # p4 = 'UFIU'
         # p5 = 'UFUIU'
-        # mPaths = [p1, p2, p3, p4]
+        # mPaths = [p1, p2, p3, p4,p5]
         #
         # self.G = np.random.rand(self.dao.trainingSize()[1], self.walkDim) / 10
         # self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
@@ -140,9 +140,9 @@ class HER(SocialRecommender):
         #         if mp == p3:
         #             self.walkCount = 10
         #         if mp == p4:
-        #             self.walkCount = 5
+        #             self.walkCount = 10
         #         if mp == p5:
-        #             self.walkCount = 5
+        #             self.walkCount = 10
         #         for t in range(self.walkCount):
         #
         #             path = [(user, 'U')]
@@ -298,12 +298,12 @@ class HER(SocialRecommender):
         #
         #
         # print 'Similarity matrix finished.'
-        # # #print self.topKSim
+        # # # #print self.topKSim
         import pickle
-        # #
-        # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # similarity = open('HER-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
-        # vectors = open('HER-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
+        # # #
+        # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        # similarity = open('HER-douban-sim'+self.foldInfo+'.pkl', 'wb')
+        # vectors = open('HER-douban-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
         # pickle.dump(self.topKSim, similarity)
@@ -312,7 +312,7 @@ class HER(SocialRecommender):
         # vectors.close()
 
         # matrix decomposition
-        pkl_file = open('HER-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
+        pkl_file = open('HER-douban-sim' + self.foldInfo + '.pkl', 'rb')
 
         self.topKSim = pickle.load(pkl_file)
 

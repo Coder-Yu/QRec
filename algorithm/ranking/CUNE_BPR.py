@@ -156,31 +156,31 @@ class CUNE_BPR(SocialRecommender):
     def buildModel(self):
         print 'Kind Note: This method will probably take much time.'
         #build C-U-NET
-        print 'Building collaborative user network...'
-        #filter isolated nodes
-        self.itemNet = {}
-        for item in self.dao.trainSet_i:
-            if len(self.dao.trainSet_i[item])>1:
-                self.itemNet[item] = self.dao.trainSet_i[item]
-
-        self.filteredRatings = defaultdict(list)
-        for item in self.itemNet:
-            for user in self.itemNet[item]:
-                if self.itemNet[item][user]>=1:
-                    self.filteredRatings[user].append(item)
-
-        self.CUNet = defaultdict(list)
-
-        for user1 in self.filteredRatings:
-            for user2 in self.filteredRatings:
-                if user1 <> user2:
-                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
-                    if weight > 0:
-                        self.CUNet[user1]+=[user2]*weight
-
-
-        #build Huffman Tree First
-        #get weight
+        # print 'Building collaborative user network...'
+        # #filter isolated nodes
+        # self.itemNet = {}
+        # for item in self.dao.trainSet_i:
+        #     if len(self.dao.trainSet_i[item])>1:
+        #         self.itemNet[item] = self.dao.trainSet_i[item]
+        #
+        # self.filteredRatings = defaultdict(list)
+        # for item in self.itemNet:
+        #     for user in self.itemNet[item]:
+        #         if self.itemNet[item][user]>=1:
+        #             self.filteredRatings[user].append(item)
+        #
+        # self.CUNet = defaultdict(list)
+        #
+        # for user1 in self.filteredRatings:
+        #     for user2 in self.filteredRatings:
+        #         if user1 <> user2:
+        #             weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+        #             if weight > 0:
+        #                 self.CUNet[user1]+=[user2]*weight
+        #
+        #
+        # #build Huffman Tree First
+        # #get weight
         # print 'Building Huffman tree...'
         # #To accelerate the method, the weight is estimated roughly
         # nodes = {}
@@ -350,18 +350,18 @@ class CUNE_BPR(SocialRecommender):
         # print 'Similarity matrix finished.'
         # #print self.topKSim
         import pickle
-        # from time import localtime, time, strftime
-        # recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        #similarity = open('CUNE-Ciao-sim'+self.foldInfo+'.pkl', 'wb')
-        #vectors = open('vec'+recordTime+'.pkl', 'wb')
-        #Pickle dictionary using protocol 0.
-
-        #pickle.dump(self.topKSim, similarity)
-        #pickle.dump((self.W,self.G),vectors)
-        #similarity.close()
+        # # from time import localtime, time, strftime
+        # # recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        # similarity = open('CUNE-douban-sim'+self.foldInfo+'.pkl', 'wb')
+        # #vectors = open('CUNE-douban-vec'+self.foldInfo+'.pkl', 'wb')
+        #
+        #
+        # pickle.dump(self.topKSim, similarity)
+        # #pickle.dump((self.W,self.G),vectors)
+        # similarity.close()
         #vectors.close()
         # #matrix decomposition
-        pkl_file = open('CUNE-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
+        pkl_file = open('CUNE-douban-sim' + self.foldInfo + '.pkl', 'rb')
         self.topKSim = pickle.load(pkl_file)
         print 'Decomposing...'
 

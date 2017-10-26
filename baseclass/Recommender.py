@@ -25,6 +25,22 @@ class Recommender(object):
         self.dao = RatingDAO(self.config, trainingSet, testSet)
         self.foldInfo = fold
         self.measure = []
+        if LineConfig(self.config['evaluation.setup']).contains('-cold'):
+            #evaluation on cold-start users
+            threshold = int(LineConfig(self.config['evaluation.setup'])['-cold'])
+            removedUser = {}
+            for user in self.dao.testSet_u:
+                if self.dao.trainSet_u.has_key(user) and len(self.dao.trainSet_u[user])>threshold:
+                    removedUser[user]=1
+
+            for user in removedUser:
+                del self.dao.testSet_u[user]
+
+            testData = []
+            for item in self.dao.testData:
+                if not removedUser.has_key(item[0]):
+                    testData.append(item)
+            self.dao.testData = testData
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
