@@ -73,237 +73,254 @@ class HER(SocialRecommender):
 
         # li = self.sao.followees.keys()
         #
-        # print 'Kind Note: This method will probably take much time.'
-        # # build U-F-NET
-        # print 'Building weighted user-friend network...'
-        # # filter isolated nodes and low ratings
-        # # Definition of Meta-Path
-        # p1 = 'UIU'
-        # p2 = 'UFU'
-        # p3 = 'UTU'
-        # p4 = 'UFIU'
-        # p5 = 'UFUIU'
-        # mPaths = [p1, p2, p3, p4,p5]
-        #
-        # self.G = np.random.rand(self.dao.trainingSize()[1], self.walkDim) / 10
-        # self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
-        #
-        # self.fItems = {}  # filtered item set
-        # for item in self.dao.trainSet_i:
-        #     self.fItems[item] = self.dao.trainSet_i[item].keys()
-        #
-        # self.fBuying = {}  # filtered buying set
-        # for user in self.dao.trainSet_u:
-        #     self.fBuying[user] = []
-        #     for item in self.dao.trainSet_u[user]:
-        #         if self.fItems.has_key(item) and self.dao.trainSet_u[user][item] > 0.75:
-        #             self.fBuying[user].append(item)
-        #     if self.fBuying[user] == []:
-        #         del self.fBuying[user]
-        #
-        #
-        # self.UFNet = defaultdict(list)
-        #
-        # for user1 in self.sao.followees:
-        #     s1 = set(self.sao.followees[user1])
-        #     for user2 in self.sao.followees[user1]:
-        #         if self.sao.followees.has_key(user2):
-        #             if user1 <> user2:
-        #                 s2 = set(self.sao.followees[user2])
-        #                 weight = len(s1.intersection(s2))
-        #                 self.UFNet[user1] += [user2] * (weight + 1)
-        #
-        # self.UTNet = defaultdict(list)
-        #
-        # for user1 in self.sao.followers:
-        #     s1 = set(self.sao.followers[user1])
-        #     for user2 in self.sao.followers[user1]:
-        #         if self.sao.followers.has_key(user2):
-        #             if user1 <> user2:
-        #                 s2 = set(self.sao.followers[user2])
-        #                 weight = len(s1.intersection(s2))
-        #                 self.UTNet[user1] += [user2] * (weight + 1)
-        # #
-        # #
-        # #
-        # #
-        # print 'Generating random meta-path random walks...'
-        # self.walks = []
-        # #self.usercovered = {}
-        # for user in self.dao.user:
-        #
-        #     for mp in mPaths:
-        #         if mp == p1:
-        #             self.walkCount = 10
-        #         if mp == p2:
-        #             self.walkCount = 10
-        #         if mp == p3:
-        #             self.walkCount = 10
-        #         if mp == p4:
-        #             self.walkCount = 10
-        #         if mp == p5:
-        #             self.walkCount = 10
-        #         for t in range(self.walkCount):
-        #
-        #             path = [(user, 'U')]
-        #             lastNode = user
-        #             nextNode = user
-        #             lastType = 'U'
-        #             for i in range(self.walkLength / len(mp)):
-        #
-        #                 for tp in mp[1:]:
-        #                     try:
-        #                         if tp == 'I':
-        #
-        #                             nextNode = choice(self.fBuying[lastNode])
-        #
-        #                         if tp == 'U':
-        #
-        #                             if lastType == 'I':
-        #                                 nextNode = choice(self.fItems[lastNode])
-        #                             elif lastType == 'F':
-        #                                 nextNode = choice(self.UFNet[lastNode])
-        #                                 while not self.dao.user.has_key(nextNode):
-        #                                     nextNode = choice(self.UFNet[lastNode])
+        print 'Kind Note: This method will probably take much time.'
+        # build U-F-NET
+        print 'Building weighted user-friend network...'
+        # filter isolated nodes and low ratings
+        # Definition of Meta-Path
+        p1 = 'UIU'
+        p2 = 'UFU'
+        p3 = 'UTU'
+        p4 = 'UFIU'
+        p5 = 'UFUIU'
+        mPaths = [p1, p2, p3, p4,p5]
+
+        self.G = np.random.rand(self.dao.trainingSize()[1], self.walkDim) / 10
+        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
+
+        self.fItems = {}  # filtered item set
+        for item in self.dao.trainSet_i:
+            self.fItems[item] = self.dao.trainSet_i[item].keys()
+
+        self.fBuying = {}  # filtered buying set
+        for user in self.dao.trainSet_u:
+            self.fBuying[user] = []
+            for item in self.dao.trainSet_u[user]:
+                if self.fItems.has_key(item) and self.dao.trainSet_u[user][item] > 0.75:
+                    self.fBuying[user].append(item)
+            if self.fBuying[user] == []:
+                del self.fBuying[user]
+
+
+        self.UFNet = defaultdict(list)
+
+        for user1 in self.sao.followees:
+            s1 = set(self.sao.followees[user1])
+            for user2 in self.sao.followees[user1]:
+                if self.sao.followees.has_key(user2):
+                    if user1 <> user2:
+                        s2 = set(self.sao.followees[user2])
+                        weight = len(s1.intersection(s2))
+                        self.UFNet[user1] += [user2] * (weight + 1)
+
+        self.UTNet = defaultdict(list)
+
+        for user1 in self.sao.followers:
+            s1 = set(self.sao.followers[user1])
+            for user2 in self.sao.followers[user1]:
+                if self.sao.followers.has_key(user2):
+                    if user1 <> user2:
+                        s2 = set(self.sao.followers[user2])
+                        weight = len(s1.intersection(s2))
+                        self.UTNet[user1] += [user2] * (weight + 1)
         #
         #
-        #                         if tp == 'F':
-        #
-        #                             nextNode = choice(self.UFNet[lastNode])
-        #                             while not self.dao.user.has_key(nextNode):
-        #                                 nextNode = choice(self.UFNet[lastNode])
-        #
-        #                         if tp == 'T':
-        #
-        #                             nextNode = choice(self.UTNet[lastNode])
-        #                             while not self.dao.user.has_key(nextNode):
-        #                                 nextNode = choice(self.UTNet[lastNode])
-        #
-        #                         path.append((nextNode, tp))
-        #                         lastNode = nextNode
-        #                         lastType = tp
-        #
-        #                     except (KeyError, IndexError):
-        #                         path = []
-        #                         break
-        #
-        #             if path:
-        #                 self.walks.append(path)
-        #                 # for node in path:
-        #                 #     if node[1] == 'U' or node[1] == 'F':
-        #                 #         self.usercovered[node[0]] = 1
-        #                         # print path
-        #                         # if mp == 'UFIU':
-        #                         # pass
-        # shuffle(self.walks)
-        # print 'walks:', len(self.walks)
-        # # Training get top-k friends
-        # print 'Generating user embedding...'
-        # # print 'user covered', len(self.usercovered)
-        # # print 'user coverage', float(len(self.usercovered)) / len(self.dao.user)
-        # iteration = 1
-        # userList = self.dao.user.keys()
-        # itemList = self.dao.item.keys()
-        # self.topKSim = {}
-        # while iteration <= self.epoch:
-        #     loss = 0
-        #
-        #     for walk in self.walks:
-        #         for i, node in enumerate(walk):
-        #             neighbors = walk[max(0, i - self.winSize / 2):min(len(walk) - 1, i + self.winSize / 2)]
-        #             center, ctp = walk[i]
-        #             if ctp == 'U' or ctp == 'F' or ctp == 'T':  # user
-        #                 centerVec = self.W[self.dao.user[center]]
-        #             else:  # Item
-        #                 centerVec = self.G[self.dao.item[center]]
-        #             for entity, tp in neighbors:
-        #                 # negSamples = []
-        #                 currentVec = ''
-        #                 if tp == 'U' or tp == 'F' or tp=='T' and center <> entity:
-        #                     currentVec = self.W[self.dao.user[entity]]
-        #                     self.W[self.dao.user[entity]] +=   self.rate * (
-        #                         1 - sigmoid(currentVec.dot(centerVec))) * centerVec
-        #                     if ctp == 'U' or ctp == 'F' or ctp=='T':
-        #                         self.W[self.dao.user[center]] +=   self.rate * (
-        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-        #                     else:
-        #                         self.G[self.dao.item[center]] +=   self.rate * (
-        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-        #                     loss += -  log(sigmoid(currentVec.dot(centerVec)))
-        #                     for i in range(self.neg):
-        #                         sample = choice(userList)
-        #                         while sample == entity:
-        #                             sample = choice(userList)
-        #                         sampleVec = self.W[self.dao.user[sample]]
-        #                         self.W[self.dao.user[sample]] -=   self.rate * (
-        #                             1 - sigmoid(-sampleVec.dot(centerVec))) * centerVec
-        #                         if ctp == 'U' or ctp == 'F' or ctp == 'T':
-        #                             self.W[self.dao.user[center]] -=   self.rate * (
-        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-        #                         else:
-        #                             self.G[self.dao.item[center]] -=   self.rate * (
-        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-        #                         #loss += -  log(sigmoid(-sampleVec.dot(centerVec)))
-        #                         # negSamples.append(choice)
-        #                 elif tp == 'I' and center <> entity:
-        #                     currentVec = self.G[self.dao.item[entity]]
-        #                     self.G[self.dao.item[entity]] +=   self.rate * (
-        #                         1 - sigmoid(currentVec.dot(centerVec))) * centerVec
-        #                     if ctp == 'U' or ctp == 'F' or ctp == 'T':
-        #                         self.W[self.dao.user[center]] +=   self.rate * (
-        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-        #                     else:
-        #                         self.G[self.dao.item[center]] +=   self.rate * (
-        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-        #                     loss += -  log(sigmoid(currentVec.dot(centerVec)))
-        #                     for i in range(self.neg):
-        #                         sample = choice(itemList)
-        #                         while sample == entity:
-        #                             sample = choice(itemList)
-        #                         # negSamples.append(choice)
-        #                         sampleVec = self.G[self.dao.item[sample]]
-        #                         self.G[self.dao.item[sample]] -= self.rate * (
-        #                             1 - sigmoid(-currentVec.dot(centerVec))) * centerVec
-        #                         if ctp == 'U' or ctp == 'F' or ctp == 'T':
-        #                             self.W[self.dao.user[center]] -=   self.rate * (
-        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-        #                         else:
-        #                             self.G[self.dao.item[center]] -=   self.rate * (
-        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-        #                         #loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
-        #     shuffle(self.walks)
-        #
-        #     print 'iteration:', iteration, 'loss:', loss
-        #     iteration += 1
-        #
-        # print 'User embedding generated.'
-        #
-        # print 'Constructing similarity matrix...'
-        # i = 0
         #
         #
-        # for user1 in self.fBuying:
-        #     uSim = []
-        #     i+=1
-        #     if i%200==0:
-        #         print i,'/',len(self.fBuying)
-        #     vec1 = self.W[self.dao.user[user1]]
-        #     for user2 in self.fBuying:
-        #         if user1 <> user2:
-        #             vec2 = self.W[self.dao.user[user2]]
-        #             sim = cosine(vec1, vec2)
-        #             uSim.append((user2,sim))
+        print 'Generating random meta-path random walks...'
+        self.walks = []
+        #self.usercovered = {}
+
+
+        for user in self.dao.user:
+
+            for mp in mPaths:
+                if mp == p1:
+                    self.walkCount = 10
+                if mp == p2:
+                    self.walkCount = 10
+                if mp == p3:
+                    self.walkCount = 10
+                if mp == p4:
+                    self.walkCount = 10
+                if mp == p5:
+                    self.walkCount = 10
+                for t in range(self.walkCount):
+
+                    path = [(user, 'U')]
+                    lastNode = user
+                    nextNode = user
+                    lastType = 'U'
+                    for i in range(self.walkLength / len(mp)):
+
+                        for tp in mp[1:]:
+                            try:
+                                if tp == 'I':
+
+                                    nextNode = choice(self.fBuying[lastNode])
+
+                                if tp == 'U':
+
+                                    if lastType == 'I':
+                                        nextNode = choice(self.fItems[lastNode])
+                                    elif lastType == 'F':
+                                        nextNode = choice(self.UFNet[lastNode])
+                                        while not self.dao.user.has_key(nextNode):
+                                            nextNode = choice(self.UFNet[lastNode])
+
+
+                                if tp == 'F':
+
+                                    nextNode = choice(self.UFNet[lastNode])
+                                    while not self.dao.user.has_key(nextNode):
+                                        nextNode = choice(self.UFNet[lastNode])
+
+                                if tp == 'T':
+
+                                    nextNode = choice(self.UTNet[lastNode])
+                                    while not self.dao.user.has_key(nextNode):
+                                        nextNode = choice(self.UTNet[lastNode])
+
+                                path.append((nextNode, tp))
+                                lastNode = nextNode
+                                lastType = tp
+
+                            except (KeyError, IndexError):
+                                path = []
+                                break
+
+                    if path:
+                        self.walks.append(path)
+                        # for node in path:
+                        #     if node[1] == 'U' or node[1] == 'F':
+                        #         self.usercovered[node[0]] = 1
+                                # print path
+                                # if mp == 'UFIU':
+                                # pass
+        shuffle(self.walks)
+        print 'walks:', len(self.walks)
+        # Training get top-k friends
+        print 'Generating user embedding...'
+        # print 'user covered', len(self.usercovered)
+        # print 'user coverage', float(len(self.usercovered)) / len(self.dao.user)
+        # sampleWalks = []
+        # sampleUser = {}
+        # for i in range(1000):
+        #     p = choice(self.walks)
+        #     u = choice(p)
+        #     while u[1]=='I':
+        #         u = choice(p)
+        #     if len(self.dao.trainSet_u[u[0]])<=10:
+        #         sampleUser[u[0]] = 1
         #
-        #     self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
-        #
-        #
+        # print 'user coverage:', len(sampleUser)/float(1000)
+
+
+
+
+        iteration = 1
+        userList = self.dao.user.keys()
+        itemList = self.dao.item.keys()
+        self.topKSim = {}
+        while iteration <= self.epoch:
+            loss = 0
+
+            for walk in self.walks:
+                for i, node in enumerate(walk):
+                    neighbors = walk[max(0, i - self.winSize / 2):min(len(walk) - 1, i + self.winSize / 2)]
+                    center, ctp = walk[i]
+                    if ctp == 'U' or ctp == 'F' or ctp == 'T':  # user
+                        centerVec = self.W[self.dao.user[center]]
+                    else:  # Item
+                        centerVec = self.G[self.dao.item[center]]
+                    for entity, tp in neighbors:
+                        # negSamples = []
+                        currentVec = ''
+                        if tp == 'U' or tp == 'F' or tp=='T' and center <> entity:
+                            currentVec = self.W[self.dao.user[entity]]
+                            self.W[self.dao.user[entity]] +=   self.rate * (
+                                1 - sigmoid(currentVec.dot(centerVec))) * centerVec
+                            if ctp == 'U' or ctp == 'F' or ctp=='T':
+                                self.W[self.dao.user[center]] +=   self.rate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            else:
+                                self.G[self.dao.item[center]] +=   self.rate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            loss += -  log(sigmoid(currentVec.dot(centerVec)))
+                            for i in range(self.neg):
+                                sample = choice(userList)
+                                while sample == entity:
+                                    sample = choice(userList)
+                                sampleVec = self.W[self.dao.user[sample]]
+                                self.W[self.dao.user[sample]] -=   self.rate * (
+                                    1 - sigmoid(-sampleVec.dot(centerVec))) * centerVec
+                                if ctp == 'U' or ctp == 'F' or ctp == 'T':
+                                    self.W[self.dao.user[center]] -=   self.rate * (
+                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+                                else:
+                                    self.G[self.dao.item[center]] -=   self.rate * (
+                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+                                #loss += -  log(sigmoid(-sampleVec.dot(centerVec)))
+                                # negSamples.append(choice)
+                        elif tp == 'I' and center <> entity:
+                            currentVec = self.G[self.dao.item[entity]]
+                            self.G[self.dao.item[entity]] +=   self.rate * (
+                                1 - sigmoid(currentVec.dot(centerVec))) * centerVec
+                            if ctp == 'U' or ctp == 'F' or ctp == 'T':
+                                self.W[self.dao.user[center]] +=   self.rate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            else:
+                                self.G[self.dao.item[center]] +=   self.rate * (
+                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+                            loss += -  log(sigmoid(currentVec.dot(centerVec)))
+                            for i in range(self.neg):
+                                sample = choice(itemList)
+                                while sample == entity:
+                                    sample = choice(itemList)
+                                # negSamples.append(choice)
+                                sampleVec = self.G[self.dao.item[sample]]
+                                self.G[self.dao.item[sample]] -= self.rate * (
+                                    1 - sigmoid(-currentVec.dot(centerVec))) * centerVec
+                                if ctp == 'U' or ctp == 'F' or ctp == 'T':
+                                    self.W[self.dao.user[center]] -=   self.rate * (
+                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+                                else:
+                                    self.G[self.dao.item[center]] -=   self.rate * (
+                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+                                #loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
+            shuffle(self.walks)
+
+            print 'iteration:', iteration, 'loss:', loss
+            iteration += 1
+
+        print 'User embedding generated.'
+
+        print 'Constructing similarity matrix...'
+        i = 0
+
+
+        for user1 in self.fBuying:
+            uSim = []
+            i+=1
+            if i%200==0:
+                print i,'/',len(self.fBuying)
+            vec1 = self.W[self.dao.user[user1]]
+            for user2 in self.fBuying:
+                if user1 <> user2:
+                    vec2 = self.W[self.dao.user[user2]]
+                    sim = cosine(vec1, vec2)
+                    uSim.append((user2,sim))
+
+            self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
+
+
         # print 'Similarity matrix finished.'
         # # # #print self.topKSim
         import pickle
-        # # #
-        # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # similarity = open('HER-douban-sim'+self.foldInfo+'.pkl', 'wb')
-        # vectors = open('HER-douban-vec'+self.foldInfo+'.pkl', 'wb')
+        # # # #
+        # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        # similarity = open('HER-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
+        # vectors = open('HER-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
         # pickle.dump(self.topKSim, similarity)
@@ -312,7 +329,7 @@ class HER(SocialRecommender):
         # vectors.close()
 
         # matrix decomposition
-        pkl_file = open('HER-douban-sim' + self.foldInfo + '.pkl', 'rb')
+        pkl_file = open('HER-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
 
         self.topKSim = pickle.load(pkl_file)
 
