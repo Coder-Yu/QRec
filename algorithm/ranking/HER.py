@@ -83,7 +83,7 @@ class HER(SocialRecommender):
         p3 = 'UTU'
         p4 = 'UFIU'
         p5 = 'UFUIU'
-        mPaths = [p1, p2, p3, p4,p5]
+        mPaths = [p1,p2,p3]#, p2, p3, p4,p5]
 
         self.G = np.random.rand(self.dao.trainingSize()[1], self.walkDim) / 10
         self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
@@ -319,19 +319,19 @@ class HER(SocialRecommender):
         import pickle
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # similarity = open('HER-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
-        # vectors = open('HER-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
-        # #Pickle dictionary using protocol 0.
-        #
-        # pickle.dump(self.topKSim, similarity)
-        # pickle.dump((self.W,self.G),vectors)
-        # similarity.close()
-        # vectors.close()
+        similarity = open('HER-lastfm-p3-sim'+self.foldInfo+'.pkl', 'wb')
+        vectors = open('HER-lastfm-p3-vec'+self.foldInfo+'.pkl', 'wb')
+        #Pickle dictionary using protocol 0.
+
+        pickle.dump(self.topKSim, similarity)
+        pickle.dump((self.W,self.G),vectors)
+        similarity.close()
+        vectors.close()
 
         # matrix decomposition
-        pkl_file = open('HER-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
+        #pkl_file = open('HER-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
 
-        self.topKSim = pickle.load(pkl_file)
+        #self.topKSim = pickle.load(pkl_file)
 
         print 'Decomposing...'
         self.F = np.random.rand(self.dao.trainingSize()[0], self.k) / 10

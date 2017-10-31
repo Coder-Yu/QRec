@@ -42,6 +42,8 @@ class Recommender(object):
                     testData.append(item)
             self.dao.testData = testData
 
+
+
     def readConfiguration(self):
         self.algorName = self.config['recommender']
         self.output = LineConfig(self.config['output.setup'])
