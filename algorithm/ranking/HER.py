@@ -83,7 +83,7 @@ class HER(SocialRecommender):
         p3 = 'UTU'
         p4 = 'UFIU'
         p5 = 'UFUIU'
-        mPaths = [p1,p2,p3]#, p2, p3, p4,p5]
+        mPaths = [p1,p2,p3,p4,p5]
 
         self.G = np.random.rand(self.dao.trainingSize()[1], self.walkDim) / 10
         self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
@@ -138,20 +138,20 @@ class HER(SocialRecommender):
                 if mp == p1:
                     self.walkCount = 10
                 if mp == p2:
-                    self.walkCount = 10
+                    self.walkCount = 8
                 if mp == p3:
-                    self.walkCount = 10
+                    self.walkCount = 8
                 if mp == p4:
-                    self.walkCount = 10
+                    self.walkCount = 5
                 if mp == p5:
-                    self.walkCount = 10
+                    self.walkCount = 5
                 for t in range(self.walkCount):
 
                     path = [(user, 'U')]
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
-                    for i in range(self.walkLength / len(mp)):
+                    for i in range(self.walkLength / len(mp[1:])):
 
                         for tp in mp[1:]:
                             try:
@@ -167,6 +167,11 @@ class HER(SocialRecommender):
                                         nextNode = choice(self.UFNet[lastNode])
                                         while not self.dao.user.has_key(nextNode):
                                             nextNode = choice(self.UFNet[lastNode])
+                                    elif lastType == 'T':
+                                        nextNode = choice(self.UTNet[lastNode])
+                                        while not self.dao.user.has_key(nextNode):
+                                            nextNode = choice(self.UTNet[lastNode])
+
 
 
                                 if tp == 'F':
@@ -177,9 +182,9 @@ class HER(SocialRecommender):
 
                                 if tp == 'T':
 
-                                    nextNode = choice(self.UTNet[lastNode])
+                                    nextNode = choice(self.UFNet[lastNode])
                                     while not self.dao.user.has_key(nextNode):
-                                        nextNode = choice(self.UTNet[lastNode])
+                                        nextNode = choice(self.UFNet[lastNode])
 
                                 path.append((nextNode, tp))
                                 lastNode = nextNode
@@ -319,8 +324,8 @@ class HER(SocialRecommender):
         import pickle
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        similarity = open('HER-lastfm-p3-sim'+self.foldInfo+'.pkl', 'wb')
-        vectors = open('HER-lastfm-p3-vec'+self.foldInfo+'.pkl', 'wb')
+        similarity = open('HER-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
+        vectors = open('HER-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         #Pickle dictionary using protocol 0.
 
         pickle.dump(self.topKSim, similarity)
