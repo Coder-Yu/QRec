@@ -305,6 +305,17 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td width="5%">35,770</td>
     <td>Trust</td>
     </tr> 
+	 <tr>
+    <td><a href="http://files.grouplens.org/datasets/hetrec2011/hetrec2011-lastfm-2k.zip" target="_blank"><b>LastFM</b></a> [4]</td>
+    <td>1,892</td>
+    <td>17,632</td>
+    <td width="6%">92,834</td>
+    <td width="10%">implicit</td>
+    <td>0.27%</td>
+    <td width="4%">1,892</td>
+    <td width="5%">25,434</td>
+    <td>Trust</td>
+    </tr> 
   </table>
 </div>
 
@@ -312,3 +323,4 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 <p>[1]. Tang, J., Gao, H., Liu, H.: mtrust:discerning multi-faceted trust in a connected world. In: International Conference on Web Search and Web Data Mining, WSDM 2012, Seattle, Wa, Usa, February. pp. 93–102 (2012)</p>
 <p>[2]. Massa, P., Avesani, P.: Trust-aware recommender systems. In: Proceedings of the 2007 ACM conference on Recommender systems. pp. 17–24. ACM (2007) </p>
 <p>[3].  G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
+<p>[4] Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
