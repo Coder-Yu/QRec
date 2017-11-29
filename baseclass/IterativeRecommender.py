@@ -35,8 +35,8 @@ class IterativeRecommender(Recommender):
         print '='*80
 
     def initModel(self):
-        self.P = np.random.rand(self.dao.trainingSize()[0], self.k)/10  # latent user matrix
-        self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)/10  # latent item matrix
+        self.P = np.random.rand(self.dao.trainingSize()[0], self.k)/3 # latent user matrix
+        self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
     def saveModel(self):
