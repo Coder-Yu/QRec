@@ -1,5 +1,5 @@
 
-![RecQ](http://i2.muimg.com/1949/44c429091e3bd3d2.png)
+<h1>RecQ</h1>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
