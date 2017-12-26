@@ -1,5 +1,5 @@
 
-<img src="http://upload.ouliu.net/i/20171227005547wk0zi.png"  />
+<img src="http://upload.ouliu.net/i/20171227005547wk0zi.png" width="250" height="150"/>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
