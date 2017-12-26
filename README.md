@@ -1,5 +1,5 @@
 
-<h1>RecQ</h1>
+<img src="http://upload.ouliu.net/i/20171227005547wk0zi.png"  />
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
@@ -23,7 +23,6 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 <li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
 </ul>
 
-![Visualization](http://i1.piimg.com/1949/176acec1f8fd03aa.png)
 <h2>How to Run it</h2>
 <ul>
 <li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
