@@ -43,16 +43,18 @@ class FileIO(object):
             ratings = ratings[1:]
         # order of the columns
         order = ratingConfig['-columns'].strip().split()
-
+        delim = ' |,|\t'
+        if ratingConfig.contains('-delim'):
+            delim=ratingConfig['-delim']
         for lineNo, line in enumerate(ratings):
-            items = split(' |,|\t', line.strip())
-            if not bTest and len(order) < 3:
+            items = split(delim,line.strip())
+            if not bTest and len(order) < 2:
                 print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
                 exit(-1)
             try:
                 userId = items[int(order[0])]
                 itemId = items[int(order[1])]
-                if bTest and len(order)<3:
+                if len(order)<3:
                     rating = 1 #default value
                 else:
                     rating  = items[int(order[2])]
