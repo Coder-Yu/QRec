@@ -6,11 +6,7 @@ from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid, cosine, cosine_sp
 from math import log
-from structure.symmetricMatrix import SymmetricMatrix
-import os
-
-from time import localtime, time, strftime
-import matplotlib.pyplot as plt
+import gensim.models.word2vec as w2v
 
 
 class HER(SocialRecommender):
@@ -147,7 +143,7 @@ class HER(SocialRecommender):
                     self.walkCount = 5
                 for t in range(self.walkCount):
 
-                    path = [(user, 'U')]
+                    path = ['U'+user]
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
@@ -186,7 +182,7 @@ class HER(SocialRecommender):
                                     while not self.dao.user.has_key(nextNode):
                                         nextNode = choice(self.UFNet[lastNode])
 
-                                path.append((nextNode, tp))
+                                path.append(tp+nextNode)
                                 lastNode = nextNode
                                 lastType = tp
 
@@ -223,81 +219,86 @@ class HER(SocialRecommender):
 
 
 
-        iteration = 1
-        userList = self.dao.user.keys()
-        itemList = self.dao.item.keys()
+        # iteration = 1
+        # userList = self.dao.user.keys()
+        # itemList = self.dao.item.keys()
         self.topKSim = {}
-        while iteration <= self.epoch:
-            loss = 0
+        # while iteration <= self.epoch:
+        #     loss = 0
+        #
+        #     for walk in self.walks:
+        #         for i, node in enumerate(walk):
+        #             neighbors = walk[max(0, i - self.winSize / 2):min(len(walk) - 1, i + self.winSize / 2)]
+        #             center, ctp = walk[i]
+        #             if ctp == 'U' or ctp == 'F' or ctp == 'T':  # user
+        #                 centerVec = self.W[self.dao.user[center]]
+        #             else:  # Item
+        #                 centerVec = self.G[self.dao.item[center]]
+        #             for entity, tp in neighbors:
+        #                 # negSamples = []
+        #                 currentVec = ''
+        #                 if tp == 'U' or tp == 'F' or tp=='T' and center <> entity:
+        #                     currentVec = self.W[self.dao.user[entity]]
+        #                     self.W[self.dao.user[entity]] +=   self.rate * (
+        #                         1 - sigmoid(currentVec.dot(centerVec))) * centerVec
+        #                     if ctp == 'U' or ctp == 'F' or ctp=='T':
+        #                         self.W[self.dao.user[center]] +=   self.rate * (
+        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+        #                     else:
+        #                         self.G[self.dao.item[center]] +=   self.rate * (
+        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+        #                     loss += -  log(sigmoid(currentVec.dot(centerVec)))
+        #                     for i in range(self.neg):
+        #                         sample = choice(userList)
+        #                         while sample == entity:
+        #                             sample = choice(userList)
+        #                         sampleVec = self.W[self.dao.user[sample]]
+        #                         self.W[self.dao.user[sample]] -=   self.rate * (
+        #                             1 - sigmoid(-sampleVec.dot(centerVec))) * centerVec
+        #                         if ctp == 'U' or ctp == 'F' or ctp == 'T':
+        #                             self.W[self.dao.user[center]] -=   self.rate * (
+        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+        #                         else:
+        #                             self.G[self.dao.item[center]] -=   self.rate * (
+        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+        #                         #loss += -  log(sigmoid(-sampleVec.dot(centerVec)))
+        #                         # negSamples.append(choice)
+        #                 elif tp == 'I' and center <> entity:
+        #                     currentVec = self.G[self.dao.item[entity]]
+        #                     self.G[self.dao.item[entity]] +=   self.rate * (
+        #                         1 - sigmoid(currentVec.dot(centerVec))) * centerVec
+        #                     if ctp == 'U' or ctp == 'F' or ctp == 'T':
+        #                         self.W[self.dao.user[center]] +=   self.rate * (
+        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+        #                     else:
+        #                         self.G[self.dao.item[center]] +=   self.rate * (
+        #                             1 - sigmoid(currentVec.dot(centerVec))) * currentVec
+        #                     loss += -  log(sigmoid(currentVec.dot(centerVec)))
+        #                     for i in range(self.neg):
+        #                         sample = choice(itemList)
+        #                         while sample == entity:
+        #                             sample = choice(itemList)
+        #                         # negSamples.append(choice)
+        #                         sampleVec = self.G[self.dao.item[sample]]
+        #                         self.G[self.dao.item[sample]] -= self.rate * (
+        #                             1 - sigmoid(-currentVec.dot(centerVec))) * centerVec
+        #                         if ctp == 'U' or ctp == 'F' or ctp == 'T':
+        #                             self.W[self.dao.user[center]] -=   self.rate * (
+        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+        #                         else:
+        #                             self.G[self.dao.item[center]] -=   self.rate * (
+        #                                 1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
+        #                         #loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
+        #     shuffle(self.walks)
+        #
+        #     print 'iteration:', iteration, 'loss:', loss
+        #     iteration += 1
 
-            for walk in self.walks:
-                for i, node in enumerate(walk):
-                    neighbors = walk[max(0, i - self.winSize / 2):min(len(walk) - 1, i + self.winSize / 2)]
-                    center, ctp = walk[i]
-                    if ctp == 'U' or ctp == 'F' or ctp == 'T':  # user
-                        centerVec = self.W[self.dao.user[center]]
-                    else:  # Item
-                        centerVec = self.G[self.dao.item[center]]
-                    for entity, tp in neighbors:
-                        # negSamples = []
-                        currentVec = ''
-                        if tp == 'U' or tp == 'F' or tp=='T' and center <> entity:
-                            currentVec = self.W[self.dao.user[entity]]
-                            self.W[self.dao.user[entity]] +=   self.rate * (
-                                1 - sigmoid(currentVec.dot(centerVec))) * centerVec
-                            if ctp == 'U' or ctp == 'F' or ctp=='T':
-                                self.W[self.dao.user[center]] +=   self.rate * (
-                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-                            else:
-                                self.G[self.dao.item[center]] +=   self.rate * (
-                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-                            loss += -  log(sigmoid(currentVec.dot(centerVec)))
-                            for i in range(self.neg):
-                                sample = choice(userList)
-                                while sample == entity:
-                                    sample = choice(userList)
-                                sampleVec = self.W[self.dao.user[sample]]
-                                self.W[self.dao.user[sample]] -=   self.rate * (
-                                    1 - sigmoid(-sampleVec.dot(centerVec))) * centerVec
-                                if ctp == 'U' or ctp == 'F' or ctp == 'T':
-                                    self.W[self.dao.user[center]] -=   self.rate * (
-                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-                                else:
-                                    self.G[self.dao.item[center]] -=   self.rate * (
-                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-                                #loss += -  log(sigmoid(-sampleVec.dot(centerVec)))
-                                # negSamples.append(choice)
-                        elif tp == 'I' and center <> entity:
-                            currentVec = self.G[self.dao.item[entity]]
-                            self.G[self.dao.item[entity]] +=   self.rate * (
-                                1 - sigmoid(currentVec.dot(centerVec))) * centerVec
-                            if ctp == 'U' or ctp == 'F' or ctp == 'T':
-                                self.W[self.dao.user[center]] +=   self.rate * (
-                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-                            else:
-                                self.G[self.dao.item[center]] +=   self.rate * (
-                                    1 - sigmoid(currentVec.dot(centerVec))) * currentVec
-                            loss += -  log(sigmoid(currentVec.dot(centerVec)))
-                            for i in range(self.neg):
-                                sample = choice(itemList)
-                                while sample == entity:
-                                    sample = choice(itemList)
-                                # negSamples.append(choice)
-                                sampleVec = self.G[self.dao.item[sample]]
-                                self.G[self.dao.item[sample]] -= self.rate * (
-                                    1 - sigmoid(-currentVec.dot(centerVec))) * centerVec
-                                if ctp == 'U' or ctp == 'F' or ctp == 'T':
-                                    self.W[self.dao.user[center]] -=   self.rate * (
-                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-                                else:
-                                    self.G[self.dao.item[center]] -=   self.rate * (
-                                        1 - sigmoid(-sampleVec.dot(centerVec))) * sampleVec
-                                #loss += -self.alpha * log(sigmoid(-sampleVec.dot(centerVec)))
-            shuffle(self.walks)
+        model = w2v.Word2Vec(self.walks, size=self.k, window=5, min_count=0, iter=3)
 
-            print 'iteration:', iteration, 'loss:', loss
-            iteration += 1
-
+        for user in self.fBuying:
+            uid = self.dao.user[user]
+            self.W[uid] = model.wv['U'+user]
         print 'User embedding generated.'
 
         print 'Constructing similarity matrix...'
@@ -321,17 +322,17 @@ class HER(SocialRecommender):
 
         # print 'Similarity matrix finished.'
         # # # #print self.topKSim
-        import pickle
+        #import pickle
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        similarity = open('HER-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
-        vectors = open('HER-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
-        #Pickle dictionary using protocol 0.
-
-        pickle.dump(self.topKSim, similarity)
-        pickle.dump((self.W,self.G),vectors)
-        similarity.close()
-        vectors.close()
+        # similarity = open('HER-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
+        # vectors = open('HER-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
+        # #Pickle dictionary using protocol 0.
+        #
+        # pickle.dump(self.topKSim, similarity)
+        # pickle.dump((self.W,self.G),vectors)
+        # similarity.close()
+        # vectors.close()
 
         # matrix decomposition
         #pkl_file = open('HER-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
