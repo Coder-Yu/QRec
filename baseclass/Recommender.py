@@ -122,19 +122,13 @@ class Recommender(object):
         res = []  # used to contain the text of the result
         N = 0
         threshold = 0
-        bThres = False
-        bTopN = False
         if self.ranking.contains('-topN'):
-            bTopN = True
             N = int(self.ranking['-topN'])
             if N > 100 or N < 0:
                 print 'N can not be larger than 100! It has been reassigned with 100'
                 N = 100
             if N > len(self.dao.item):
                 N = len(self.dao.item)
-        elif self.ranking.contains('-threshold'):
-            threshold = float(self.ranking['-threshold'])
-            bThres = True
         else:
             print 'No correct evaluation metric is specified!'
             exit(-1)
@@ -178,8 +172,7 @@ class Recommender(object):
             recommendations = [item[1] for item in Nrecommendations]
             resNames = [item[0] for item in Nrecommendations]
 
-            # itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
-            # if bTopN:
+
             # find the K biggest scores
             for item in itemSet:
                 ind = N
@@ -206,10 +199,7 @@ class Recommender(object):
                     recommendations[ind + 1] = itemSet[item]
                     resNames[ind + 1] = item
             recList[user] = zip(resNames, recommendations)
-            # elif bThres:
-            #     itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
-            #     recList[user] = itemSet[:]
-            #     userN[user] = len(itemSet)
+
 
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
@@ -238,15 +228,7 @@ class Recommender(object):
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         if self.ranking.contains('-topN'):
             self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, rawRes,N)
-        # elif self.ranking.contains('-threshold'):
-        #     origin = self.dao.testSet_u.copy()
-        #     for user in origin:
-        #         temp = {}
-        #         for item in origin[user]:
-        #             if origin[user][item] >= threshold:
-        #                 temp[item] = threshold
-        #         origin[user] = temp
-        #     self.measure = Measure.rankingMeasure_threshold(origin, recList, userN)
+
         FileIO.writeFile(outDir, fileName, self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
@@ -280,9 +262,7 @@ class Recommender(object):
 
 
     def performance(self):
-        #res = []  # used to contain the text of the result
-        #res.append('userId  itemId  original  prediction\n')
-        # predict
+
         res = []
         for ind, entry in enumerate(self.dao.testData):
             user, item, rating = entry
@@ -295,18 +275,7 @@ class Recommender(object):
             pred = self.checkRatingBoundary(prediction)
             # add prediction in order to measure
             res.append([user,item,rating,pred])
-            #res.append(user + ' ' + item + ' ' + str(rating) + ' ' + str(pred) + '\n')
-        #currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # output prediction result
-        # if self.isOutput:
-        #     outDir = self.output['-dir']
-        #     fileName = self.config['recommender'] + '@' + currentTime + '-rating-predictions' + self.foldInfo + '.txt'
-        #     FileIO.writeFile(outDir, fileName, res)
-        #     print 'The Result has been output to ', abspath(outDir), '.'
-        # output evaluation result
-        # outDir = self.output['-dir']
-        # fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
+
         self.measure = Measure.ratingMeasure(res)
 
         return self.measure
-        #FileIO.writeFile(outDir, fileName, self.measure)
