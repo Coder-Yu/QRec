@@ -133,6 +133,16 @@ class Recommender(object):
             print 'No correct evaluation metric is specified!'
             exit(-1)
 
+        currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        # output prediction result
+
+        fileName = ''
+        outDir = self.output['-dir']
+        fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
+            N) + 'items' + self.foldInfo + '.txt'
+
+        if self.isOutput:
+            FileIO.writeFile(outDir, fileName, [])
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
         # predict
         recList = {}
@@ -150,10 +160,7 @@ class Recommender(object):
                 # pred = self.checkRatingBoundary(prediction)
                 #####################################
                 # add prediction in order to measure
-                # if bThres:
-                #     if rating > threshold:
-                #         itemSet[self.dao.id2item[id]]= rating
-                # else:
+
                 itemSet[self.dao.id2item[id]] = rating
 
             ratedList, ratingList = self.dao.userRated(user)
@@ -203,24 +210,20 @@ class Recommender(object):
 
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
-            for item in recList[user]:
-                line += ' (' + item[0] + ',' + str(item[1]) + ')'
-                if self.dao.testSet_u[user].has_key(item[0]):
-                    line += '*'
+            if self.isOutput:
+                for item in recList[user]:
+                    line += ' (' + item[0] + ',' + str(item[1]) + ')'
+                    if self.dao.testSet_u[user].has_key(item[0]):
+                        line += '*'
 
-            line += '\n'
-            res.append(line)
+                line += '\n'
+                res.append(line)
+                if len(res)>500:
+                    FileIO.writeFile(outDir, fileName, res)
+                    res = []
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
-            fileName = ''
-            outDir = self.output['-dir']
-            if self.ranking.contains('-topN'):
-                fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
-                    N) + 'items' + self.foldInfo + '.txt'
-            elif self.ranking.contains('-threshold'):
-                fileName = self.config['recommender'] + '@' + currentTime + '-threshold-' + str(
-                    threshold) + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
             print 'The result has been output to ', abspath(outDir), '.'
         # output evaluation result
