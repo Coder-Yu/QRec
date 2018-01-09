@@ -33,7 +33,7 @@ class Measure(object):
 
 
     @staticmethod
-    def rankingMeasure(origin,res,rawRes,N):
+    def rankingMeasure(origin,res,N):
         measure = []
         if len(origin)!= len(res):
             print 'Lengths do not match!'
@@ -47,8 +47,8 @@ class Measure(object):
         measure.append('F1:' + str(F1) + '\n')
         MAP = Measure.MAP(origin,res,N)
         measure.append('MAP:' + str(MAP) + '\n')
-        AUC = Measure.AUC(origin,res,rawRes)
-        measure.append('AUC:' + str(AUC) + '\n')
+        #AUC = Measure.AUC(origin,res,rawRes)
+        #measure.append('AUC:' + str(AUC) + '\n')
         return measure
 
     @staticmethod

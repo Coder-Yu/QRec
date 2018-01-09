@@ -133,22 +133,12 @@ class Recommender(object):
             print 'No correct evaluation metric is specified!'
             exit(-1)
 
-        currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # output prediction result
-
-        fileName = ''
-        outDir = self.output['-dir']
-        fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
-            N) + 'items' + self.foldInfo + '.txt'
-
-        if self.isOutput:
-            FileIO.writeFile(outDir, fileName, [])
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
         # predict
         recList = {}
         userN = {}
         userCount = len(self.dao.testSet_u)
-        rawRes = {}
+        #rawRes = {}
         for i, user in enumerate(self.dao.testSet_u):
             itemSet = {}
             line = user + ':'
@@ -167,7 +157,7 @@ class Recommender(object):
             for item in ratedList:
                 del itemSet[item]
 
-            rawRes[user] = itemSet
+            #rawRes[user] = itemSet
             Nrecommendations = []
             for item in itemSet:
                 if len(Nrecommendations) < N:
@@ -210,27 +200,27 @@ class Recommender(object):
 
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
-            if self.isOutput:
-                for item in recList[user]:
-                    line += ' (' + item[0] + ',' + str(item[1]) + ')'
-                    if self.dao.testSet_u[user].has_key(item[0]):
-                        line += '*'
+            for item in recList[user]:
+                line += ' (' + item[0] + ',' + str(item[1]) + ')'
+                if self.dao.testSet_u[user].has_key(item[0]):
+                    line += '*'
 
-                line += '\n'
-                res.append(line)
-                if len(res)>500:
-                    FileIO.writeFile(outDir, fileName, res)
-                    res = []
+            line += '\n'
+            res.append(line)
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
+            fileName = ''
+            outDir = self.output['-dir']
+            fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
+            N) + 'items' + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
             print 'The result has been output to ', abspath(outDir), '.'
         # output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         if self.ranking.contains('-topN'):
-            self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, rawRes,N)
+            self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, N)
 
         FileIO.writeFile(outDir, fileName, self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
