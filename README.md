@@ -84,7 +84,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td scope="row">item.ranking</td>
     <td>off -topN -1 </td>
     <td>Main option: whether to do item ranking<br>
-      -topN N: the length of the recommendation list for item recommendation, default -1 for full list; </br>
+      <td>-topN N1,N2,N3...: the length of the recommendation list. *RecQ can generate multiple evaluation results for different N at the same time</br>
     </td>
   </tr>
   <tr>

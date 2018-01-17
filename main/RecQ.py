@@ -100,11 +100,14 @@ class RecQ(object):
             self.measure = [dict(m)[i] for i in range(1,k+1)]
             res = []
             for i in range(len(self.measure[0])):
+                if self.measure[0][i][:3] == 'Top':
+                    res.append(self.measure[0][i])
+                    continue
                 measure = self.measure[0][i].split(':')[0]
                 total = 0
                 for j in range(k):
                     total += float(self.measure[j][i].split(':')[1])
-                res.append(measure+':'+str(total/k)+'\n')
+                res.append(measure + ':' + str(total / k) + '\n')
             #output result
             currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
             outDir = LineConfig(self.config['output.setup'])['-dir']
