@@ -23,10 +23,9 @@ class WRMF(IterativeRecommender):
             YtY = self.Y.T.dot(self.Y)
             # the user n*n ==> I
             I = np.ones(len(self.dao.item))
-            for user in self.dao.user:#self.dao.user:
+            for user in self.dao.user:
                 C_u = np.ones(len(self.dao.item))
                 P_u = np.zeros(len(self.dao.item))
-                # uid = self.dao.user[user]
                 uid=self.dao.getUserId(user)
                 for item in self.dao.trainSet_u[user]:
                     iid =self.dao.getItemId(item)
@@ -43,7 +42,6 @@ class WRMF(IterativeRecommender):
             for item in self.dao.item:
                 C_i = np.ones(len(self.dao.user))
                 P_i = np.zeros(len(self.dao.user))
-                # iid=self.dao.item[item]
                 iid=self.dao.getItemId(item)
                 for user in self.dao.trainSet_i[item]:
                     uid = self.dao.getUserId(user)
@@ -54,8 +52,8 @@ class WRMF(IterativeRecommender):
                 self.Y[iid] = (Temp.dot(self.X.T)*C_i).dot(P_i)
             iteration += 1
             print 'iteration:',iteration
-            # if self.isConverged(iteration):
-            #     break
+            if self.isConverged(iteration):
+                break
     def predict(self, u):
         'invoked to rank all the items for the user'
         u = self.dao.getUserId(u)
