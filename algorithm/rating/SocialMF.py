@@ -14,33 +14,39 @@ class SocialMF(SocialRecommender ):
         while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
-                userId, itemId, r = entry
-                followees = self.sao.getFollowees(userId)
-                u = self.dao.getUserId(userId)
-                i = self.dao.getItemId(itemId)
-                error = r - self.P[u].dot(self.Q[i])
+                user, item, rating = entry
+                u = self.dao.user[user]
+                i = self.dao.item[item]
+                error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
-                fPred = 0
-                denom = 0
-                relationLoss = np.zeros(self.k)
-                for followee in followees:
-                    weight= followees[followee]
-                    uf = self.dao.getUserId(followee)
-                    if uf <> -1 and self.dao.containsUser(followee):
-                        fPred += weight * self.P[uf]
-                        denom += weight
-                if denom <> 0:
-                    relationLoss = p - fPred / denom
-
-                self.loss += self.regU * p.dot(p) + self.regI * q.dot(q) + self.regS *  relationLoss.dot(relationLoss)
-
-                # update latent vectors
-                self.P[u] += self.lRate * (error * q - self.regU * p - self.regS * relationLoss)
+                self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
 
+            for user in self.sao.user:
+                if self.dao.containsUser(user):
+                    fPred = 0
+                    denom = 0
+                    u = self.dao.user[user]
+                    relationLoss = np.zeros(self.k)
+                    followees = self.sao.getFollowees(user)
+                    for followee in followees:
+                        weight= followees[followee]
+                        if self.dao.containsUser(followee):
+                            uf = self.dao.user[followee]
+                            fPred += weight * self.P[uf]
+                            denom += weight
+                    if denom <> 0:
+                        relationLoss = p - fPred / denom
 
+                    self.loss +=  self.regS *  relationLoss.dot(relationLoss)
+
+                    # update latent vectors
+                    self.P[u] -= self.lRate * self.regS * relationLoss
+
+
+            self.loss+=self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break

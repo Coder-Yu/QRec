@@ -37,7 +37,7 @@ class UserKNN(Recommender):
         for n in range(userCount):
             #if user n has rating on item i
             similarUser = topUsers[n][0]
-            if self.dao.rating(similarUser,i) != 0:
+            if self.dao.rating(similarUser,i) != -1:
                 similarity = topUsers[n][1]
                 rating = self.dao.rating(similarUser,i)
                 sum += similarity*(rating-self.dao.userMeans[similarUser])
@@ -51,6 +51,7 @@ class UserKNN(Recommender):
         pred = self.dao.userMeans[u]+sum/float(denom)
         return pred
 
+
     def computeCorr(self):
         'compute correlation among users'
         print 'Computing user correlation...'
@@ -60,7 +61,7 @@ class UserKNN(Recommender):
                 if u1 <> u2:
                     if self.userSim.contains(u1,u2):
                         continue
-                    sim = qmath.similarity(self.dao.row(u1),self.dao.row(u2),self.sim)
+                    sim = qmath.similarity(self.dao.sRow(u1),self.dao.sRow(u2),self.sim)
                     self.userSim.set(u1,u2,sim)
             print 'user '+u1+' finished.'
         print 'The user correlation has been figured out.'

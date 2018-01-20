@@ -4,8 +4,8 @@ from tool import qmath
 
 
 class SoReg(SocialRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(SoReg, self).__init__(conf,trainingSet,testSet,fold)
+    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
+        super(SoReg, self).__init__(conf,trainingSet,testSet,relation,fold)
 
     def readConfiguration(self):
         super(SoReg, self).readConfiguration()
@@ -21,48 +21,55 @@ class SoReg(SocialRecommender):
     def initModel(self):
         super(SoReg, self).initModel()
         # compute similarity
-        self.Sim = {}
-        for entry in self.dao.trainingData:
-            u, i, r = entry
-            if self.sao.getFollowees(u):
-                for f in self.sao.getFollowees(u):
-                    if not self.Sim.has_key(u):
-                        self.Sim[u]={}
-                    self.Sim[u][f]=self.sim(u,f)
-
+        from collections import defaultdict
+        self.Sim = defaultdict(dict)
+        print 'constructing similarity matrix...'
+        for user in self.dao.user:
+            for f in self.sao.getFollowees(user):
+                if self.Sim.has_key(user) and self.Sim[user].has_key(f):
+                    pass
+                else:
+                    self.Sim[user][f]=self.sim(user,f)
+                    self.Sim[f][user]=self.Sim[user][f]
 
 
     def sim(self,u,v):
-        return (qmath.pearson(self.dao.row(u), self.dao.row(v))+1)/2.0
+        return (qmath.pearson_sp(self.dao.sRow(u), self.dao.sRow(v))+self.sao.weight(u,v))/2.0
 
     def buildModel(self):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
             for entry in self.dao.trainingData:
-                u, i, r = entry
-                uid = self.dao.getUserId(u)
-                id = self.dao.getItemId(i)
-                simSumf = 0
-                simSum2 = 0
+                user, item, rating = entry
+                uid = self.dao.user[user]
+                id = self.dao.item[item]
+
                 # add the followees' influence
-                if self.sao.getFollowees(u):
-                    for f in self.sao.getFollowees(u):
-                        if self.dao.containsUser(f):
-                            fid = self.dao.getUserId(f)
-                            simSumf += self.Sim[u][f]*(self.P[uid]-self.P[fid])
-                            simSum2 += self.Sim[u][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
 
-                error = r - self.P[uid].dot(self.Q[id])
-                p = self.P[uid].copy()
-                q = self.Q[id].copy()
+                error = rating - self.P[uid].dot(self.Q[id])
+                p = self.P[uid]
+                q = self.Q[id]
 
-                self.loss += error**2 + self.alpha*simSum2 + self.regU * p.dot(p) + self.regI * q.dot(q)
+                self.loss += error**2
 
                 #update latent vectors
-                self.P[uid] += self.lRate*(error*q - self.regU * p - self.alpha*simSumf)
+                self.P[uid] += self.lRate*(error*q - self.regU * p)
                 self.Q[id] += self.lRate*(error*p - self.regI * q)
 
+            for user in self.dao.user:
+                simSumf = 0
+                simSum2 = 0
+                uid = self.dao.user[user]
+                for f in self.sao.getFollowees(user):
+                    if self.dao.containsUser(f):
+                        fid = self.dao.user[f]
+                        simSumf += self.Sim[user][f] * (self.P[uid] - self.P[fid])
+                        simSum2 += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
+                        self.loss += simSum2
+                self.P[uid] += self.lRate * (- self.alpha * simSumf)
+
+            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break

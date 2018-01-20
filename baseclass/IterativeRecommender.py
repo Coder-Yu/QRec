@@ -1,6 +1,8 @@
 from baseclass.Recommender import Recommender
 from tool import config
 import numpy as np
+from random import shuffle
+
 
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -28,8 +30,8 @@ class IterativeRecommender(Recommender):
         print '='*80
 
     def initModel(self):
-        self.P = np.random.rand(self.dao.trainingSize()[0], self.k)  # latent user matrix
-        self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)  # latent item matrix
+        self.P = np.random.rand(self.dao.trainingSize()[0], self.k)/3 # latent user matrix
+        self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
     def saveModel(self):
@@ -51,23 +53,37 @@ class IterativeRecommender(Recommender):
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return self.P[self.dao.getUserId(u)].dot(self.Q[self.dao.getItemId(i)])
+            return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
+        elif self.dao.containsUser(u) and not self.dao.containsItem(i):
+            return self.dao.userMeans[u]
+        elif not self.dao.containsUser(u) and self.dao.containsItem(i):
+            return self.dao.itemMeans[i]
         else:
             return self.dao.globalMean
+
+    def predictForRanking(self,u):
+        'used to rank all the items for the user'
+        if self.dao.containsUser(u):
+            return (self.Q).dot(self.P[self.dao.user[u]])
+        else:
+            return [self.dao.globalMean]*len(self.dao.item)
 
     def isConverged(self,iter):
         from math import isnan
         if isnan(self.loss):
             print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
             exit(-1)
+        measure = self.performance()
+        value = [item.strip()for item in measure]
+        #with open(self.algorName+' iteration.txt')
         deltaLoss = (self.lastLoss-self.loss)
-        print '%s %s iteration %d: loss = %.4f, delta_loss = %.4f learning_Rate = %f' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
+        print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate,measure[0][:11],measure[1][:12])
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
         if not converged:
             self.updateLearningRate(iter)
         self.lastLoss = self.loss
+        shuffle(self.dao.trainingData)
         return converged
-
 

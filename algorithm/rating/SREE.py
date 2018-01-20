@@ -1,19 +1,24 @@
-from baseclass.IterativeRecommender import IterativeRecommender
+from baseclass.SocialRecommender import SocialRecommender
 import numpy as np
 from tool import config
 
+###################################
+#NOTE: WE CONSIDER THAT THE SOCIAL TERM IN THE RATING PREDICTION EQUATION SHOULD
+#BE MOVED OUT. THE LOSS FUNCTION SHOULD BE (RATING ERROR)^2 + SOCIAL TERM + PENALTY TERMS
+#THEREFORE, THE IMPLEMENTATION IS DIFFERENT FROM THE ORIGINAL PAPER.
+###################################
 
-class EE(IterativeRecommender):
-    def __init__(self, conf, trainingSet=None, testSet=None, fold='[1]'):
-        super(EE, self).__init__(conf, trainingSet, testSet, fold)
+class SREE(SocialRecommender):
+    def __init__(self, conf, trainingSet=None, testSet=None, relation=list(),fold='[1]'):
+        super(SREE, self).__init__(conf, trainingSet, testSet, relation,fold)
 
-    # def readConfiguration(self):
-    #     super(EE, self).readConfiguration()
-    #     Dim = config.LineConfig(self.config['EE'])
-    #     self.Dim = int(Dim['-d'])
+    def readConfiguration(self):
+        super(SREE, self).readConfiguration()
+        par = config.LineConfig(self.config['SREE'])
+        self.alpha = float(par['-alpha'])
 
     def initModel(self):
-        super(EE, self).initModel()
+        super(SREE, self).initModel()
         self.Bu = np.random.rand(self.dao.trainingSize()[0])/10  # bias value of user
         self.Bi = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of item
         # self.X = np.random.rand(self.dao.trainingSize()[0], self.Dim)/10
@@ -39,6 +44,21 @@ class EE(IterativeRecommender):
                 self.Bu[u] += self.lRate * (error - self.regB * bu)
                 self.Bi[i] += self.lRate * (error - self.regB * bi)
             self.loss+=self.regB*(self.Bu*self.Bu).sum()+self.regB*(self.Bi*self.Bi).sum()
+
+            for user in self.sao.user:
+                if self.dao.containsUser(user):
+                    u = self.dao.user[user]
+                    followees = self.sao.getFollowees(user)
+                    for friend in followees:
+                        if self.dao.containsUser(friend):
+                            v = self.dao.user[friend]
+                            weight = followees[friend]
+                            p = self.P[u]
+                            z = self.P[v]
+                            # update latent vectors
+                            self.P[u] -= self.lRate * self.alpha*weight*(p-z)
+                            self.loss += self.alpha*weight*(p-z).dot(p-z)
+
             iteration += 1
             self.isConverged(iteration)
 
