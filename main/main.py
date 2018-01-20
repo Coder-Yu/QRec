@@ -4,8 +4,6 @@ from RecQ import RecQ
 from tool.config import Config
 from visual.display import Display
 
-
-
 if __name__ == '__main__':
 
     print '='*80
@@ -15,7 +13,7 @@ if __name__ == '__main__':
     print '-' * 80
     print 'Rating-based Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
-    print '6. PMF            7. SVD++          8. EE             9. BPR'
+    print '6. PMF            7. SVD++          8. EE             9. BPR             19. ALS'
 
     print 'Social Recommenders:'
     print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF     14. SBPR'
@@ -109,6 +107,8 @@ if __name__ == '__main__':
 
     elif order == 'b4':
         conf = Config('../config/rand.conf')
+    elif order == '19':
+        conf = Config('../config/ALS.conf')
 
     else:
         print 'Error num!'
