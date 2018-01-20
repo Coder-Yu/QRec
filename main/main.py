@@ -15,15 +15,15 @@ if __name__ == '__main__':
     print '-' * 80
     print 'Rating-based Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
-    print '6. PMF            7. SVD++          8. EE             9. BPR'
+    print '6. PMF            7. SVD++          8. EE             9. BPR             10. WRMF'
 
     print 'Social Recommenders:'
-    print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF     14. SBPR'
-    print '15. SREE'
+    print '11. RSTE          12. SoRec         13. SoReg         14. SocialMF     15. SBPR'
+    print '16. SREE'
 
 
     print 'Advanced Recommenders:'
-    print '16. CoFactor      17. CUNE-MF       18. CUNE-BPR'
+    print '17. CoFactor      18. CUNE-MF       19. CUNE-BPR'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
@@ -69,33 +69,35 @@ if __name__ == '__main__':
     elif order == '9':
         conf = Config('../config/BPR.conf')
 
-
-
     elif order == '10':
-        conf = Config('../config/RSTE.conf')
+        conf = Config('../config/WRMF.conf')
+
 
     elif order == '11':
-        conf = Config('../config/SoRec.conf')
+        conf = Config('../config/RSTE.conf')
 
     elif order == '12':
-        conf = Config('../config/SoReg.conf')
+        conf = Config('../config/SoRec.conf')
 
     elif order == '13':
-        conf = Config('../config/SocialMF.conf')
+        conf = Config('../config/SoReg.conf')
 
     elif order == '14':
-        conf = Config('../config/SBPR.conf')
+        conf = Config('../config/SocialMF.conf')
 
     elif order == '15':
-        conf = Config('../config/SREE.conf')
+        conf = Config('../config/SBPR.conf')
 
     elif order == '16':
-        conf = Config('../config/CoFactor.conf')
+        conf = Config('../config/SREE.conf')
 
     elif order == '17':
-        conf = Config('../config/CUNE_MF.conf')
+        conf = Config('../config/CoFactor.conf')
 
     elif order == '18':
+        conf = Config('../config/CUNE_MF.conf')
+
+    elif order == '19':
         conf = Config('../config/CUNE_BPR.conf')
 
     elif order == 'b1':
