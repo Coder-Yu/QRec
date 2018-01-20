@@ -120,14 +120,13 @@ class Recommender(object):
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
-
+        N = 0
+        threshold = 0
         if self.ranking.contains('-topN'):
-            top = self.ranking['-topN'].split(',')
-            top = [int(num) for num in top]
-            N = int(top[-1])
+            N = int(self.ranking['-topN'])
             if N > 100 or N < 0:
-                print 'N can not be larger than 100! It has been reassigned with 10'
-                N = 10
+                print 'N can not be larger than 100! It has been reassigned with 100'
+                N = 100
             if N > len(self.dao.item):
                 N = len(self.dao.item)
         else:
@@ -220,7 +219,9 @@ class Recommender(object):
         # output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
-        self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, top)
+        if self.ranking.contains('-topN'):
+            self.measure = Measure.rankingMeasure(self.dao.testSet_u, recList, N)
+
         FileIO.writeFile(outDir, fileName, self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
