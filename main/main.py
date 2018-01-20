@@ -19,11 +19,11 @@ if __name__ == '__main__':
 
     print 'Social Recommenders:'
     print '10. RSTE          11. SoRec         12. SoReg         13. SocialMF     14. SBPR'
-    print '15. SREE'
+    print '15. SREE          16. WRMF'
 
 
     print 'Advanced Recommenders:'
-    print '16. CoFactor      17. CUNE-MF       18. CUNE-BPR'
+    print '17. CoFactor      18. CUNE-MF       19. CUNE-BPR'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
@@ -90,12 +90,15 @@ if __name__ == '__main__':
         conf = Config('../config/SREE.conf')
 
     elif order == '16':
-        conf = Config('../config/CoFactor.conf')
+        conf = Config('../config/WRMF.conf')
 
     elif order == '17':
-        conf = Config('../config/CUNE_MF.conf')
+        conf = Config('../config/CoFactor.conf')
 
     elif order == '18':
+        conf = Config('../config/CUNE_MF.conf')
+
+    elif order == '19':
         conf = Config('../config/CUNE_BPR.conf')
 
     elif order == 'b1':
