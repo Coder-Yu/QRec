@@ -27,6 +27,9 @@ if __name__ == '__main__':
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
+    
+    print 'WZW:'
+    print '20:WRMF'
     print '='*80
     algor = -1
     conf = -1
@@ -109,6 +112,10 @@ if __name__ == '__main__':
 
     elif order == 'b4':
         conf = Config('../config/rand.conf')
+        
+        
+    elif order == '20':
+        conf = Config('../config/WRMF.conf')
 
     else:
         print 'Error num!'
@@ -117,3 +124,4 @@ if __name__ == '__main__':
     recSys.execute()
     e = time.time()
     print "Run time: %f s" % (e - s)
+    
