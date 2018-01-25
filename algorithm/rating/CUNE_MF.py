@@ -210,17 +210,19 @@ class CUNE_MF(IterativeRecommender):
         for user in self.CUNet:
             for t in range(self.walkCount):
                 path = [user]
+                lastNode = user
                 for i in range(1,self.walkLength):
-                    nextNode = choice(self.CUNet[user])
+                    nextNode = choice(self.CUNet[lastNode])
                     count=0
-                    while(self.visited[user].has_key(nextNode)):
-                        nextNode = choice(self.CUNet[user])
+                    while(self.visited[lastNode].has_key(nextNode)):
+                        nextNode = choice(self.CUNet[lastNode])
                         #break infinite loop
                         count+=1
                         if count==10:
                             break
                     path.append(nextNode)
                     self.visited[user][nextNode] = 1
+                    lastNode = nextNode
                 self.walks.append(path)
                 #print path
         shuffle(self.walks)
