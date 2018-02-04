@@ -252,6 +252,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
      </td>
   </tr>
+    <tr>
+    <td scope="row">WRMF</td>
+    <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
+     </td>
+  </tr>
   </table>
 </div>
 

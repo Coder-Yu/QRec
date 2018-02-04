@@ -1,7 +1,7 @@
 ################# Confidence Frequency Matrix Factorization #################
 #                   Weighted Rating Matrix  Factorization                   #
 # this algorithm refers to the following paper:
-# Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets,2008 IEEE
+# Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets
 from baseclass.IterativeRecommender import IterativeRecommender
 import math
 import numpy as np
