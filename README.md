@@ -1,7 +1,7 @@
 <img src="http://upload.ouliu.net/i/20171227024711eiaca.png" width="250" height="120"/>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
-**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
+**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 Released by School of Software Engineering, Chongqing University</br>
 <b>More algorithms (ranking based and context-aware) can be found in another project of mine <a href="https://github.com/Coder-Yu/Yue/">Yue</a></b>
 <h2>Introduction</h2>
