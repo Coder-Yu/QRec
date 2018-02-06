@@ -59,7 +59,6 @@ class SoReg(SocialRecommender):
 
                 simSum = 0
                 simSumf1 = 0
-                uid = self.dao.user[user]
                 for f in self.sao.getFollowees(user):
                     if self.dao.containsUser(f):
                         fid = self.dao.user[f]
