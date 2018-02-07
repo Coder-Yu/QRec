@@ -1,4 +1,4 @@
-<img src="http://upload.ouliu.net/i/20171227024711eiaca.png" width="250" height="120"/>
+<img src="http://i2.bvimg.com/631692/8822de4cc837157e.png" width="250" height="140"/>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
