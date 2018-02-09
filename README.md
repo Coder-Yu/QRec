@@ -189,6 +189,12 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Jamali and Ester, A Matrix Factorization Technique with Trust Propagation for Recommendation in Social Networks, RecSys 2010.
      </td>
   </tr>
+    <tr>
+    <td scope="row">LOCABAL</td>
+    <td>Tang, Jiliang, et al. Exploiting local and global social context for recommendation, AAAI 2013.
+     </td>
+  </tr>
+  
   <tr>
     <td scope="row">RSTE</td>
     <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
