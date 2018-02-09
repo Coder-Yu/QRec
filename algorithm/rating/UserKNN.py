@@ -24,11 +24,12 @@ class UserKNN(Recommender):
         print '='*80
 
     def initModel(self):
+        self.topUsers = {}
         self.computeCorr()
 
     def predict(self,u,i):
         #find the closest neighbors of user u
-        topUsers = sorted(self.userSim[u].iteritems(),key = lambda d:d[1],reverse=True)
+        topUsers = self.topUsers[u]
         userCount = self.neighbors
         if userCount > len(topUsers):
             userCount = len(topUsers)
@@ -63,6 +64,7 @@ class UserKNN(Recommender):
                         continue
                     sim = qmath.similarity(self.dao.sRow(u1),self.dao.sRow(u2),self.sim)
                     self.userSim.set(u1,u2,sim)
+            self.topUsers[u1]=sorted(self.userSim[u1].iteritems(), key=lambda d: d[1], reverse=True)
             print 'user '+u1+' finished.'
         print 'The user correlation has been figured out.'
 

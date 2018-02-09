@@ -23,11 +23,12 @@ class ItemKNN(Recommender):
         print '='*80
 
     def initModel(self):
+        self.topItems = {}
         self.computeCorr()
 
     def predict(self,u,i):
         #find the closest neighbors of item i
-        topItems = sorted(self.itemSim[i].iteritems(),key = lambda d:d[1],reverse=True)
+        topItems = self.topItems[i]
         itemCount = self.neighbors
         if itemCount > len(topItems):
             itemCount = len(topItems)
@@ -62,6 +63,7 @@ class ItemKNN(Recommender):
                         continue
                     sim = qmath.similarity(self.dao.sCol(i1),self.dao.sCol(i2),self.sim)
                     self.itemSim.set(i1,i2,sim)
+            self.topItems[i1] = sorted(self.itemSim[i1].iteritems(),key = lambda d:d[1],reverse=True)
             print 'item '+i1+' finished.'
         print 'The item correlation has been figured out.'
 
