@@ -1,7 +1,7 @@
-<img src="http://upload.ouliu.net/i/20171227024711eiaca.png" width="250" height="120"/>
+<img src="http://i2.bvimg.com/631692/8822de4cc837157e.png" width="200" height="115"/>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
-**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
+**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 Released by School of Software Engineering, Chongqing University</br>
 <b>More algorithms (ranking based and context-aware) can be found in another project of mine <a href="https://github.com/Coder-Yu/Yue/">Yue</a></b>
 <h2>Introduction</h2>
@@ -250,6 +250,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   <tr>
     <td scope="row">CUNE-BPR</td>
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
+     </td>
+  </tr>
+    <tr>
+    <td scope="row">WRMF</td>
+    <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
      </td>
   </tr>
   </table>
