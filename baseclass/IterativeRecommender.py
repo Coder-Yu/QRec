@@ -216,7 +216,7 @@ class IterativeRecommender(Recommender):
             origin = {}
             for user in recList:
                 origin[user] = self.dao.testSet_u[user]
-            self.measure = Measure.rankingMeasure(origin, recList, rawRes,N)
+            self.measure = Measure.rankingMeasure(origin, recList, N)
         # elif self.ranking.contains('-threshold'):
         #     origin = self.dao.testSet_u.copy()
         #     for user in origin:

@@ -33,7 +33,7 @@ class Measure(object):
 
 
     @staticmethod
-    def rankingMeasure(origin,res,rawRes,N):
+    def rankingMeasure(origin,res,N):
         measure = []
         if len(origin)!= len(res):
             print 'Lengths do not match!'

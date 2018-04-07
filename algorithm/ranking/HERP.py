@@ -395,7 +395,7 @@ class HERP(SocialRecommender):
             if self.trueTopKFriends.has_key(user):
                 for friend in self.trueTopKFriends[user][:self.topK]:
                     if self.dao.user.has_key(friend):
-                        for item in self.dao.trainSet_u[friend]:
+                        for item in self.positive[friend]:
                             if not self.PositiveSet[user].has_key(item):
                                 if not self.IPositiveSet[user].has_key(item):
                                     self.IPositiveSet[user][item] = 1
@@ -405,7 +405,7 @@ class HERP(SocialRecommender):
             if self.pTopKSim.has_key(user):
                 for friend in self.pTopKSim[user][:self.topK]:
                     if self.dao.user.has_key(friend):
-                        for item in self.dao.trainSet_u[friend]:
+                        for item in self.positive[friend]:
                             if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(item):
                                 if not self.OKSet[user].has_key(item):
                                     self.OKSet[user][item] = 1
