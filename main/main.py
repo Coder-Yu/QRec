@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     print 'Advanced Recommenders:'
     print '16. CoFactor      17. CUNE-MF       18. CUNE-BPR      19. MPE-MF       20. MPE-BPR'
-    print '21. HER           22. SocialFD'
+    print '21. HER           22. SocialFD      a22. HERP'
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular'
     print '='*80
@@ -106,6 +106,10 @@ if __name__ == '__main__':
 
     elif order == '21':
         conf = Config('../config/HER.conf')
+
+    elif order == 'a22':
+        conf = Config('../config/HERP.conf')
+
     elif order == '22':
         conf = Config('../config/SocialFD.conf')
 
