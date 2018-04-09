@@ -360,15 +360,17 @@ class HERP(SocialRecommender):
 
         # print 'Similarity matrix finished.'
         # # # #print self.topKSim
-        #import pickle
+        import pickle
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # similarity = open('HERP-lastfm-sim'+self.foldInfo+'.pkl', 'wb')
+        psimilarity = open('HERP-pEpinions-sim'+self.foldInfo+'.pkl', 'wb')
+        nsimilarity = open('HERP-nEpinions-sim' + self.foldInfo + '.pkl', 'wb')
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
-        # pickle.dump(self.topKSim, similarity)
-        # pickle.dump((self.W,self.G),vectors)
+        pickle.dump(self.pTopKSim, psimilarity)
+        pickle.dump(self.nTopKSim, nsimilarity)
+        #pickle.dump((self.W,self.G),vectors)
         # similarity.close()
         # vectors.close()
 
@@ -504,7 +506,7 @@ class HERP(SocialRecommender):
             for user in self.trueTopKFriends:
                 for friend in self.trueTopKFriends[user]:
                     u = self.dao.user[user]
-                    f = self.dao.user[friend[0]]
+                    f = self.dao.user[friend]
                     self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
