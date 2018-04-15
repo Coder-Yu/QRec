@@ -35,16 +35,16 @@ class HER(SocialRecommender):
         print '=' * 80
 
     def buildModel(self):
-        tobeCleaned = []
-        for user in self.dao.testSet_u:
-            for item in self.dao.testSet_u[user]:
-                if self.dao.testSet_u[user][item]<4.5:
-                    tobeCleaned.append((user,item))
-
-        for pair in tobeCleaned:
-            del self.dao.testSet_u[pair[0]][pair[1]]
-            if len(self.dao.testSet_u[pair[0]])==0:
-                del self.dao.testSet_u[pair[0]]
+        # tobeCleaned = []
+        # for user in self.dao.testSet_u:
+        #     for item in self.dao.testSet_u[user]:
+        #         if self.dao.testSet_u[user][item]<4.5:
+        #             tobeCleaned.append((user,item))
+        #
+        # for pair in tobeCleaned:
+        #     del self.dao.testSet_u[pair[0]][pair[1]]
+        #     if len(self.dao.testSet_u[pair[0]])==0:
+        #         del self.dao.testSet_u[pair[0]]
         #data clean
         cleanList = []
         cleanPair = []
@@ -101,7 +101,7 @@ class HER(SocialRecommender):
         for user in self.dao.trainSet_u:
             self.fBuying[user] = []
             for item in self.dao.trainSet_u[user]:
-                if self.fItems.has_key(item) and self.dao.trainSet_u[user][item] > 0.75:
+                if self.fItems.has_key(item) and self.dao.trainSet_u[user][item] > 0:
                     self.fBuying[user].append(item)
             if self.fBuying[user] == []:
                 del self.fBuying[user]
@@ -143,9 +143,9 @@ class HER(SocialRecommender):
                 if mp == p1:
                     self.walkCount = 10
                 if mp == p2:
-                    self.walkCount = 8
+                    self.walkCount = 5
                 if mp == p3:
-                    self.walkCount = 8
+                    self.walkCount = 5
                 if mp == p4:
                     self.walkCount = 5
                 if mp == p5:
@@ -335,10 +335,11 @@ class HER(SocialRecommender):
         #     i += 1
         #     if i % 200 == 0:
         #         print i, '/', len(self.dao.user)
-        #
+        #     l1 = self.dao.trainSet_u[user1].keys()
         #     for user2 in self.dao.user:
         #         if user1 <> user2:
-        #             sim = qmath.similarity(self.dao.sRow(user1),self.dao.sRow(user2),'cos')
+        #             l2 = self.dao.trainSet_u[user2].keys()
+        #             sim = len(set(l1).intersection(l2))
         #             uSim.append((user2, sim))
         #
         #     self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
@@ -368,67 +369,65 @@ class HER(SocialRecommender):
         # prepare Pu set, IPu set, and Nu set
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.IPositiveSet = defaultdict(dict)
+        self.IPositiveSet = defaultdict(list)
 
 
-        for user in self.dao.user:
+        for user in self.topKSim:
             for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item] >= 0.9:
-                    self.PositiveSet[user][item] = 1
-                    # else:
-                    #     self.NegativeSet[user].append(item)
-            if self.topKSim.has_key(user):
-                for friend in self.topKSim[user][:self.topK]:
-                    if self.dao.user.has_key(friend[0]):
-                        print friend
-                        for item in self.dao.trainSet_u[friend[0]]:
-                            if not self.PositiveSet[user].has_key(item):
-                                if not self.IPositiveSet[user].has_key(item):
-                                    self.IPositiveSet[user][item] = 1
-                                else:
-                                    self.IPositiveSet[user][item] += 1
+                if self.dao.trainSet_u[user][item]>=1:
+                    self.PositiveSet[user][item]=1
+                # else:
+                #     self.NegativeSet[user].append(item)
 
-        print self.IPositiveSet
+            for friend in self.topKSim[user]:
+                for item in self.dao.trainSet_u[friend[0]]:
+                    if not self.PositiveSet[user].has_key(item):
+                        self.IPositiveSet[user].append(item)
+
+        #print self.IPositiveSet
         iteration = 0
+        self.s=1
         while iteration < self.maxIter:
             self.loss = 0
             itemList = self.dao.item.keys()
 
             for user in self.PositiveSet:
-                kItems = self.IPositiveSet[user].keys()
+
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
+                    j=0
                     if len(self.IPositiveSet[user]) > 0:
-                        item_k = choice(kItems)
+                        item_k = choice(self.IPositiveSet[user])
+
                         k = self.dao.item[item_k]
-                        Suk = self.IPositiveSet[user][item_k]
-                        self.P[u] += (1 / (Suk + 1)) * self.lRate * (1 - sigmoid(
-                            (self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k])) / (Suk + 1))) \
-                                     * (self.Q[i] - self.Q[k])
-                        self.Q[i] += (1 / (Suk + 1)) * self.lRate * (1 - sigmoid(
-                            (self.P[u].dot(self.Q[i])- self.P[u].dot(self.Q[k])) / (
-                                Suk + 1))) * \
+                        self.P[u] += self.lRate * (
+                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
+                                             self.Q[i] - self.Q[k])
+                        self.Q[i] += self.lRate * (
+                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
                                      self.P[u]
-                        self.Q[k] -= (1 / (Suk + 1)) * self.lRate * (1 - sigmoid(
-                            (self.P[u].dot(self.Q[i])- self.P[u].dot(self.Q[k])) / (
-                                Suk + 1))) * self.P[u]
+                        self.Q[k] -= self.lRate * (
+                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
+                                     self.P[u]
+
                         item_j = ''
                         # if len(self.NegativeSet[user])>0:
                         #     item_j = choice(self.NegativeSet[user])
                         # else:
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
+                        while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
                         j = self.dao.item[item_j]
-                        self.P[u] += self.lRate * (
-                            1 - sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))) * (
-                                         self.Q[k] - self.Q[j])
-                        self.Q[k] += self.lRate * (
-                            1 - sigmoid(self.P[u].dot(self.Q[k])- self.P[u].dot(self.Q[j]))) * \
+                        self.P[u] += (1 / self.s) * self.lRate * (
+                                1 - sigmoid(
+                            (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
+                                             self.Q[k] - self.Q[j])
+                        self.Q[k] += (1 / self.s) * self.lRate * (
+                                1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * \
                                      self.P[u]
-                        self.Q[j] -= self.lRate * (
-                            1 - sigmoid(self.P[u].dot(self.Q[k])  - self.P[u].dot(self.Q[j]))) * \
+                        self.Q[j] -= (1 / self.s) * self.lRate * (
+                                1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * \
                                      self.P[u]
 
                         self.P[u] -= self.lRate * self.regU * self.P[u]
@@ -436,30 +435,26 @@ class HER(SocialRecommender):
                         self.Q[j] -= self.lRate * self.regI * self.Q[j]
                         self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += -log(sigmoid(
-                            (self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]) ) / (Suk + 1))) \
-                                     - log(
-                            sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]) ))
+                        # self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
+                        #              log(sigmoid(
+                        #                  (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
                     else:
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
                         j = self.dao.item[item_j]
                         self.P[u] += self.lRate * (
-                            1 - sigmoid(self.P[u].dot(self.Q[i])  - self.P[u].dot(self.Q[j]) )) * (
-                                         self.Q[i] - self.Q[j])
+                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
+                                             self.Q[i] - self.Q[j])
                         self.Q[i] += self.lRate * (
-                            1 - sigmoid(self.P[u].dot(self.Q[i])  - self.P[u].dot(self.Q[j]) )) * \
+                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
                                      self.P[u]
                         self.Q[j] -= self.lRate * (
-                            1 - sigmoid(self.P[u].dot(self.Q[i])  - self.P[u].dot(self.Q[j]) )) * \
+                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
                                      self.P[u]
 
+                    self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
-                        self.loss += -log(
-                            sigmoid(self.P[u].dot(self.Q[i])  - self.P[u].dot(self.Q[j])))
-
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
             for user in self.topKSim:
                 for friend in self.topKSim[user]:

@@ -1,5 +1,4 @@
 from baseclass.IterativeRecommender import IterativeRecommender
-from baseclass.SocialRecommender import SocialRecommender
 from tool import config
 from random import randint
 from random import shuffle,choice
@@ -7,129 +6,130 @@ from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid,cosine
 from math import log
+import gensim.models.word2vec as w2v
 from structure.symmetricMatrix import SymmetricMatrix
-class Node(object):
-    def __init__(self):
-        self.val = 0
-        self.last = None
-        self.next = None
+# class Node(object):
+#     def __init__(self):
+#         self.val = 0
+#         self.last = None
+#         self.next = None
+#
+# class OrderedLinkList(object):
+#     def __init__(self):
+#         self.head=None
+#         self.tail=None
+#         self.length = 0
+#
+#     def __len__(self):
+#         return self.length
+#
+#     def insert(self,node):
+#         self.length+=1
+#         if self.head:
+#             tmp = self.head
+#             while tmp.val < node.val:
+#                 if tmp==self.tail:
+#                     break
+#                 tmp = tmp.next
+#
+#             if tmp is self.head:
+#
+#                 if self.head.val < node.val:
+#                     node.next = self.head
+#                     self.head.last = node
+#                     self.head = node
+#                 else:
+#                     node.next = self.head
+#                     self.head.last = node
+#                     self.head = node
+#                 return
+#
+#             node.next = tmp.next
+#             tmp.next = node
+#             node.last = tmp
+#             if not node.next:
+#                 self.tail = node
+#
+#         else:
+#             self.head = node
+#             self.tail = node
+#
+#     def removeHead(self):
+#         if self.head:
+#             self.head = self.head.next
+#             self.length -= 1
+#
+#     def removeNode(self,node):
+#         if self.head:
+#             tmp = self.head
+#             while tmp is not node and tmp.next:
+#                 tmp = tmp.next
+#             if tmp.next:
+#                 tmp.last.next = tmp.next
+#                 tmp.next.last = tmp.last
+#             self.length-=1
+#
+#
+# class HTreeNode(object):
+#     def __init__(self,left,right,freq,id,code=None):
+#         self.left = left
+#         self.right = right
+#         self.weight = freq
+#         self.id = id
+#         self.code = code
+#
+#     def __lt__(self, other):
+#         if self.weight < other.weight:
+#             return True
+#         else:
+#             return False
+#
+# class HuffmanTree(object):
+#     def __init__(self,root=None,vecLength=10):
+#         self.root = root
+#         self.weight = 0
+#         self.code = {}
+#         self.vecLength = vecLength
+#         self.vector = {}
+#
+#     def buildFromTrees(self,left,right):
+#         root = HTreeNode(left.val,right.val,left.val.weight+right.val.weight,None)
+#         return root
+#
+#     def buildTree(self,nodeList):
+#         if len(nodeList)<2:
+#             self.root = nodeList.head
+#             return
+#
+#         while(len(nodeList)>1):
+#             left = nodeList.head
+#             right = nodeList.head.next
+#             nodeList.removeHead()
+#             nodeList.removeHead()
+#             tree = self.buildFromTrees(left,right)
+#             node = Node()
+#             node.val = tree
+#             nodeList.insert(node)
+#
+#         self.root = nodeList.head.val
+#
+#     def coding(self,root,prefix,hierarchy):
+#         if root:
+#             root.code = prefix
+#             self.vector[prefix] = np.random.random(self.vecLength)
+#             if root.id:
+#                 self.code[root.id] = prefix
+#
+#             # if root.id:
+#             #     print 'level', hierarchy
+#             #     print root.id,prefix,root.weight
+#
+#             self.coding(root.left,prefix+'0',hierarchy+1)
+#             self.coding(root.right,prefix+'1',hierarchy+1)
 
-class OrderedLinkList(object):
-    def __init__(self):
-        self.head=None
-        self.tail=None
-        self.length = 0
-
-    def __len__(self):
-        return self.length
-
-    def insert(self,node):
-        self.length+=1
-        if self.head:
-            tmp = self.head
-            while tmp.val < node.val:
-                if tmp==self.tail:
-                    break
-                tmp = tmp.next
-
-            if tmp is self.head:
-
-                if self.head.val < node.val:
-                    node.next = self.head
-                    self.head.last = node
-                    self.head = node
-                else:
-                    node.next = self.head
-                    self.head.last = node
-                    self.head = node
-                return
-
-            node.next = tmp.next
-            tmp.next = node
-            node.last = tmp
-            if not node.next:
-                self.tail = node
-
-        else:
-            self.head = node
-            self.tail = node
-
-    def removeHead(self):
-        if self.head:
-            self.head = self.head.next
-            self.length -= 1
-
-    def removeNode(self,node):
-        if self.head:
-            tmp = self.head
-            while tmp is not node and tmp.next:
-                tmp = tmp.next
-            if tmp.next:
-                tmp.last.next = tmp.next
-                tmp.next.last = tmp.last
-            self.length-=1
-
-
-class HTreeNode(object):
-    def __init__(self,left,right,freq,id,code=None):
-        self.left = left
-        self.right = right
-        self.weight = freq
-        self.id = id
-        self.code = code
-
-    def __lt__(self, other):
-        if self.weight < other.weight:
-            return True
-        else:
-            return False
-
-class HuffmanTree(object):
-    def __init__(self,root=None,vecLength=10):
-        self.root = root
-        self.weight = 0
-        self.code = {}
-        self.vecLength = vecLength
-        self.vector = {}
-
-    def buildFromTrees(self,left,right):
-        root = HTreeNode(left.val,right.val,left.val.weight+right.val.weight,None)
-        return root
-
-    def buildTree(self,nodeList):
-        if len(nodeList)<2:
-            self.root = nodeList.head
-            return
-
-        while(len(nodeList)>1):
-            left = nodeList.head
-            right = nodeList.head.next
-            nodeList.removeHead()
-            nodeList.removeHead()
-            tree = self.buildFromTrees(left,right)
-            node = Node()
-            node.val = tree
-            nodeList.insert(node)
-
-        self.root = nodeList.head.val
-
-    def coding(self,root,prefix,hierarchy):
-        if root:
-            root.code = prefix
-            self.vector[prefix] = np.random.random(self.vecLength)
-            if root.id:
-                self.code[root.id] = prefix
-
-            # if root.id:
-            #     print 'level', hierarchy
-            #     print root.id,prefix,root.weight
-
-            self.coding(root.left,prefix+'0',hierarchy+1)
-            self.coding(root.right,prefix+'1',hierarchy+1)
-
-class CUNE_BPR(SocialRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
-        super(CUNE_BPR, self).__init__(conf,trainingSet,testSet,relation,fold)
+class CUNE_BPR(IterativeRecommender):
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(CUNE_BPR, self).__init__(conf,trainingSet,testSet,fold)
         self.nonLeafVec = {}
         self.leafVec = {}
 
@@ -172,34 +172,36 @@ class CUNE_BPR(SocialRecommender):
         self.CUNet = defaultdict(list)
 
         for user1 in self.filteredRatings:
+            s1 = set(self.filteredRatings[user1])
             for user2 in self.filteredRatings:
                 if user1 <> user2:
-                    weight = len(set(self.filteredRatings[user1]).intersection(set(self.filteredRatings[user2])))
+                    s2 = set(self.filteredRatings[user2])
+                    weight = len(s1.intersection(s2))
                     if weight > 0:
                         self.CUNet[user1]+=[user2]*weight
 
 
         #build Huffman Tree First
         #get weight
-        print 'Building Huffman tree...'
-        #To accelerate the method, the weight is estimated roughly
-        nodes = {}
-        for user in self.CUNet:
-            nodes[user] = len(self.CUNet[user])
-        nodes = sorted(nodes.iteritems(),key=lambda d:d[1])
-        nodes = [HTreeNode(None,None,user[1],user[0]) for user in nodes]
-        nodeList = OrderedLinkList()
-        for node in nodes:
-            listNode = Node()
-            listNode.val = node
-            try:
-                nodeList.insert(listNode)
-            except AttributeError:
-                pass
-        self.HTree = HuffmanTree(vecLength=self.walkDim)
-        self.HTree.buildTree(nodeList)
-        print 'Coding for all users...'
-        self.HTree.coding(self.HTree.root,'',0)
+        # print 'Building Huffman tree...'
+        # #To accelerate the method, the weight is estimated roughly
+        # nodes = {}
+        # for user in self.CUNet:
+        #     nodes[user] = len(self.CUNet[user])
+        # nodes = sorted(nodes.iteritems(),key=lambda d:d[1])
+        # nodes = [HTreeNode(None,None,user[1],user[0]) for user in nodes]
+        # nodeList = OrderedLinkList()
+        # for node in nodes:
+        #     listNode = Node()
+        #     listNode.val = node
+        #     try:
+        #         nodeList.insert(listNode)
+        #     except AttributeError:
+        #         pass
+        # self.HTree = HuffmanTree(vecLength=self.walkDim)
+        # self.HTree.buildTree(nodeList)
+        # print 'Coding for all users...'
+        # self.HTree.coding(self.HTree.root,'',0)
 
 
         print 'Generating random deep walks...'
@@ -207,171 +209,75 @@ class CUNE_BPR(SocialRecommender):
         self.visited = defaultdict(dict)
         for user in self.CUNet:
             for t in range(self.walkCount):
-                currentNode = user
                 path = [user]
+                lastNode = user
                 for i in range(1,self.walkLength):
-                    nextNode = choice(self.CUNet[user])
+                    nextNode = choice(self.CUNet[lastNode])
                     count=0
-                    while(self.visited[user].has_key(nextNode)):
-                        nextNode = choice(self.CUNet[user])
+                    while(self.visited[lastNode].has_key(nextNode)):
+                        nextNode = choice(self.CUNet[lastNode])
                         #break infinite loop
                         count+=1
                         if count==10:
                             break
                     path.append(nextNode)
-                    self.visited[user][nextNode]=1
-
+                    self.visited[user][nextNode] = 1
+                    lastNode = nextNode
                 self.walks.append(path)
                 #print path
         shuffle(self.walks)
-        print 'walk count',len(self.walks)
-
-        sampleWalks = []
-        sampleUser = {}
-        count = 0
-        for i in range(1000):
-            p = choice(self.walks)
-            u = choice(p)
-            if len(self.dao.trainSet_u[u]) <= 10:
-                sampleUser[u] = 1
-                #print '#'*20, u
-        print 'user coverage:', len(sampleUser) / float(1000)
 
         #Training get top-k friends
         print 'Generating user embedding...'
-        iteration = 1
-        while iteration <= self.epoch:
-            loss = 0
-            #slide windows randomly
-
-            for n in range(self.walkLength/self.winSize):
-
-                for walk in self.walks:
-                    center = randint(0, len(walk)-1)
-                    s = max(0,center-self.winSize/2)
-                    e = min(center+self.winSize/2,len(walk)-1)
-                    for user in walk[s:e]:
-                        centerUser = walk[center]
-                        if user <> centerUser:
-                            code = self.HTree.code[user]
-                            centerCode = self.HTree.code[centerUser]
-                            x = self.HTree.vector[centerCode]
-                            for i in range(1,len(code)):
-                                prefix = code[0:i]
-                                w = self.HTree.vector[prefix]
-                                self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
-                                self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
-                                loss += -log(sigmoid(w.dot(x)),2)
-            print 'iteration:', iteration, 'loss:', loss
-            iteration+=1
-            # self.topKSim={}
-            # i = 0
-            # for user1 in self.filteredRatings:
-            #     uSim = []
-            #     i += 1
-            #     if i % 200 == 0:
-            #         print i, '/', len(self.filteredRatings)
-            #         break
-            #     code = self.HTree.code[user1]
-            #     vec1 = self.HTree.vector[code]
-            #     for user2 in self.filteredRatings:
-            #         if user1 <> user2:
-            #             code2 = self.HTree.code[user2]
-            #             vec2 = self.HTree.vector[code2]
-            #             sim = cosine(vec1, vec2)
-            #             uSim.append((user2, sim))
-            #
-            #     self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
-            #
-            # es = 0
-            # rs = 0
-            # xxs = 0
-            # count = 0
-            # overlap = 0
-            # for user in self.topKSim:
-            #     li = self.dao.trainSet_u[user].keys()
-            #     for f, s in self.topKSim[user]:
-            #         # print 'embedding similarity',f,s
-            #         # print 'preference similarity',f,cosine_sp(self.dao.trainSet_u[user],self.dao.trainSet_u[f])
-            #         # os.system('pause')
-            #
-            #         li1 = self.dao.trainSet_u[f].keys()
-            #         overlap += len(set(li).intersection(set(li1)))
-            #         count += 1
-            # print 'embedding overlap', float(overlap) / count
-            #
-            # es = 0
-            # rs = 0
-            # xxs = 0
-            # count = 0
-            # overlap = 0
-            # for user in self.topKSim:
-            #     li = self.dao.trainSet_u[user].keys()
-            #     if self.sao.followees.has_key(user):
-            #         for f in self.sao.followees[user]:
-            #             # print 'embedding similarity',f,s
-            #             # print 'preference similarity',f,cosine_sp(self.dao.trainSet_u[user],self.dao.trainSet_u[f])
-            #             # os.system('pause')
-            #
-            #             li1 = self.dao.trainSet_u[f].keys()
-            #             overlap += len(set(li).intersection(set(li1)))
-            #             count += 1
-            # print 'friend overlap', float(overlap) / count
-            #
-            # es = 0
-            # rs = 0
-            # xxs = 0
-            # count = 0
-            # overlap = 0
-            # userList = self.filteredRatings.keys()
-            # for user in self.topKSim:
-            #     li = self.dao.trainSet_u[user].keys()
-            #     for f, s in self.topKSim[user]:
-            #         # print 'embedding similarity',f,s
-            #         # print 'preference similarity',f,cosine_sp(self.dao.trainSet_u[user],self.dao.trainSet_u[f])
-            #         # os.system('pause')
-            #         user2 = choice(userList)
-            #         li1 = self.dao.trainSet_u[user2].keys()
-            #         overlap += len(set(li).intersection(set(li1)))
-            #         count += 1
-            #
-            # print 'random overlap', float(overlap) / count
+        # iteration = 1
+        # while iteration <= self.epoch:
+        #     loss = 0
+        #     #slide windows randomly
+        #
+        #     for n in range(self.walkLength/self.winSize):
+        #
+        #         for walk in self.walks:
+        #             center = randint(0, len(walk)-1)
+        #             s = max(0,center-self.winSize/2)
+        #             e = min(center+self.winSize/2,len(walk)-1)
+        #             for user in walk[s:e]:
+        #                 centerUser = walk[center]
+        #                 if user <> centerUser:
+        #                     code = self.HTree.code[user]
+        #                     centerCode = self.HTree.code[centerUser]
+        #                     x = self.HTree.vector[centerCode]
+        #                     for i in range(1,len(code)):
+        #                         prefix = code[0:i]
+        #                         w = self.HTree.vector[prefix]
+        #                         self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
+        #                         self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
+        #                         loss += -log(sigmoid(w.dot(x)),2)
+        #     print 'iteration:', iteration, 'loss:', loss
+        #     iteration+=1
+        model = w2v.Word2Vec(self.walks, size=self.walkDim, window=5, min_count=0, iter=3)
         print 'User embedding generated.'
 
+        print 'Constructing similarity matrix...'
+        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
         self.topKSim = {}
         i = 0
         for user1 in self.CUNet:
-            prefix1 = self.HTree.code[user1]
-            vec1 = self.HTree.vector[prefix1]
+            # prefix1 = self.HTree.code[user1]
+            # vec1 = self.HTree.vector[prefix1]
             sims = []
+            u1 = self.dao.user[user1]
+            self.W[u1] = model.wv[user1]
             for user2 in self.CUNet:
                 if user1 <> user2:
-                    prefix2 = self.HTree.code[user2]
-                    vec2 = self.HTree.vector[prefix2]
-                    sim = cosine(vec1,vec2)
-                    sims.append((user2,sim))
-            self.topKSim[user1] = sorted(sims,key=lambda d:d[1],reverse=True)[:self.topK]
-            i+=1
-            if i%200==0:
-                print 'progress:',i,'/',len(self.CUNet)
-
+                    u2 = self.dao.user[user2]
+                    self.W[u2] = model.wv[user2]
+                    sims.append((user2,cosine(self.W[u1],self.W[u2])))
+            self.topKSim[user1] = sorted(sims, key=lambda d: d[1], reverse=True)[:self.topK]
+            i += 1
+            if i % 200 == 0:
+                print 'progress:', i, '/', len(self.CUNet)
         print 'Similarity matrix finished.'
         #print self.topKSim
-        import pickle
-        # # from time import localtime, time, strftime
-        # # recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # similarity = open('CUNE-douban-sim'+self.foldInfo+'.pkl', 'wb')
-        # #vectors = open('CUNE-douban-vec'+self.foldInfo+'.pkl', 'wb')
-        #
-        #
-        # pickle.dump(self.topKSim, similarity)
-        # #pickle.dump((self.W,self.G),vectors)
-        # similarity.close()
-        #vectors.close()
-        # #matrix decomposition
-        pkl_file = open('CUNE-douban-sim' + self.foldInfo + '.pkl', 'rb')
-        self.topKSim = pickle.load(pkl_file)
-        print 'Decomposing...'
 
         #prepare Pu set, IPu set, and Nu set
         print 'Preparing item sets...'
@@ -379,17 +285,17 @@ class CUNE_BPR(SocialRecommender):
         self.IPositiveSet = defaultdict(list)
         #self.NegativeSet = defaultdict(list)
 
-        for user in self.dao.user:
+        for user in self.topKSim:
             for item in self.dao.trainSet_u[user]:
                 if self.dao.trainSet_u[user][item]>=1:
                     self.PositiveSet[user][item]=1
                 # else:
                 #     self.NegativeSet[user].append(item)
-            if self.topKSim.has_key(user):
-                for friend in self.topKSim[user]:
-                    for item in self.dao.trainSet_u[friend[0]]:
-                        if not self.PositiveSet[user].has_key(item):
-                            self.IPositiveSet[user].append(item)
+
+            for friend in self.topKSim[user]:
+                for item in self.dao.trainSet_u[friend[0]]:
+                    if not self.PositiveSet[user].has_key(item):
+                        self.IPositiveSet[user].append(item)
 
 
         print 'Training...'
@@ -399,10 +305,12 @@ class CUNE_BPR(SocialRecommender):
             itemList = self.dao.item.keys()
             for user in self.PositiveSet:
                 u = self.dao.user[user]
+
                 for item in self.PositiveSet[user]:
+                    i = self.dao.item[item]
                     if len(self.IPositiveSet[user]) > 0:
                         item_k = choice(self.IPositiveSet[user])
-                        i = self.dao.item[item]
+
                         k = self.dao.item[item_k]
                         self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
                         self.Q[i] - self.Q[k])
@@ -432,8 +340,8 @@ class CUNE_BPR(SocialRecommender):
                         self.Q[j] -= self.lRate * self.regI * self.Q[j]
                         self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
-                                     log(sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
+                        #self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) #- \
+                                     #log(sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
                     else:
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
@@ -446,9 +354,13 @@ class CUNE_BPR(SocialRecommender):
                         self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
                                      self.P[u]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
+                    self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
-
+            for user in self.topKSim:
+                for friend in self.topKSim[user]:
+                    u = self.dao.user[user]
+                    f = self.dao.user[friend[0]]
+                    self.P[u] -= 0.1*self.lRate*(self.P[u]-self.P[f])
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
