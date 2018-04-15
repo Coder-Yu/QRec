@@ -83,6 +83,6 @@ class WRMF(IterativeRecommender):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
             u = self.dao.getUserId(u)
-            return self.Q.dot(self.P[u])+self.dao.globalMean
+            return self.Y.dot(self.X[u])
         else:
             return [self.dao.globalMean] * len(self.dao.item)
