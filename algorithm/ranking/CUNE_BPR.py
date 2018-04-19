@@ -354,13 +354,13 @@ class CUNE_BPR(IterativeRecommender):
                         self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
                                      self.P[u]
 
-                    self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
+                self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
-            for user in self.topKSim:
-                for friend in self.topKSim[user]:
-                    u = self.dao.user[user]
-                    f = self.dao.user[friend[0]]
-                    self.P[u] -= 0.1*self.lRate*(self.P[u]-self.P[f])
+            # for user in self.topKSim:
+            #     for friend in self.topKSim[user]:
+            #         u = self.dao.user[user]
+            #         f = self.dao.user[friend[0]]
+            #         self.P[u] -= 0.1*self.lRate*(self.P[u]-self.P[f])
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):

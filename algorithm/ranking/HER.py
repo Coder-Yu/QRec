@@ -314,35 +314,37 @@ class HER(SocialRecommender):
         i = 0
 
 
-        for user1 in self.fBuying:
-            uSim = []
-            i+=1
-            if i%200==0:
-                print i,'/',len(self.fBuying)
-            vec1 = self.W[self.dao.user[user1]]
-            for user2 in self.fBuying:
-                if user1 <> user2:
-                    vec2 = self.W[self.dao.user[user2]]
-                    sim = cosine(vec1, vec2)
-                    uSim.append((user2,sim))
-
-            self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
-
-
-        # from tool import qmath
-        # for user1 in self.dao.user:
+        # for user1 in self.fBuying:
         #     uSim = []
-        #     i += 1
-        #     if i % 200 == 0:
-        #         print i, '/', len(self.dao.user)
-        #     l1 = self.dao.trainSet_u[user1].keys()
-        #     for user2 in self.dao.user:
+        #     i+=1
+        #     if i%200==0:
+        #         print i,'/',len(self.fBuying)
+        #     vec1 = self.W[self.dao.user[user1]]
+        #     for user2 in self.fBuying:
         #         if user1 <> user2:
-        #             l2 = self.dao.trainSet_u[user2].keys()
-        #             sim = len(set(l1).intersection(l2))
-        #             uSim.append((user2, sim))
+        #             vec2 = self.W[self.dao.user[user2]]
+        #             sim = cosine(vec1, vec2)
+        #             uSim.append((user2,sim))
         #
         #     self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
+
+
+        from tool import qmath
+        for user1 in self.dao.user:
+            uSim = []
+            i += 1
+            if i % 200 == 0:
+                print i, '/', len(self.dao.user)
+            l1 = self.dao.trainSet_u[user1].keys()
+            for user2 in self.dao.user:
+                if user1 <> user2:
+                    l2 = self.dao.trainSet_u[user2].keys()
+                    sim = len(set(l1).intersection(l2))
+                    if sim==0:
+                        continue
+                    uSim.append((user2, sim))
+
+            self.topKSim[user1] = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
 
 
         # print 'Similarity matrix finished.'
