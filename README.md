@@ -235,8 +235,6 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
      </td>
   </tr>
-
-    </tr>
     <tr>
     <td scope="row">SocialFD</td>
     <td>Yu et al., A Social Recommender Based on Factorization and Distance Metric Learning, IEEE Access.
