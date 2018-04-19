@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     print 'Social Recommenders:'
     print '11. RSTE          12. SoRec         13. SoReg         14. SocialMF     15. SBPR'
-    print '16. SREE          17. LOCABAL'
+    print '16. SREE          17. LOCABAL       18. SocialFD'
 
 
     print 'Advanced Recommenders:'
@@ -93,6 +93,9 @@ if __name__ == '__main__':
 
     elif order == '17':
         conf = Config('../config/LOCABAL.conf')
+
+    elif order == '18':
+        conf = Config('../config/SocialFD.conf')
 
     elif order == 'a1':
         conf = Config('../config/CoFactor.conf')

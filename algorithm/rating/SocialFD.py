@@ -10,11 +10,11 @@ class SocialFD(SocialRecommender):
 
     def initModel(self):
         super(SocialFD, self).initModel()
-        self.Bu = np.random.rand(self.dao.trainingSize()[0])/2 # biased value of user
-        self.Bi = np.random.rand(self.dao.trainingSize()[1])/2  # biased value of item
-        self.H = np.random.rand(self.k, self.k)/2
-        self.P /= 3
-        self.Q /= 3
+        self.Bu = np.random.rand(self.dao.trainingSize()[0])/5 # biased value of user
+        self.Bi = np.random.rand(self.dao.trainingSize()[1])/5  # biased value of item
+        self.H = np.random.rand(self.k, self.k)/5
+        self.P /= 10
+        self.Q /= 10
 
 
     def readConfiguration(self):
@@ -22,6 +22,7 @@ class SocialFD(SocialRecommender):
         eps = config.LineConfig(self.config['SocialFD'])
         self.alpha = float(eps['-alpha'])
         self.eta = float(eps['-eta'])
+        self.beta = float(eps['-beta'])
 
 
     def buildModel(self):
@@ -53,30 +54,20 @@ class SocialFD(SocialRecommender):
 
                 elif r <= 0.5: #low ratings
 
-                    self.loss += self.eta*(1-self.alpha) * abs(1 - min(d, 1))
+                    self.loss += self.eta*self.alpha * abs(1 - min(d, 1))
                     # update latent vectors
                     if d < 1:
-                        self.H += self.lRate * ((self.eta*(1-self.alpha) - error) * derivative_d)
+                        self.H += self.lRate * ((self.eta*self.alpha - error) * derivative_d)
                     else:
                         self.H -= self.lRate * error * derivative_d
                     W = (self.H.dot(self.H.T) + self.H.dot(self.H.T).T)
                     if d < 1:
-                        self.P[u] += self.lRate * ((-error + self.eta*(1-self.alpha)) * (W.dot(np.array([x - y]).T)).T[0])
-                        self.Q[i] += self.lRate * ((error - self.eta*(1-self.alpha)) * (W.dot(np.array([x - y]).T)).T[0])
+                        self.P[u] += self.lRate * ((-error + self.eta*self.alpha) * (W.dot(np.array([x - y]).T)).T[0])
+                        self.Q[i] += self.lRate * ((error - self.eta*self.alpha) * (W.dot(np.array([x - y]).T)).T[0])
                     else:
                         self.P[u] += self.lRate * (-error * (W.dot(np.array([x - y]).T)).T[0])
                         self.Q[i] += self.lRate * (error * (W.dot(np.array([x - y]).T)).T[0])
-                        # self.loss += self.regU * bu ** 2 + self.regI * bi ** 2 + self.regU * x.dot(x) + self.regI * y.dot(
-                        #     y)
-                        # # update latent vectors
-                        # self.Bu[u] += self.lRate * (error - self.regU * bu)
-                        # self.Bi[i] += self.lRate * (error - self.regI * bi)
-                        # self.H += self.lRate * ((error ) * derivative_d)
-                        # W = (self.H.dot(self.H.T) + self.H.T.dot(self.H))
-                        # self.P[u] += self.lRate * (
-                        # (error) * (W.dot(np.array([x - y]).T)).T[0] - self.regU * x)
-                        # self.Q[i] += self.lRate * (
-                        # (-error ) * (W.dot(np.array([x - y]).T)).T[0] - self.regI * y)
+
 
                 else: #medium
                     # update latent vectors
@@ -87,7 +78,8 @@ class SocialFD(SocialRecommender):
 
                 self.Bu[u] += self.lRate * (error - self.regU * bu)
                 self.Bi[i] += self.lRate * (error - self.regI * bi)
-
+                self.P[u] += self.lRate*(error*x-self.regU*x)
+                self.Q[i] += self.lRate*(error*y-self.regI*y)
 
             for user in self.dao.user:
                 relations = self.sao.getFollowees(user)
@@ -100,8 +92,8 @@ class SocialFD(SocialRecommender):
                         R = (self.H.dot(self.H.T) + self.H.T.dot(self.H))
                         derivative_s = self.H.dot((x - self.P[uf]).T.dot(x - self.P[uf]))
                         delta = R.dot(np.array([x - self.P[uf]]).T).T[0]
-                        self.P[u] -= self.lRate * self.eta*self.alpha * delta
-                        self.H -= self.lRate * self.eta*self.alpha * derivative_s
+                        self.P[u] -= self.lRate * self.eta*self.beta * delta
+                        self.H -= self.lRate * self.eta*self.beta * derivative_s
             iteration += 1
             self.loss+=self.regU*self.Bu.dot(self.Bu)+self.regI*self.Bi.dot(self.Bi)
             if self.isConverged(iteration):
