@@ -227,6 +227,16 @@ class CUNE_BPR(IterativeRecommender):
                 #print path
         shuffle(self.walks)
 
+        uList = []
+        coldCount = 0
+        while len(uList)<1000:
+            cp = choice(self.walks)
+            su = choice(cp)
+            if len(self.dao.trainSet_u[su])<10:
+                coldCount+=1
+            uList.append(su)
+        print 'cold rate:',float(coldCount)/1000
+
         #Training get top-k friends
         print 'Generating user embedding...'
         # iteration = 1
