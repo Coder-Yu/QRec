@@ -268,6 +268,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
      </td>
   </tr>
+      <tr>
+    <td scope="row">TBPR</td>
+    <td>Wang, Xin, et al. Social Recommendation with Strong and Weak Ties, CIKM 2016.
+     </td>
+  </tr>
   </table>
 </div>
 
