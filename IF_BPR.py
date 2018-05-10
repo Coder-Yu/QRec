@@ -9,13 +9,13 @@ from math import log
 import gensim.models.word2vec as w2v
 
 
-class HERP(SocialRecommender):
+class IF_BPR(SocialRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
-        super(HERP, self).__init__(conf, trainingSet, testSet, relation, fold)
+        super(IF_BPR, self).__init__(conf, trainingSet, testSet, relation, fold)
 
     def readConfiguration(self):
-        super(HERP, self).readConfiguration()
-        options = config.LineConfig(self.config['HERP'])
+        super(IF_BPR, self).readConfiguration()
+        options = config.LineConfig(self.config['IF_BPR'])
         self.walkCount = int(options['-T'])
         self.walkLength = int(options['-L'])
         self.walkDim = int(options['-l'])
@@ -27,7 +27,7 @@ class HERP(SocialRecommender):
         self.rate = float(options['-r'])
 
     def printAlgorConfig(self):
-        super(HERP, self).printAlgorConfig()
+        super(IF_BPR, self).printAlgorConfig()
         print 'Specified Arguments of', self.config['recommender'] + ':'
         print 'Walks count per user', self.walkCount
         print 'Length of each walk', self.walkLength
@@ -51,7 +51,7 @@ class HERP(SocialRecommender):
 
 
     def initModel(self):
-        super(HERP, self).initModel()
+        super(IF_BPR, self).initModel()
         self.positive = defaultdict(list)
         self.pItems = defaultdict(list)
         for user in self.dao.trainSet_u:
@@ -61,7 +61,9 @@ class HERP(SocialRecommender):
         self.readNegativeFeedbacks()
         self.P = np.ones((len(self.dao.user), self.k)) / 10  # latent user matrix
         #self.Q = np.ones((len(self.dao.item), self.k)) / 10  # latent item matrix
-
+        self.threshold = {}
+        self.avg_sim = {}
+        self.thres_loss=dict.fromkeys(self.dao.user.keys(),0)
 
 
 
@@ -299,6 +301,7 @@ class HERP(SocialRecommender):
 
         self.pTopKSim = {}
         self.nTopKSim = {}
+        self.pSimilarity = defaultdict(dict)
 
         model = w2v.Word2Vec(self.pWalks, size=self.walkDim, window=5, min_count=0, iter=10)
         model2 = w2v.Word2Vec(self.nWalks, size=self.walkDim, window=5, min_count=0, iter=10)
@@ -334,7 +337,12 @@ class HERP(SocialRecommender):
                     sim = cosine(vec1, vec2)
                     uSim.append((user2,sim))
             fList = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
+            self.threshold[user1] = fList[-1][1]
+            for pair in fList:
+                self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
+            self.avg_sim[user1]=sum(self.pTopKSim[user1])/len(self.pTopKSim[user1])
+
 
         i=0
         for user1 in self.negative:
@@ -358,6 +366,8 @@ class HERP(SocialRecommender):
             self.trueTopKFriends[user] = trueFriends
             # if len(trueFriends)>0:
             #     print trueFriends
+            self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
+
 
 
 
@@ -366,9 +376,9 @@ class HERP(SocialRecommender):
         import pickle
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        psimilarity = open('HERP-pEpinions-sim'+self.foldInfo+'.pkl', 'wb')
-        nsimilarity = open('HERP-nEpinions-sim' + self.foldInfo + '.pkl', 'wb')
-        # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
+        psimilarity = open('IF_BPR-pEpinions-sim'+self.foldInfo+'.pkl', 'wb')
+        nsimilarity = open('IF_BPR-nEpinions-sim' + self.foldInfo + '.pkl', 'wb')
+        # vectors = open('IF_BPR-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
         pickle.dump(self.pTopKSim, psimilarity)
@@ -378,7 +388,7 @@ class HERP(SocialRecommender):
         # vectors.close()
 
         # matrix decomposition
-        #pkl_file = open('HERP-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
+        #pkl_file = open('IF_BPR-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
 
         #self.topKSim = pickle.load(pkl_file)
 
@@ -395,47 +405,44 @@ class HERP(SocialRecommender):
             for item in self.dao.trainSet_u[user]:
                 self.PositiveSet[user][item] = 1
 
-        for user in self.negative:
-            for item in self.negative[user]:
-                if self.dao.user.has_key(user) and self.dao.item.has_key(item):
-                    self.NegSets[user][item] = 1
-                    # else:
-                    #     self.NegativeSet[user].append(item)
-            if self.trueTopKFriends.has_key(user):
-                for friend in self.trueTopKFriends[user][:self.topK]:
-                    if self.dao.user.has_key(friend):
-                        for item in self.positive[friend]:
-                            if not self.PositiveSet[user].has_key(item):
-                                if not self.IPositiveSet[user].has_key(item):
-                                    self.IPositiveSet[user][item] = 1
-                                else:
-                                    self.IPositiveSet[user][item] += 1
-
-            if self.pTopKSim.has_key(user):
-                for friend in self.pTopKSim[user][:self.topK]:
-                    if self.dao.user.has_key(friend):
-                        for item in self.positive[friend]:
-                            if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(item):
-                                if not self.OKSet[user].has_key(item):
-                                    self.OKSet[user][item] = 1
-                                else:
-                                    self.OKSet[user][item] += 1
-
-            if self.nTopKSim.has_key(user):
-                for friend in self.nTopKSim[user][:self.topK]:
-                    if self.dao.user.has_key(friend):
-                        for item in self.negative[friend]:
-                            if self.dao.item.has_key(item):
-                                if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(item) \
-                                    and not self.OKSet.has_key(item):
-                                    if not self.NegSets[user].has_key(item):
-                                        self.NegSets[user][item]=1
-                                    else:
-                                        self.NegSets[user][item] += 1
-
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
+            for user in self.negative:
+                for item in self.negative[user]:
+                    if self.dao.user.has_key(user) and self.dao.item.has_key(item):
+                        self.NegSets[user][item] = 1
+                        # else:
+                        #     self.NegativeSet[user].append(item)
+                if self.trueTopKFriends.has_key(user):
+                    for friend in self.trueTopKFriends[user][:self.topK]:
+                        if self.dao.user.has_key(friend):
+                            for item in self.positive[friend]:
+                                if not self.PositiveSet[user].has_key(item):
+                                    self.IPositiveSet[user][item]=friend
+
+
+                if self.pTopKSim.has_key(user):
+                    for friend in self.pTopKSim[user][:self.topK]:
+                        if self.dao.user.has_key(friend):
+                            for item in self.positive[friend]:
+                                if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(
+                                        item):
+                                        self.OKSet[user][item] = friend
+
+
+                if self.nTopKSim.has_key(user):
+                    for friend in self.nTopKSim[user][:self.topK]:
+                        if self.dao.user.has_key(friend):
+                            for item in self.negative[friend]:
+                                if self.dao.item.has_key(item):
+                                    if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(
+                                            item) \
+                                            and not self.OKSet.has_key(item):
+                                        if not self.NegSets[user].has_key(item):
+                                            self.NegSets[user][item] = 1
+                                        else:
+                                            self.NegSets[user][item] += 1
             itemList = self.dao.item.keys()
 
             for user in self.PositiveSet:
@@ -452,8 +459,9 @@ class HERP(SocialRecommender):
                         if len(kItems) > 0 and len(okItems) > 0:
 
                             item_k = choice(kItems)
+                            uf = self.IPositiveSet[user][item_k]
                             k = self.dao.item[item_k]
-                            self.optimization(u,i,k)
+                            self.optimization_thres(u,i,k,user,uf)
 
                             item_ok = choice(okItems)
                             ok = self.dao.item[item_ok]
@@ -470,7 +478,8 @@ class HERP(SocialRecommender):
                             item_ok = choice(okItems)
                             ok = self.dao.item[item_ok]
 
-                            self.optimization(u,i,ok)
+                            uf = self.OKSet[user][item_ok]
+                            self.optimization_thres(u, i, ok, user, uf)
 
                             item_j = choice(itemList)
                             while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j) or self.OKSet[user].has_key(item_j)):
@@ -480,9 +489,9 @@ class HERP(SocialRecommender):
 
                         elif len(kItems)>0 and len(okItems)==0:
                             item_k = choice(kItems)
+                            uf = self.IPositiveSet[user][item_k]
                             k = self.dao.item[item_k]
-
-                            self.optimization(u,i,k)
+                            self.optimization_thres(u,i,k,user,uf)
 
                             item_j = choice(itemList)
                             while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j) or self.OKSet[user].has_key(item_j)):
@@ -521,6 +530,18 @@ class HERP(SocialRecommender):
         self.P[u] -= self.lRate * self.regU * self.P[u]
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
+
+    def optimization_thres(self, u, i, j,user,friend):
+        g_theta = sigmoid((self.avg_sim[user]-self.threshold[user])(self.threshold[user]-self.pSimilarity[user][friend]))
+        s = sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))/(1+g_theta))
+        self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
+        self.Q[i] += self.lRate * (1 - s) * self.P[u]
+        self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+        self.loss += -log(s)
+        self.P[u] -= self.lRate * self.regU * self.P[u]
+        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+        self.Q[j] -= self.lRate * self.regI * self.Q[j]
+        t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))*(self.avg_sim[user]+self.pSimilarity[user][friend]-2*self.threshold[user])/(1+g_theta)**2
 
     def predict(self,user,item):
 

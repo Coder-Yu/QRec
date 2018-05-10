@@ -8,20 +8,7 @@ from collections import defaultdict
 class SBPR(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
         super(SBPR, self).__init__(conf,trainingSet,testSet,relation,fold)
-        count = 0
-        uc = 0
-        for user in self.dao.user:
-            if self.sao.followees.has_key(user):
-                count += len(self.sao.followees[user])
-                uc +=1
-        print 'global average', float(count) / uc
-        count = 0
-        uc = 0
-        for user in self.dao.testSet_u:
-            if self.sao.followees.has_key(user):
-                count += len(self.sao.followees[user])
-                uc +=1
-        print 'average',float(count)/uc
+
 
 
     def buildModel(self):
