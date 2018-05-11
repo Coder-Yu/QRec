@@ -121,8 +121,6 @@ class IF_BPR(SocialRecommender):
 
 
 
-
-
         self.UFNet = defaultdict(list)
 
         for user1 in self.sao.followees:
@@ -217,12 +215,7 @@ class IF_BPR(SocialRecommender):
 
                     if path:
                         self.pWalks.append(path)
-                        # for node in path:
-                        #     if node[1] == 'U' or node[1] == 'F':
-                        #         self.usercovered[node[0]] = 1
-                                # print path
-                                # if mp == 'UFIU':
-                                # pass
+
         self.nWalks = []
         # self.usercovered = {}
 
@@ -288,12 +281,7 @@ class IF_BPR(SocialRecommender):
 
                     if path:
                         self.nWalks.append(path)
-                        # for node in path:
-                        #     if node[1] == 'U' or node[1] == 'F':
-                        #         self.usercovered[node[0]] = 1
-                        # print path
-                        # if mp == 'UFIU':
-                        # pass
+
         shuffle(self.pWalks)
         print 'pwalks:', len(self.pWalks)
         print 'nwalks:', len(self.nWalks)
@@ -550,7 +538,7 @@ class IF_BPR(SocialRecommender):
 
     def optimization_thres(self, u, i, j,user,friend):
 
-        g_theta = sigmoid(10*(self.avg_sim[user]-self.threshold[user])*(self.threshold[user]-self.pSimilarity[user][friend]))
+        g_theta = sigmoid((self.avg_sim[user]-self.threshold[user])/(self.threshold[user]-self.pSimilarity[user][friend]))
         s = sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))/(1+g_theta))
         self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
         self.Q[i] += self.lRate * (1 - s) * self.P[u]
