@@ -63,7 +63,8 @@ class IF_BPR(SocialRecommender):
         #self.Q = np.ones((len(self.dao.item), self.k)) / 10  # latent item matrix
         self.threshold = {}
         self.avg_sim = {}
-        self.thres_loss=dict.fromkeys(self.dao.user.keys(),0)
+        self.thres_d = dict.fromkeys(self.dao.user.keys(),0)
+        self.thres_count = dict.fromkeys(self.dao.user.keys(),0)
 
 
 
@@ -341,7 +342,7 @@ class IF_BPR(SocialRecommender):
             for pair in fList:
                 self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
-            self.avg_sim[user1]=sum(self.pTopKSim[user1])/len(self.pTopKSim[user1])
+            self.avg_sim[user1]=sum(self.pSimilarity[user1].values())/len(self.pSimilarity[user1])
 
 
         i=0
@@ -397,26 +398,28 @@ class IF_BPR(SocialRecommender):
         # prepare Pu set, IPu set, and Nu set
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.IPositiveSet = defaultdict(dict)
-        self.OKSet = defaultdict(dict)
+
         self.NegSets = defaultdict(dict)
 
         for user in self.dao.user:
             for item in self.dao.trainSet_u[user]:
                 self.PositiveSet[user][item] = 1
 
+        for user in self.dao.user:
+            for item in self.negative[user]:
+                if self.dao.item.has_key(item):
+                    self.NegSets[user][item] = 1
+
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for user in self.negative:
-                for item in self.negative[user]:
-                    if self.dao.user.has_key(user) and self.dao.item.has_key(item):
-                        self.NegSets[user][item] = 1
-                        # else:
-                        #     self.NegativeSet[user].append(item)
+            print self.foldInfo,self.threshold['100']
+            self.IPositiveSet = defaultdict(dict)
+            self.OKSet = defaultdict(dict)
+            for user in self.dao.user:
                 if self.trueTopKFriends.has_key(user):
                     for friend in self.trueTopKFriends[user][:self.topK]:
-                        if self.dao.user.has_key(friend):
+                        if self.dao.user.has_key(friend) and self.pSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.positive[friend]:
                                 if not self.PositiveSet[user].has_key(item):
                                     self.IPositiveSet[user][item]=friend
@@ -424,7 +427,7 @@ class IF_BPR(SocialRecommender):
 
                 if self.pTopKSim.has_key(user):
                     for friend in self.pTopKSim[user][:self.topK]:
-                        if self.dao.user.has_key(friend):
+                        if self.dao.user.has_key(friend) and self.pSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.positive[friend]:
                                 if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(
                                         item):
@@ -444,12 +447,14 @@ class IF_BPR(SocialRecommender):
                                         else:
                                             self.NegSets[user][item] += 1
             itemList = self.dao.item.keys()
-
             for user in self.PositiveSet:
                 #itemList = self.NegSets[user].keys()
                 kItems = self.IPositiveSet[user].keys()
                 okItems = self.OKSet[user].keys()
-                nItems = self.OKSet[user].keys()
+                nItems = self.NegSets[user].keys()
+                # print kItems
+                # print okItems
+                # print nItems
                 u = self.dao.user[user]
 
                 for item in self.PositiveSet[user]:
@@ -506,15 +511,27 @@ class IF_BPR(SocialRecommender):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u, i, j)
+                        if len(nItems)>0:
+                            item_n = choice(nItems)
+                            n = self.dao.item[item_n]
+                            self.optimization(u,j,n)
+                if self.thres_count[user]>0:
+                    self.threshold[user] -= self.lRate * self.thres_d[user] / self.thres_count[user]
+                    #print user, self.thres_d[user], self.thres_count[user]
+                    self.thres_d[user]=0
+                    self.thres_count[user]=0
+                    li = [sim for sim in self.pSimilarity[user].values() if sim>=self.threshold[user]]
+                    if len(li)==0:
+                        self.avg_sim[user] = self.threshold[user]
+                    else:
+                        self.avg_sim[user]= sum(li)/(len(li)+0.0)
 
-                    item_n = choice(nItems)
-                    n = self.dao.item[item_n]
-                    self.optimization(u,j,n)
-            for user in self.trueTopKFriends:
-                for friend in self.trueTopKFriends[user]:
-                    u = self.dao.user[user]
-                    f = self.dao.user[friend]
-                    self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
+            # for user in self.trueTopKFriends:
+            #     for friend in self.trueTopKFriends[user]:
+            #         if self.pSimilarity[user][friend]>self.threshold[user]:
+            #             u = self.dao.user[user]
+            #             f = self.dao.user[friend]
+            #             self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
@@ -532,7 +549,8 @@ class IF_BPR(SocialRecommender):
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
 
     def optimization_thres(self, u, i, j,user,friend):
-        g_theta = sigmoid((self.avg_sim[user]-self.threshold[user])(self.threshold[user]-self.pSimilarity[user][friend]))
+
+        g_theta = sigmoid(10*(self.avg_sim[user]-self.threshold[user])*(self.threshold[user]-self.pSimilarity[user][friend]))
         s = sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))/(1+g_theta))
         self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
         self.Q[i] += self.lRate * (1 - s) * self.P[u]
@@ -541,8 +559,10 @@ class IF_BPR(SocialRecommender):
         self.P[u] -= self.lRate * self.regU * self.P[u]
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
-        t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))*(self.avg_sim[user]+self.pSimilarity[user][friend]-2*self.threshold[user])/(1+g_theta)**2
-
+        t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))*10\
+                       *(self.avg_sim[user]+self.pSimilarity[user][friend]-2*self.threshold[user])/(1+g_theta)**2+0.05*self.threshold[user]
+        self.thres_d[user] += t_derivative
+        self.thres_count[user] += 1
     def predict(self,user,item):
 
         if self.dao.containsUser(user) and self.dao.containsItem(item):

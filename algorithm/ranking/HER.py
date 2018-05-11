@@ -143,9 +143,9 @@ class HER(SocialRecommender):
                 if mp == p1:
                     self.walkCount = 10
                 if mp == p2:
-                    self.walkCount = 5
+                    self.walkCount = 8
                 if mp == p3:
-                    self.walkCount = 5
+                    self.walkCount = 8
                 if mp == p4:
                     self.walkCount = 5
                 if mp == p5:
@@ -384,20 +384,19 @@ class HER(SocialRecommender):
         # prepare Pu set, IPu set, and Nu set
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.IPositiveSet = defaultdict(list)
+        self.IPositiveSet = defaultdict(dict)
 
 
         for user in self.topKSim:
             for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item]>=1:
-                    self.PositiveSet[user][item]=1
+                self.PositiveSet[user][item]=1
                 # else:
                 #     self.NegativeSet[user].append(item)
 
             for friend in self.topKSim[user]:
                 for item in self.dao.trainSet_u[friend[0]]:
                     if not self.PositiveSet[user].has_key(item):
-                        self.IPositiveSet[user].append(item)
+                        self.IPositiveSet[user][item]=1
 
         #print self.IPositiveSet
         iteration = 0
@@ -407,68 +406,28 @@ class HER(SocialRecommender):
             itemList = self.dao.item.keys()
 
             for user in self.PositiveSet:
-
+                kItems = self.IPositiveSet[user].keys()
                 u = self.dao.user[user]
+
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    j=0
-                    if len(self.IPositiveSet[user]) > 0:
-                        item_k = choice(self.IPositiveSet[user])
+                    if len(kItems) > 0:
+                        item_k = choice(kItems)
 
                         k = self.dao.item[item_k]
-                        self.P[u] += self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
-                                             self.Q[i] - self.Q[k])
-                        self.Q[i] += self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
-                                     self.P[u]
-                        self.Q[k] -= self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
-                                     self.P[u]
+                        self.optimization(u,i,k)
 
-                        item_j = ''
-                        # if len(self.NegativeSet[user])>0:
-                        #     item_j = choice(self.NegativeSet[user])
-                        # else:
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                        while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item)):
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
-                        self.P[u] += (1 / self.s) * self.lRate * (
-                                1 - sigmoid(
-                            (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
-                                             self.Q[k] - self.Q[j])
-                        self.Q[k] += (1 / self.s) * self.lRate * (
-                                1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * \
-                                     self.P[u]
-                        self.Q[j] -= (1 / self.s) * self.lRate * (
-                                1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * \
-                                     self.P[u]
-
-                        self.P[u] -= self.lRate * self.regU * self.P[u]
-                        self.Q[i] -= self.lRate * self.regI * self.Q[i]
-                        self.Q[j] -= self.lRate * self.regI * self.Q[j]
-                        self.Q[k] -= self.lRate * self.regI * self.Q[k]
-
-                        # self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
-                        #              log(sigmoid(
-                        #                  (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
+                        j = self.dao.item[j]
+                        self.optimization(u,k,j)
                     else:
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
-                        self.P[u] += self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
-                                             self.Q[i] - self.Q[j])
-                        self.Q[i] += self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
-                                     self.P[u]
-                        self.Q[j] -= self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
-                                     self.P[u]
-
-                    self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
+                        j = self.dao.item[j]
+                        self.optimization(u, i, j)
 
 
             for user in self.topKSim:
@@ -481,6 +440,16 @@ class HER(SocialRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
+
+    def optimization(self, u, i, j):
+        s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
+        self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
+        self.Q[i] += self.lRate * (1 - s) * self.P[u]
+        self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+        self.loss += -log(s)
+        self.P[u] -= self.lRate * self.regU * self.P[u]
+        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+        self.Q[j] -= self.lRate * self.regI * self.Q[j]
 
     def predict(self,user,item):
 
