@@ -46,64 +46,33 @@ class SBPR(SocialRecommender):
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    j = 0
 
-                    if len(self.IPositiveSet[user]) > 0:
-                        item_k = choice(kItems)
+                    for ind in range(3):
+                        if len(self.IPositiveSet[user]) > 0:
+                            item_k = choice(kItems)
 
-                        k = self.dao.item[item_k]
-                        self.P[u] += self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
-                                             self.Q[i] - self.Q[k])
-                        self.Q[i] += self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
-                                     self.P[u]
-                        self.Q[k] -= self.lRate * (
-                                1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
-                                     self.P[u]
+                            k = self.dao.item[item_k]
+                            self.optimization(u,i,k)
 
-                        item_j = ''
-                        # if len(self.NegativeSet[user])>0:
-                        #     item_j = choice(self.NegativeSet[user])
-                        # else:
-                        item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
-                        self.P[u] += self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (self.Q[k] - self.Q[j])
-                        self.Q[k] += self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
-                        self.Q[j] -= self.lRate * (1 - sigmoid((self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
+                            while (self.PositiveSet[user].has_key(item_j)):
+                                item_j = choice(itemList)
+                            j = self.dao.item[item_j]
+                            self.optimization(u,k,j)
 
-                        self.P[u] -= self.lRate * self.regU * self.P[u]
-                        self.Q[i] -= self.lRate * self.regI * self.Q[i]
-                        self.Q[j] -= self.lRate * self.regI * self.Q[j]
-                        self.Q[k] -= self.lRate * self.regI * self.Q[k]
+                            # self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
+                            #              log(sigmoid(
+                            #                  (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
 
-                        # self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
-                        #              log(sigmoid(
-                        #                  (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
-
-                    else:
-                        item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                        else:
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
-                        self.P[u] += self.lRate * (
-                        1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]) )) * (
-                                         self.Q[i] - self.Q[j])
-                        self.Q[i] += self.lRate * (
-                        1 - sigmoid(self.P[u].dot(self.Q[i])  - self.P[u].dot(self.Q[j]) )) * \
-                                     self.P[u]
-                        self.Q[j] -= self.lRate * (
-                        1 - sigmoid(self.P[u].dot(self.Q[i])- self.P[u].dot(self.Q[j]) )) * \
-                                     self.P[u]
-                        # self.b[i] += self.lRate * (
-                        # 1 - sigmoid(self.P[u].dot(self.Q[i]) + self.b[i] - self.P[u].dot(self.Q[j]) - self.b[j]))
-                        # self.b[j] -= self.lRate * (
-                        # 1 - sigmoid(self.P[u].dot(self.Q[i]) + self.b[i] - self.P[u].dot(self.Q[j]) - self.b[j]))
+                            while (self.PositiveSet[user].has_key(item_j)):
+                                item_j = choice(itemList)
+                            j = self.dao.item[item_j]
+                            self.optimization(u, i, j)
 
-                    self.loss += -log(
-                        sigmoid(self.P[u].dot(self.Q[i])- self.P[u].dot(self.Q[j])))
+
 
 
             # for user in self.dao.user:
@@ -120,6 +89,15 @@ class SBPR(SocialRecommender):
             if self.isConverged(iteration):
                 break
 
+    def optimization(self, u, i, j):
+        s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
+        self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
+        self.Q[i] += self.lRate * (1 - s) * self.P[u]
+        self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+        self.loss += -log(s)
+        self.P[u] -= self.lRate * self.regU * self.P[u]
+        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+        self.Q[j] -= self.lRate * self.regI * self.Q[j]
 
     def predict(self,user,item):
 

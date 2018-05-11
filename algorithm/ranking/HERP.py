@@ -447,8 +447,8 @@ class HERP(SocialRecommender):
 
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    j = 0
-                    for ind in range(3):
+
+                    for ind in range(2):
                         if len(kItems) > 0 and len(okItems) > 0:
 
                             item_k = choice(kItems)

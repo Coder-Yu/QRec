@@ -411,30 +411,31 @@ class HER(SocialRecommender):
 
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    if len(kItems) > 0:
-                        item_k = choice(kItems)
+                    for ind in range(3):
+                        if len(kItems) > 0:
+                            item_k = choice(kItems)
 
-                        k = self.dao.item[item_k]
-                        self.optimization(u,i,k)
+                            k = self.dao.item[item_k]
+                            self.optimization(u,i,k)
 
-                        item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item)):
                             item_j = choice(itemList)
-                        j = self.dao.item[j]
-                        self.optimization(u,k,j)
-                    else:
-                        item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item)):
+                                item_j = choice(itemList)
+                            j = self.dao.item[item_j]
+                            self.optimization(u,k,j)
+                        else:
                             item_j = choice(itemList)
-                        j = self.dao.item[j]
-                        self.optimization(u, i, j)
+                            while (self.PositiveSet[user].has_key(item_j)):
+                                item_j = choice(itemList)
+                            j = self.dao.item[item_j]
+                            self.optimization(u, i, j)
 
 
-            for user in self.topKSim:
-                for friend in self.topKSim[user]:
-                    u = self.dao.user[user]
-                    f = self.dao.user[friend[0]]
-                    self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
+            # for user in self.topKSim:
+            #     for friend in self.topKSim[user]:
+            #         u = self.dao.user[user]
+            #         f = self.dao.user[friend[0]]
+            #         self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
