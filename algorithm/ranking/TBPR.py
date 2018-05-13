@@ -143,147 +143,132 @@ class TBPR(SocialRecommender):
                 jItems = self.jointSet[user].keys()
                 wItems = self.weakSet[user].keys()
                 sItems = self.strongSet[user].keys()
-                for i in range(3): #sample n times
-                    if len(jItems)>0 and len(wItems)>0 and len(sItems)>0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                for item in self.positiveSet[user]:
+                    i = self.dao.item[item]
+                    for n in range(3): #negative sampling for 3 times
+                        if len(jItems)>0 and len(wItems)>0 and len(sItems)>0:
 
-                            item_j = choice(jItems)
-                            j = self.dao.item[item_j]
-                            self.optimization(u,i,j)
+                                item_j = choice(jItems)
+                                j = self.dao.item[item_j]
+                                self.optimization(u,i,j)
 
-                            item_w = choice(wItems)
-                            w = self.dao.item[item_w]
-                            self.optimization(u,j,w)
+                                item_w = choice(wItems)
+                                w = self.dao.item[item_w]
+                                self.optimization(u,j,w)
 
-                            item_s = choice(sItems)
-                            s = self.dao.item[item_s]
-                            self.optimization_theta(u, w, s)
+                                item_s = choice(sItems)
+                                s = self.dao.item[item_s]
+                                self.optimization_theta(u, w, s)
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u,s,k)
+                                while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
+                                       or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u,s,k)
 
-                    if len(jItems) == 0 and len(wItems) > 0 and len(sItems) > 0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) == 0 and len(wItems) > 0 and len(sItems) > 0:
 
-                            item_w = choice(wItems)
-                            w = self.dao.item[item_w]
-                            self.optimization(u, i, w)
+                                item_w = choice(wItems)
+                                w = self.dao.item[item_w]
+                                self.optimization(u, i, w)
 
-                            item_s = choice(sItems)
-                            s = self.dao.item[item_s]
-                            self.optimization_theta(u, w, s)
+                                item_s = choice(sItems)
+                                s = self.dao.item[item_s]
+                                self.optimization_theta(u, w, s)
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, s, k)
+                                while (self.positiveSet[user].has_key(item_k)
+                                       or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, s, k)
 
-                    if len(jItems) == 0 and len(wItems) ==0 and len(sItems) > 0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) == 0 and len(wItems) ==0 and len(sItems) > 0:
 
-                            item_s = choice(sItems)
-                            s = self.dao.item[item_s]
-                            self.optimization(u, i, s)
+                                item_s = choice(sItems)
+                                s = self.dao.item[item_s]
+                                self.optimization(u, i, s)
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, s, k)
+                                while (self.positiveSet[user].has_key(item_k)
+                                       or self.strongSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, s, k)
 
-                    if len(jItems) == 0 and len(wItems) == 0 and len(sItems) ==0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) == 0 and len(wItems) == 0 and len(sItems) ==0:
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, i, k)
+                                while (self.positiveSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, i, k)
 
-                    if len(jItems) == 0 and len(wItems) > 0 and len(sItems) == 0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) == 0 and len(wItems) > 0 and len(sItems) == 0:
 
-                            item_w = choice(wItems)
-                            w = self.dao.item[item_w]
-                            self.optimization(u, i, w)
+                                item_w = choice(wItems)
+                                w = self.dao.item[item_w]
+                                self.optimization(u, i, w)
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, w, k)
+                                while (self.positiveSet[user].has_key(item_k)
+                                       or self.strongSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, w, k)
 
 
-                    if len(jItems) > 0 and len(wItems) == 0 and len(sItems) > 0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) > 0 and len(wItems) == 0 and len(sItems) > 0:
 
-                            item_j = choice(jItems)
-                            j = self.dao.item[item_j]
-                            self.optimization(u,i,j)
+                                item_j = choice(jItems)
+                                j = self.dao.item[item_j]
+                                self.optimization(u,i,j)
 
-                            item_s = choice(sItems)
-                            s = self.dao.item[item_s]
-                            self.optimization(u, j, s)
+                                item_s = choice(sItems)
+                                s = self.dao.item[item_s]
+                                self.optimization(u, j, s)
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, s, k)
+                                while (self.positiveSet[user].has_key(item_k)
+                                       or self.strongSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, s, k)
 
-                    if len(jItems) > 0 and len(wItems) >0 and len(sItems) == 0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) > 0 and len(wItems) >0 and len(sItems) == 0:
 
-                            item_j = choice(jItems)
-                            j = self.dao.item[item_j]
-                            self.optimization(u, i, j)
+                                item_j = choice(jItems)
+                                j = self.dao.item[item_j]
+                                self.optimization(u, i, j)
 
-                            item_w = choice(wItems)
-                            w = self.dao.item[item_w]
-                            self.optimization(u, j, w)
+                                item_w = choice(wItems)
+                                w = self.dao.item[item_w]
+                                self.optimization(u, j, w)
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, w, k)
+                                while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
+                                       or self.weakSet[user].has_key(item_k) ):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, w, k)
 
-                    if len(jItems) > 0 and len(wItems) == 0 and len(sItems) == 0:
-                        for item in self.positiveSet[user]:
-                            i = self.dao.item[item]
+                        if len(jItems) > 0 and len(wItems) == 0 and len(sItems) == 0:
 
-                            item_j = choice(jItems)
-                            j = self.dao.item[item_j]
-                            self.optimization(u, i, j)
+                                item_j = choice(jItems)
+                                j = self.dao.item[item_j]
+                                self.optimization(u, i, j)
 
 
-                            item_k = choice(itemList)
-                            while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                   or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                 item_k = choice(itemList)
-                            k = self.dao.item[item_k]
-                            self.optimization(u, j, k)
+                                while (self.positiveSet[user].has_key(item_k)
+                                       or self.jointSet[user].has_key(item_k)):
+                                    item_k = choice(itemList)
+                                k = self.dao.item[item_k]
+                                self.optimization(u, j, k)
 
                                                 
-            self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
+                self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             self.theta -= self.lRate*self.theta_derivative/self.theta_count
             self.weakTies = defaultdict(dict)
             self.strongTies = defaultdict(dict)

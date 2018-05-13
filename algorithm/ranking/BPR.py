@@ -43,68 +43,28 @@ class BPR(IterativeRecommender):
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    # if len(self.NegativeSet[user]) > 0:
-                    #     item_j = choice(self.NegativeSet[user])
-                    # else:
-                    item_j = choice(itemList)
-                    while (self.PositiveSet[user].has_key(item_j)):
+                    for n in range(3): #negative sampling (3 times)
                         item_j = choice(itemList)
-                    j = self.dao.item[item_j]
-                    s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
-                    self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
-                    self.Q[i] += self.lRate * (1 - s) * self.P[u]
-                    self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+                        while (self.PositiveSet[user].has_key(item_j)):
+                            item_j = choice(itemList)
+                        j = self.dao.item[item_j]
+                        self.optimization(u,i,j)
 
-                    self.P[u] -= self.lRate * self.regU * self.P[u]
-                    self.Q[i] -= self.lRate * self.regI * self.Q[i]
-                    self.Q[j] -= self.lRate * self.regI * self.Q[j]
-                    self.loss += -log(s)
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
-            # for sample in range(len(self.dao.user)):
-            #     while True:
-            #         userIdx = choice(self.dao.user.keys())
-            #         ratedItems = self.dao.trainSet_u[userIdx]
-            #         if len(ratedItems) != 0:
-            #             break
-            #
-            #     #positive item index
-            #     posItemIdx = choice(ratedItems.keys())
-            #     posPredictRating = self.predict(userIdx, posItemIdx)
-            #
-            #     # negative item index
-            #     while True:
-            #         negItemIdx = choice(self.dao.item.keys())
-            #         if  not(negItemIdx in ratedItems.keys()):
-            #             break
-            #     negPredictRating = self.predict(userIdx, negItemIdx)
-            #
-            #     userId = self.dao.getUserId(userIdx)
-            #     posItemId = self.dao.getItemId(posItemIdx)
-            #     negItemId = self.dao.getItemId(negItemIdx)
-            #
-            #
-            #     posNegDiffValue = posPredictRating - negPredictRating
-            #     self.loss +=  -math.log(qmath.sigmoid(posNegDiffValue))
-            #     posNegGradient = qmath.sigmoid(-posNegDiffValue)
-            #
-            #     #update user factors, item factors
-            #     for factorIdx in range(self.k):
-            #         userFactorValue = self.P[self.dao.getUserId(userIdx)][factorIdx]
-            #         posItemFactorValue = self.Q[self.dao.getItemId(posItemIdx)][factorIdx]
-            #         negItemFactorValue = self.Q[self.dao.getItemId(negItemIdx)][factorIdx]
-            #         self.P[userId][factorIdx] += self.lRate * (posNegGradient * (posItemFactorValue - negItemFactorValue) - self.regU * userFactorValue)
-            #         self.Q[posItemId][factorIdx] += self.lRate * (posNegGradient * userFactorValue - self.regI  * posItemFactorValue)
-            #         self.Q[negItemId][factorIdx] +=  self.lRate * (posNegGradient * (-userFactorValue) - self.regI  * negItemFactorValue)
-            #         self.loss += self.regU * userFactorValue * userFactorValue + self.regI * posItemFactorValue * posItemFactorValue +  self.regI  * negItemFactorValue * negItemFactorValue
-            #
-            #
-            # iteration += 1
-            # if self.isConverged(iteration):
-            #     break
 
+    def optimization(self,u,i,j):
+        s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
+        self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
+        self.Q[i] += self.lRate * (1 - s) * self.P[u]
+        self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+
+        self.P[u] -= self.lRate * self.regU * self.P[u]
+        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+        self.Q[j] -= self.lRate * self.regI * self.Q[j]
+        self.loss += -log(s)
 
     def predict(self,user,item):
 

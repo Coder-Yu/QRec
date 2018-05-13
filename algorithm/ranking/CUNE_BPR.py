@@ -282,20 +282,19 @@ class CUNE_BPR(IterativeRecommender):
         #prepare Pu set, IPu set, and Nu set
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.IPositiveSet = defaultdict(list)
+        self.IPositiveSet = defaultdict(dict)
         #self.NegativeSet = defaultdict(list)
 
         for user in self.topKSim:
             for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item]>=1:
-                    self.PositiveSet[user][item]=1
+                 self.PositiveSet[user][item]=1
                 # else:
                 #     self.NegativeSet[user].append(item)
 
             for friend in self.topKSim[user]:
                 for item in self.dao.trainSet_u[friend[0]]:
                     if not self.PositiveSet[user].has_key(item):
-                        self.IPositiveSet[user].append(item)
+                        self.IPositiveSet[user][item]=1
 
 
         print 'Training...'
@@ -305,59 +304,59 @@ class CUNE_BPR(IterativeRecommender):
             itemList = self.dao.item.keys()
             for user in self.PositiveSet:
                 u = self.dao.user[user]
-
+                kItems = self.IPositiveSet[user].keys()
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    if len(self.IPositiveSet[user]) > 0:
-                        item_k = choice(self.IPositiveSet[user])
+                    for n in range(3): #negative sampling for 3 times
+                        if len(self.IPositiveSet[user]) > 0:
+                            item_k = choice(kItems)
+                            k = self.dao.item[item_k]
+                            self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
+                            self.Q[i] - self.Q[k])
+                            self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
+                                         self.P[u]
+                            self.Q[k] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
+                                         self.P[u]
 
-                        k = self.dao.item[item_k]
-                        self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
-                        self.Q[i] - self.Q[k])
-                        self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
-                                     self.P[u]
-                        self.Q[k] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
-                                     self.P[u]
-
-                        item_j = ''
-                        # if len(self.NegativeSet[user])>0:
-                        #     item_j = choice(self.NegativeSet[user])
-                        # else:
-                        item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                            item_j = ''
+                            # if len(self.NegativeSet[user])>0:
+                            #     item_j = choice(self.NegativeSet[user])
+                            # else:
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
-                        self.P[u] += (1 / self.s) * self.lRate * (
-                        1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
-                                     self.Q[k] - self.Q[j])
-                        self.Q[k] += (1 / self.s) * self.lRate * (
-                        1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
-                        self.Q[j] -= (1 / self.s) * self.lRate * (
-                        1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
+                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
+                                item_j = choice(itemList)
+                            j = self.dao.item[item_j]
+                            self.P[u] += (1 / self.s) * self.lRate * (
+                            1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
+                                         self.Q[k] - self.Q[j])
+                            self.Q[k] += (1 / self.s) * self.lRate * (
+                            1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
+                            self.Q[j] -= (1 / self.s) * self.lRate * (
+                            1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * self.P[u]
 
-                        self.P[u] -= self.lRate * self.regU * self.P[u]
-                        self.Q[i] -= self.lRate * self.regI * self.Q[i]
-                        self.Q[j] -= self.lRate * self.regI * self.Q[j]
-                        self.Q[k] -= self.lRate * self.regI * self.Q[k]
+                            self.P[u] -= self.lRate * self.regU * self.P[u]
+                            self.Q[i] -= self.lRate * self.regI * self.Q[i]
+                            self.Q[j] -= self.lRate * self.regI * self.Q[j]
+                            self.Q[k] -= self.lRate * self.regI * self.Q[k]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
-                                     log(sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
-                    else:
-                        item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                            self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
+                                         log(sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
+                        else:
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
-                        self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
-                            self.Q[i] - self.Q[j])
-                        self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
-                                     self.P[u]
-                        self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
-                                     self.P[u]
+                            while (self.PositiveSet[user].has_key(item_j)):
+                                item_j = choice(itemList)
+                            j = self.dao.item[item_j]
+                            self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
+                                self.Q[i] - self.Q[j])
+                            self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
+                                         self.P[u]
+                            self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
+                                         self.P[u]
 
-                        self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
+                            self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
 
-            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
+                self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
