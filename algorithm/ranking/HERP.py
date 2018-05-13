@@ -448,7 +448,7 @@ class HERP(SocialRecommender):
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
 
-                    for ind in range(2):
+                    for ind in range(1):
                         if len(kItems) > 0 and len(okItems) > 0:
 
                             item_k = choice(kItems)
@@ -497,15 +497,16 @@ class HERP(SocialRecommender):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u, i, j)
+                        if len(nItems)>0:
+                            item_n = choice(nItems)
+                            n = self.dao.item[item_n]
+                            self.optimization(u,j,n)
 
-                        item_n = choice(nItems)
-                        n = self.dao.item[item_n]
-                        self.optimization(u,j,n)
-            # for user in self.trueTopKFriends:
-            #     for friend in self.trueTopKFriends[user]:
-            #         u = self.dao.user[user]
-            #         f = self.dao.user[friend]
-            #         self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
+            for user in self.trueTopKFriends:
+                for friend in self.trueTopKFriends[user]:
+                    u = self.dao.user[user]
+                    f = self.dao.user[friend]
+                    self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1

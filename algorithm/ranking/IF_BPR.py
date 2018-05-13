@@ -326,11 +326,11 @@ class IF_BPR(SocialRecommender):
                     sim = cosine(vec1, vec2)
                     uSim.append((user2,sim))
             fList = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
-            self.threshold[user1] = fList[-1][1]
+            self.threshold[user1] = fList[self.topK/2][1]
             for pair in fList:
                 self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
-            self.avg_sim[user1]=sum(self.pSimilarity[user1].values())/len(self.pSimilarity[user1])
+            self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/self.topK/2
 
 
         i=0
@@ -401,7 +401,8 @@ class IF_BPR(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            print self.foldInfo,self.threshold['100']
+            print self.foldInfo,'100',self.threshold['100']
+            print self.foldInfo, '2',self.threshold['2']
             self.IPositiveSet = defaultdict(dict)
             self.OKSet = defaultdict(dict)
             for user in self.dao.user:
@@ -448,7 +449,7 @@ class IF_BPR(SocialRecommender):
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
 
-                    for ind in range(2):
+                    for ind in range(1):
                         if len(kItems) > 0 and len(okItems) > 0:
 
                             item_k = choice(kItems)
@@ -514,12 +515,12 @@ class IF_BPR(SocialRecommender):
                     else:
                         self.avg_sim[user]= sum(li)/(len(li)+0.0)
 
-            # for user in self.trueTopKFriends:
-            #     for friend in self.trueTopKFriends[user]:
-            #         if self.pSimilarity[user][friend]>self.threshold[user]:
-            #             u = self.dao.user[user]
-            #             f = self.dao.user[friend]
-            #             self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
+            for user in self.trueTopKFriends:
+                for friend in self.trueTopKFriends[user]:
+                    if self.pSimilarity[user][friend]>self.threshold[user]:
+                        u = self.dao.user[user]
+                        f = self.dao.user[friend]
+                        self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
@@ -537,8 +538,16 @@ class IF_BPR(SocialRecommender):
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
 
     def optimization_thres(self, u, i, j,user,friend):
+        #print 'inner', (self.pSimilarity[user][friend]-self.threshold[user])/(self.avg_sim[user]-self.threshold[user])
+        try:
+            g_theta = sigmoid((self.pSimilarity[user][friend]-self.threshold[user])/(self.avg_sim[user]-self.threshold[user]))
+        except OverflowError:
+            print 'threshold',self.threshold[user],'smilarity',self.pSimilarity[user][friend],'avg',self.avg_sim[user]
+            print (self.pSimilarity[user][friend]-self.threshold[user]),(self.avg_sim[user]-self.threshold[user])
+            print (self.pSimilarity[user][friend]-self.threshold[user])/(self.avg_sim[user]-self.threshold[user])
+            exit(-1)
+        #print 'g_theta',g_theta
 
-        g_theta = sigmoid((self.avg_sim[user]-self.threshold[user])/(self.threshold[user]-self.pSimilarity[user][friend]))
         s = sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))/(1+g_theta))
         self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
         self.Q[i] += self.lRate * (1 - s) * self.P[u]
@@ -547,8 +556,9 @@ class IF_BPR(SocialRecommender):
         self.P[u] -= self.lRate * self.regU * self.P[u]
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
-        t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))*10\
-                       *(self.avg_sim[user]+self.pSimilarity[user][friend]-2*self.threshold[user])/(1+g_theta)**2+0.05*self.threshold[user]
+        t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))\
+                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-self.threshold[user])**2/(1+g_theta)**2# + 0.03*self.threshold[user]
+        #print 'derivative', t_derivative
         self.thres_d[user] += t_derivative
         self.thres_count[user] += 1
     def predict(self,user,item):

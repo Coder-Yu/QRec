@@ -49,25 +49,26 @@ class SBPR(SocialRecommender):
 
                     for ind in range(3):
                         if len(self.IPositiveSet[user]) > 0:
-                            item_k = choice(kItems)
 
-                            k = self.dao.item[item_k]
-                            self.optimization(u,i,k)
 
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
-                            self.optimization(u,k,j)
+                            self.optimization(u,i,j)
 
+                            item_k = choice(kItems)
+
+                            k = self.dao.item[item_k]
+                            self.optimization(u, k, j)
                             # self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) - \
                             #              log(sigmoid(
                             #                  (1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
 
                         else:
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u, i, j)

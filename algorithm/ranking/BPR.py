@@ -42,7 +42,7 @@ class BPR(IterativeRecommender):
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    for ind in range(5):
+                    for ind in range(3):
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
