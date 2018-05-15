@@ -330,7 +330,7 @@ class IF_BPR(SocialRecommender):
             for pair in fList:
                 self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
-            self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/self.topK/2
+            self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/(self.topK/2)
 
 
         i=0
@@ -410,7 +410,7 @@ class IF_BPR(SocialRecommender):
                     for friend in self.trueTopKFriends[user][:self.topK]:
                         if self.dao.user.has_key(friend) and self.pSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.positive[friend]:
-                                if not self.PositiveSet[user].has_key(item):
+                                if not self.PositiveSet[user].has_key(item) and not self.NegSets[user].has_key(item):
                                     self.IPositiveSet[user][item]=friend
 
 
@@ -419,7 +419,7 @@ class IF_BPR(SocialRecommender):
                         if self.dao.user.has_key(friend) and self.pSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.positive[friend]:
                                 if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(
-                                        item):
+                                        item) and not self.NegSets[user].has_key(item):
                                         self.OKSet[user][item] = friend
 
 
@@ -526,6 +526,32 @@ class IF_BPR(SocialRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
+        import seaborn as sns
+        np.random.seed(sum(map(ord, "aesthetics")))
+        sns.set_style("dark")
+        import matplotlib.pyplot as plt
+        pointY = []
+        pointX = []
+        f= plt.figure(figsize=(8,4))
+        ax=f.add_subplot(111)
+        for user in self.dao.user:
+            count = 0
+            for friend in self.pSimilarity[user]:
+                if self.pSimilarity[user][friend]>self.threshold[user]:
+                    count+=1
+            pointX.append(count)
+            # if self.sao.user.has_key(user):
+            #     pointY.append(len(self.sao.followees[user]))
+            # else:
+            #     pointY.append(0)
+        # ax[0].scatter(x=pointY,y=pointX,s=5,c='red')
+        # ax[0].set_xlabel('Count of Explicit Friends')
+        # ax[0].set_ylabel('Count of Implicit Friends')
+        pointX.sort()
+        ax.plot(range(len(pointX)),pointX,color='green')
+        ax.set_ylabel('Count of Implicit Friends')
+        #ax[1].set_xticklabels((' '))
+        plt.savefig('./friends'+self.foldInfo+'.png')
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
@@ -557,7 +583,7 @@ class IF_BPR(SocialRecommender):
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
         t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))\
-                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-self.threshold[user])**2/(1+g_theta)**2# + 0.03*self.threshold[user]
+                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-self.threshold[user])**2/(1+g_theta)**2 + 0.05*self.threshold[user]
         #print 'derivative', t_derivative
         self.thres_d[user] += t_derivative
         self.thres_count[user] += 1

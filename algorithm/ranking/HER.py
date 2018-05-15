@@ -431,11 +431,11 @@ class HER(SocialRecommender):
                             self.optimization(u, i, j)
 
 
-            # for user in self.topKSim:
-            #     for friend in self.topKSim[user]:
-            #         u = self.dao.user[user]
-            #         f = self.dao.user[friend[0]]
-            #         self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
+            for user in self.topKSim:
+                for friend in self.topKSim[user]:
+                    u = self.dao.user[user]
+                    f = self.dao.user[friend[0]]
+                    self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1

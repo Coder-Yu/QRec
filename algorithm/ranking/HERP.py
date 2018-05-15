@@ -361,26 +361,34 @@ class HERP(SocialRecommender):
 
 
 
+
         # print 'Similarity matrix finished.'
         # # # #print self.topKSim
         import pickle
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        psimilarity = open('HERP-pEpinions-sim'+self.foldInfo+'.pkl', 'wb')
-        nsimilarity = open('HERP-nEpinions-sim' + self.foldInfo + '.pkl', 'wb')
+        #psimilarity = open('HERP-pEpinions-sim'+self.foldInfo+'.pkl', 'wb')
+        #nsimilarity = open('HERP-nEpinions-sim' + self.foldInfo + '.pkl', 'wb')
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
-        pickle.dump(self.pTopKSim, psimilarity)
-        pickle.dump(self.nTopKSim, nsimilarity)
+        #pickle.dump(self.pTopKSim, psimilarity)
+        #pickle.dump(self.nTopKSim, nsimilarity)
         #pickle.dump((self.W,self.G),vectors)
         # similarity.close()
         # vectors.close()
 
         # matrix decomposition
-        #pkl_file = open('HERP-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
-
-        #self.topKSim = pickle.load(pkl_file)
+        # pkl_file = open('HERP-pEpinions-sim'+self.foldInfo+'.pkl', 'rb')
+        # self.pTopKSim = pickle.load(pkl_file)
+        # pkl_file = open('HERP-nEpinions-sim'+self.foldInfo+'.pkl', 'rb')
+        # self.nTopKSim = pickle.load(pkl_file)
+        # self.trueTopKFriends = defaultdict(list)
+        # for user in self.pTopKSim:
+        #     trueFriends = list(set(self.pTopKSim[user][:self.topK]).intersection(set(self.nTopKSim[user][:self.topK])))
+        #     self.trueTopKFriends[user] = trueFriends
+            # if len(trueFriends)>0:
+            #     print trueFriends
 
         print 'Decomposing...'
         self.F = np.random.rand(self.dao.trainingSize()[0], self.k) / 10
@@ -405,7 +413,7 @@ class HERP(SocialRecommender):
                 for friend in self.trueTopKFriends[user][:self.topK]:
                     if self.dao.user.has_key(friend):
                         for item in self.positive[friend]:
-                            if not self.PositiveSet[user].has_key(item):
+                            if not self.PositiveSet[user].has_key(item) and not self.NegSets[user].has_key(item):
                                 if not self.IPositiveSet[user].has_key(item):
                                     self.IPositiveSet[user][item] = 1
                                 else:
@@ -415,7 +423,7 @@ class HERP(SocialRecommender):
                 for friend in self.pTopKSim[user][:self.topK]:
                     if self.dao.user.has_key(friend):
                         for item in self.positive[friend]:
-                            if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(item):
+                            if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(item) and not self.NegSets[user].has_key(item):
                                 if not self.OKSet[user].has_key(item):
                                     self.OKSet[user][item] = 1
                                 else:
@@ -437,14 +445,18 @@ class HERP(SocialRecommender):
         while iteration < self.maxIter:
             self.loss = 0
             itemList = self.dao.item.keys()
-
+            kc = 0.0
+            okc = 0.0
+            nc = 0.0
             for user in self.PositiveSet:
                 #itemList = self.NegSets[user].keys()
                 kItems = self.IPositiveSet[user].keys()
                 okItems = self.OKSet[user].keys()
-                nItems = self.OKSet[user].keys()
+                nItems = self.NegSets[user].keys()
                 u = self.dao.user[user]
-
+                kc+= len(kItems)
+                okc += len(okItems)
+                nc+=len(nItems)
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
 
@@ -507,8 +519,12 @@ class HERP(SocialRecommender):
                     u = self.dao.user[user]
                     f = self.dao.user[friend]
                     self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
+                    #self.loss += self.alpha * (self.P[u] - self.P[f]).dot((self.P[u] - self.P[f]))
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
+            print kc/len(self.PositiveSet)
+            print okc/len(self.PositiveSet)
+            print nc/len(self.PositiveSet)
             iteration += 1
             if self.isConverged(iteration):
                 break
