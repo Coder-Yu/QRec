@@ -269,15 +269,16 @@ class TBPR(SocialRecommender):
 
                                                 
                 self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
-            self.theta -= self.lRate*self.theta_derivative/self.theta_count
-            self.weakTies = defaultdict(dict)
-            self.strongTies = defaultdict(dict)
-            for u1 in self.strength:
-                for u2 in self.strength[u1]:
-                    if self.strength[u1][u2] > self.theta:
-                        self.strongTies[u1][u2] = self.strength[u1][u2]
-                    else:
-                        self.weakTies[u1][u2] = self.strength[u1][u2]
+            if self.theta_count>0:
+                self.theta -= self.lRate*self.theta_derivative/self.theta_count
+                self.weakTies = defaultdict(dict)
+                self.strongTies = defaultdict(dict)
+                for u1 in self.strength:
+                    for u2 in self.strength[u1]:
+                        if self.strength[u1][u2] > self.theta:
+                            self.strongTies[u1][u2] = self.strength[u1][u2]
+                        else:
+                            self.weakTies[u1][u2] = self.strength[u1][u2]
             iteration += 1
             if self.isConverged(iteration):
                 break
