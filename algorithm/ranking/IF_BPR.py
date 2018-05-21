@@ -411,8 +411,12 @@ class IF_BPR(SocialRecommender):
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
+
+
         pickle.dump(self.pSimilarity, psimilarity)
         pickle.dump(self.nSimilarity, nsimilarity)
+
+
         #pickle.dump((self.W,self.G),vectors)
         # similarity.close()
         # vectors.close()
@@ -567,80 +571,90 @@ class IF_BPR(SocialRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
-        import seaborn as sns
-        np.random.seed(sum(map(ord, "aesthetics")))
-        sns.set_style("dark")
-        import matplotlib.pyplot as plt
-        pointN = []
-        pointX = []
-        f= plt.figure(figsize=(12,4))
-        ax1=f.add_subplot(121)
-        ax2=f.add_subplot(122)
-        for user in self.dao.user:
-            count = 0
-            for friend in self.pSimilarity[user]:
-                if self.pSimilarity[user][friend]>self.threshold[user]:
-                    count+=1
-            pointX.append(count)
-            count = 0
-            for friend in self.nSimilarity[user]:
-                if self.nSimilarity[user][friend]>self.threshold[user]:
-                    count+=1
-            pointN.append(count)
-            # if self.sao.user.has_key(user):
-            #     pointY.append(len(self.sao.followees[user]))
-            # else:
-            #     pointY.append(0)
-        # ax[0].scatter(x=pointY,y=pointX,s=5,c='red')
-        # ax[0].set_xlabel('Count of Explicit Friends')
-        # ax[0].set_ylabel('Count of Implicit Friends')
-        pointX.sort()
-        pointN.sort()
-        ax1.plot(range(len(pointX)),pointX,color='green')
-        ax2.plot(range(len(pointN)), pointN, color='red')
-        ax1.set_ylabel('Count of Positive Implicit Friends')
-        ax2.set_ylabel('Count of Negative Implicit Friends')
-        plt.tight_layout()
-        #ax[1].set_xticklabels((' '))
-        plt.savefig('./friends'+self.foldInfo+'.pdf')
-
-        #json
-        u1 = choice(self.sao.followees.keys())
-        while len(self.sao.followees[u1]) < 20 and self.dao.user.has_key(u1):
-            u1 = choice(self.sao.user.keys())
-
-        nodes = []
-        names2names = {}
-        for user in self.dao.user:
-            if self.sao.followees[u1].has_key(user) and user in self.trueTopKFriends[u1]:
-                nodes.append({"id":"both "+user,"group":1})
-                names2names[user]="both "+user
-                print '1 hit!'
-            elif self.sao.followees[u1].has_key(user) and user not in self.trueTopKFriends[u1]:
-                nodes.append({"id":"explicit "+user, "group": 2})
-                names2names[user] = "explicit " + user
-            elif not self.sao.followees[u1].has_key(user) and user in self.trueTopKFriends[u1]:
-                nodes.append({"id":"implicit "+user, "group": 3})
-                names2names[user] = "implicit " + user
-
-        nodes.append({"id": u1, "group": 4})
-        names2names[u1] = u1
-        print '5 hit!'
-        links = []
-        for user in self.sao.followees:
-            if not names2names.has_key(user):
-                continue
-            for u2 in self.sao.followees[user]:
-                if not names2names.has_key(u2):
-                    continue
-                links.append({"source":names2names[user],"target":names2names[u2],"value":1})
 
 
 
-        with open("./nodes"+self.foldInfo+".json", 'w') as json_file:
-            json.dump(nodes, json_file, ensure_ascii=False)
-        with open("./links"+self.foldInfo+".json", 'w') as json_file:
-            json.dump(links, json_file, ensure_ascii=False)
+
+
+
+        # import seaborn as sns
+        # np.random.seed(sum(map(ord, "aesthetics")))
+        # sns.set_style("dark")
+        # import matplotlib.pyplot as plt
+        # pointN = []
+        # pointX = []
+        # f= plt.figure(figsize=(12,4))
+        # ax1=f.add_subplot(121)
+        # ax2=f.add_subplot(122)
+        # for user in self.dao.user:
+        #     count = 0
+        #     for friend in self.pSimilarity[user]:
+        #         if self.pSimilarity[user][friend]>self.threshold[user]:
+        #             count+=1
+        #     pointX.append(count)
+        #     count = 0
+        #     for friend in self.nSimilarity[user]:
+        #         if self.nSimilarity[user][friend]>self.threshold[user]:
+        #             count+=1
+        #     pointN.append(count)
+        #     # if self.sao.user.has_key(user):
+        #     #     pointY.append(len(self.sao.followees[user]))
+        #     # else:
+        #     #     pointY.append(0)
+        # # ax[0].scatter(x=pointY,y=pointX,s=5,c='red')
+        # # ax[0].set_xlabel('Count of Explicit Friends')
+        # # ax[0].set_ylabel('Count of Implicit Friends')
+        # pointX.sort()
+        # pointN.sort()
+        # # ax1.plot(range(len(pointX)),pointX,color='green')
+        # # ax2.plot(range(len(pointN)), pointN, color='red')
+        # # ax1.set_ylabel('Count of Positive Implicit Friends')
+        # # ax2.set_ylabel('Count of Negative Implicit Friends')
+        # # plt.tight_layout()
+        # # #ax[1].set_xticklabels((' '))
+        # # plt.savefig('./friends'+self.foldInfo+'.pdf')
+        #
+        # th = open(self.config['ratings'] + self.foldInfo + 'pc.pkl', 'wb')
+        # pickle.dump(pointX,th)
+        # th = open(self.config['ratings'] + self.foldInfo + 'nc.pkl', 'wb')
+        # pickle.dump(pointN,th)
+        # #json
+        # u1 = choice(self.sao.followees.keys())
+        # while len(self.sao.followees[u1]) < 20 and self.dao.user.has_key(u1):
+        #     u1 = choice(self.sao.user.keys())
+        #
+        # nodes = []
+        # names2names = {}
+        # for user in self.dao.user:
+        #     if self.sao.followees[u1].has_key(user) and user in self.trueTopKFriends[u1]:
+        #         nodes.append({"id":"both "+user,"group":1})
+        #         names2names[user]="both "+user
+        #         print '1 hit!'
+        #     elif self.sao.followees[u1].has_key(user) and user not in self.trueTopKFriends[u1]:
+        #         nodes.append({"id":"explicit "+user, "group": 2})
+        #         names2names[user] = "explicit " + user
+        #     elif not self.sao.followees[u1].has_key(user) and user in self.trueTopKFriends[u1]:
+        #         nodes.append({"id":"implicit "+user, "group": 3})
+        #         names2names[user] = "implicit " + user
+        #
+        # nodes.append({"id": u1, "group": 4})
+        # names2names[u1] = u1
+        # print '5 hit!'
+        # links = []
+        # for user in self.sao.followees:
+        #     if not names2names.has_key(user):
+        #         continue
+        #     for u2 in self.sao.followees[user]:
+        #         if not names2names.has_key(u2):
+        #             continue
+        #         links.append({"source":names2names[user],"target":names2names[u2],"value":1})
+        #
+        #
+        #
+        # with open("./nodes"+self.foldInfo+".json", 'w') as json_file:
+        #     json.dump(nodes, json_file, ensure_ascii=False)
+        # with open("./links"+self.foldInfo+".json", 'w') as json_file:
+        #     json.dump(links, json_file, ensure_ascii=False)
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
@@ -672,7 +686,7 @@ class IF_BPR(SocialRecommender):
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
         t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))\
-                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-self.threshold[user])**2/(1+g_theta)**2 + 0.05*self.threshold[user]
+                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-self.threshold[user])**2/(1+g_theta)**2 + 0.01*self.threshold[user]
         #print 'derivative', t_derivative
         self.thres_d[user] += t_derivative
         self.thres_count[user] += 1
