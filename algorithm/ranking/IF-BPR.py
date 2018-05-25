@@ -444,8 +444,7 @@ class IF_BPR(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            print self.foldInfo,'100',self.threshold['100']
-            print self.foldInfo, '2',self.threshold['2']
+
             self.IPositiveSet = defaultdict(dict)
             self.OKSet = defaultdict(dict)
             for user in self.dao.user:
@@ -484,9 +483,7 @@ class IF_BPR(SocialRecommender):
                 kItems = self.IPositiveSet[user].keys()
                 okItems = self.OKSet[user].keys()
                 nItems = self.NegSets[user].keys()
-                # print kItems
-                # print okItems
-                # print nItems
+
                 u = self.dao.user[user]
 
                 for item in self.PositiveSet[user]:
@@ -549,7 +546,6 @@ class IF_BPR(SocialRecommender):
                             self.optimization(u,j,n)
                 if self.thres_count[user]>0:
                     self.threshold[user] -= self.lRate * self.thres_d[user] / self.thres_count[user]
-                    #print user, self.thres_d[user], self.thres_count[user]
                     self.thres_d[user]=0
                     self.thres_count[user]=0
                     li = [sim for sim in self.pSimilarity[user].values() if sim>=self.threshold[user]]
