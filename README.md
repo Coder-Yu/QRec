@@ -275,7 +275,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   </tr>
     </tr>
       <tr>
-    <td scope="row">TBPR</td>
+    <td scope="row">IF-BPR</td>
     <td>Junliang Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018 (Under Review).
      </td>
   </tr>
