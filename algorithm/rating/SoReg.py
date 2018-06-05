@@ -57,8 +57,12 @@ class SoReg(SocialRecommender):
                 self.P[uid] += self.lRate*(error*q - self.regU * p)
                 self.Q[vid] += self.lRate*(error*p - self.regI * q)
 
+            for user in self.sao.user:
                 simSum = 0
                 simSumf1 = 0
+                if not self.dao.containsUser(user):
+                    continue
+                uid = self.dao.user[user]
                 for f in self.sao.getFollowees(user):
                     if self.dao.containsUser(f):
                         fid = self.dao.user[f]
