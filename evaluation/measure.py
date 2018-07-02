@@ -41,6 +41,8 @@ class Measure(object):
             indicators.append('F1:' + str(F1) + '\n')
             MAP = Measure.MAP(origin, predicted, n)
             indicators.append('MAP:' + str(MAP) + '\n')
+            NDCG = Measure.NDCG(origin, predicted, n)
+            indicators.append('NDCG:' + str(NDCG) + '\n')
             # AUC = Measure.AUC(origin,res,rawRes)
             # measure.append('AUC:' + str(AUC) + '\n')
             measure.append('Top ' + str(n) + '\n')
@@ -65,6 +67,20 @@ class Measure(object):
             sum_prec += precision / (min(len(origin[user]), N) + 0.0)
         return sum_prec / (len(res))
 
+    @staticmethod
+    def NDCG(origin,res,N):
+        sum_NDCG = 0
+        for user in res:
+            DCG = 0
+            IDCG = 0
+            #1 = related, 0 = unrelated
+            for n, item in enumerate(res[user]):
+                if origin[user].has_key(item[0]):
+                    DCG+= 1.0/math.log(n+2)
+            for n, item in enumerate(origin[user].keys()[:N]):
+                IDCG+=1.0/math.log(n+2)
+            sum_NDCG += DCG / IDCG
+        return sum_NDCG / (len(res))
     # @staticmethod
     # def AUC(origin, res, rawRes):
     #
