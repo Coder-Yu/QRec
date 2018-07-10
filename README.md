@@ -1,6 +1,6 @@
 <h1>RecQ</h1>
 
-<b style="color:red>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b>
+<b><font color=#FF0000>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </font></b>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
