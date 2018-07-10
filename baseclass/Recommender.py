@@ -24,10 +24,11 @@ class Recommender(object):
         self.isOutput = True
         self.dao = RatingDAO(self.config, trainingSet, testSet)
         self.foldInfo = fold
+        self.evalSettings = LineConfig(self.config['evaluation.setup'])
         self.measure = []
-        if LineConfig(self.config['evaluation.setup']).contains('-cold'):
+        if self.evalSettings.contains('-cold'):
             #evaluation on cold-start users
-            threshold = int(LineConfig(self.config['evaluation.setup'])['-cold'])
+            threshold = int(self.evalSettings['-cold'])
             removedUser = {}
             for user in self.dao.testSet_u:
                 if self.dao.trainSet_u.has_key(user) and len(self.dao.trainSet_u[user])>threshold:
@@ -65,6 +66,10 @@ class Recommender(object):
 
     def buildModel(self):
         'build the model (for model-based algorithms )'
+        pass
+
+    def buildModel_tf(self):
+        'training model on tensorflow'
         pass
 
     def saveModel(self):
@@ -236,7 +241,14 @@ class Recommender(object):
             print 'Initializing model %s...' %(self.foldInfo)
             self.initModel()
             print 'Building Model %s...' %(self.foldInfo)
-            self.buildModel()
+            try:
+                import tensorflow
+                if self.evalSettings.contains('-tf'):
+                    self.buildModel_tf()
+                else:
+                    self.buildModel()
+            except ImportError:
+                self.buildModel()
 
         #preict the ratings or item ranking
         print 'Predicting %s...' %(self.foldInfo)

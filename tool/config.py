@@ -13,7 +13,7 @@ class Config(object):
     def getOptions(self,item):
         if not self.contains(item):
             print 'parameter '+item+' is invalid!'
-            exit(-1)
+            return None
         return self.config[item]
 
     def contains(self,key):

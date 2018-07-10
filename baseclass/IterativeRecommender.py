@@ -18,6 +18,7 @@ class IterativeRecommender(Recommender):
         learningRate = config.LineConfig(self.config['learnRate'])
         self.lRate = float(learningRate['-init'])
         self.maxLRate = float(learningRate['-max'])
+        self.batch_size = int(self.config['batch_size'])
         # regularization parameter
         regular = config.LineConfig(self.config['reg.lambda'])
         self.regU,self.regI,self.regB= float(regular['-u']),float(regular['-i']),float(regular['-b'])
@@ -52,6 +53,7 @@ class IterativeRecommender(Recommender):
 
 
     def predict(self,u,i):
+
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
         elif self.dao.containsUser(u) and not self.dao.containsItem(i):
@@ -60,6 +62,7 @@ class IterativeRecommender(Recommender):
             return self.dao.itemMeans[i]
         else:
             return self.dao.globalMean
+
 
     def predictForRanking(self,u):
         'used to rank all the items for the user'

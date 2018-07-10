@@ -1,6 +1,6 @@
 <h1>RecQ</h1>
 
-<b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b>
+<b style="color:red>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
@@ -79,6 +79,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
       Secondary option:-b, -p, -cold<br>
       -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）</br>
       -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one) </br>
+      -tf (model training would be conducted on TensorFlow)
       -cold threshold (evaluation on cold-start users, users in training set with ratings more than threshold will be removed from the test set)
      </td>
   </tr>
