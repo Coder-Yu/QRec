@@ -37,8 +37,8 @@ class PMF(IterativeRecommender):
         self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
         # 变量，初始化用户矩阵和商品矩阵
         m, n, train_size = self.dao.trainingSize()
-        self.U = tf.Variable(tf.truncated_normal(shape=[m, self.k], stddev=0.001), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[n, self.k], stddev=0.001), name='V')
+        self.U = tf.Variable(tf.truncated_normal(shape=[m, self.k], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[n, self.k], stddev=0.005), name='V')
 
         # 取出对应的用户和商品列
         U_embed = tf.nn.embedding_lookup(self.U, u_idx)
@@ -54,13 +54,12 @@ class PMF(IterativeRecommender):
         train = optimizer.minimize(total_loss, var_list=[self.U, self.V])
 
         # 初始化会话
-        init = tf.global_variables_initializer()
         with tf.Session() as sess:
+            init = tf.global_variables_initializer()
             sess.run(init)
 
             # 迭代，传递变量
             for step in range(self.maxIter):
-                print 'iteration:', step
                 # 按批优化
                 batch_size = self.batch_size
 
@@ -70,6 +69,7 @@ class PMF(IterativeRecommender):
                 item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
                 rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
                 sess.run(train, feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx})
+                print 'iteration:', step, 'loss:', sess.run(loss, feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx})
 
             # 输出训练完毕的矩阵
             self.P = sess.run(self.U)
