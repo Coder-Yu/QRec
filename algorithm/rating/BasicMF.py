@@ -51,25 +51,25 @@ class BasicMF(IterativeRecommender):
 
         #初始化会话
         init = tf.global_variables_initializer()
-        sess = tf.Session()
-        sess.run(init)
+        with tf.Session() as sess:
+            sess.run(init)
 
-        #迭代，传递变量
-        for step in range(self.maxIter):
-            print 'iteration:',step
-            #按批优化
-            batch_size=self.batch_size
+            #迭代，传递变量
+            for step in range(self.maxIter):
+                print 'iteration:',step
+                #按批优化
+                batch_size=self.batch_size
 
-            batch_idx = np.random.randint(train_size, size=batch_size)
+                batch_idx = np.random.randint(train_size, size=batch_size)
 
-            user_idx = [self.dao.user[self.dao.trainingData[idx][0]] for idx in batch_idx]
-            item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
-            rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
-            sess.run(train,feed_dict={r:rating,u_idx:user_idx,v_idx:item_idx})
+                user_idx = [self.dao.user[self.dao.trainingData[idx][0]] for idx in batch_idx]
+                item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
+                rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
+                sess.run(train,feed_dict={r:rating,u_idx:user_idx,v_idx:item_idx})
 
 
-        #输出训练完毕的矩阵
-        self.P =sess.run(self.U)
-        self.Q =sess.run(self.V)
+            #输出训练完毕的矩阵
+            self.P =sess.run(self.U)
+            self.Q =sess.run(self.V)
 
 
