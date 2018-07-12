@@ -1,7 +1,7 @@
 <h1>RecQ</h1>
 <p>
 <b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
-Algorithms supported by TensorFlow (At Present): BasicMF, PMF, SVD.... (To Be Updated) </br>
+Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
 </p>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
