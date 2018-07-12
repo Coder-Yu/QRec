@@ -36,6 +36,21 @@ class IterativeRecommender(Recommender):
         self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
+    def buildModel_tf(self):
+        # initialization
+        import tensorflow as tf
+        self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
+        self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
+        self.r = tf.placeholder(tf.float32, [None], name="rating")
+
+        self.m, self.n, self.train_size = self.dao.trainingSize()
+        self.U = tf.Variable(tf.truncated_normal(shape=[self.m, self.k], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[self.n, self.k], stddev=0.005), name='V')
+
+        self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
+        self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
+
+
     def saveModel(self):
         pass
 

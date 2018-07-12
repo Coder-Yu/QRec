@@ -29,29 +29,18 @@ class PMF(IterativeRecommender):
                 break
 
     def buildModel_tf(self):
+        super(PMF, self).buildModel_tf()
+
         import tensorflow as tf
-        # 占位符，存储输入的用户id和商品id以及评分
-        u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
-        v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
-        r = tf.placeholder(tf.float32, [None], name="rating")
-        self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
-        # 变量，初始化用户矩阵和商品矩阵
-        m, n, train_size = self.dao.trainingSize()
-        self.U = tf.Variable(tf.truncated_normal(shape=[m, self.k], stddev=0.005), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[n, self.k], stddev=0.005), name='V')
-
-        # 取出对应的用户和商品列
-        U_embed = tf.nn.embedding_lookup(self.U, u_idx)
-        V_embed = tf.nn.embedding_lookup(self.V, v_idx)
-
         # 构造损失函数 设置优化器
-        r_hat = tf.reduce_sum(tf.multiply(U_embed, V_embed), reduction_indices=1)
-        loss = tf.nn.l2_loss(tf.subtract(r, r_hat))
-        reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U)),
-                          tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V)))
-        total_loss = tf.add(loss, reg_loss)
-        optimizer = tf.train.AdamOptimizer(self.lRate)
-        train = optimizer.minimize(total_loss, var_list=[self.U, self.V])
+        reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+        self.r_hat = tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), reduction_indices=1)
+        self.loss = tf.nn.l2_loss(tf.subtract(self.r, self.r_hat))
+        self.reg_loss = tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.U)),
+                          tf.multiply(reg_lambda, tf.nn.l2_loss(self.V)))
+        self.total_loss = tf.add(self.loss, self.reg_loss)
+        self.optimizer = tf.train.AdamOptimizer(self.lRate)
+        self.train = self.optimizer.minimize(self.total_loss, var_list=[self.U, self.V])
 
         # 初始化会话
         with tf.Session() as sess:
@@ -63,13 +52,13 @@ class PMF(IterativeRecommender):
                 # 按批优化
                 batch_size = self.batch_size
 
-                batch_idx = np.random.randint(train_size, size=batch_size)
+                batch_idx = np.random.randint(self.train_size, size=batch_size)
 
                 user_idx = [self.dao.user[self.dao.trainingData[idx][0]] for idx in batch_idx]
                 item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
                 rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
-                sess.run(train, feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx})
-                print 'iteration:', step, 'loss:', sess.run(loss, feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx})
+                sess.run(self.train, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx})
+                print 'iteration:', step, 'loss:', sess.run(self.total_loss, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx})
 
             # 输出训练完毕的矩阵
             self.P = sess.run(self.U)

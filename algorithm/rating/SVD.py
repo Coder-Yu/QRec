@@ -38,44 +38,36 @@ class SVD(IterativeRecommender):
 
 
     def buildModel_tf(self):
+        super(SVD, self).buildModel_tf()
 
         import tensorflow as tf
 
-        u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
-        v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
-        r = tf.placeholder(tf.float32, [None], name="rating")
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
-        self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
-        self.reg_biase = tf.constant(self.regB, dtype=tf.float32)
-
-        m, n, train_size = self.dao.trainingSize()
-        self.U = tf.Variable(tf.truncated_normal(shape=[m, self.k], stddev=0.005), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[n, self.k], stddev=0.005), name='V')
-
-        U_bias = tf.Variable(tf.truncated_normal(shape=[m], stddev=0.005,mean=0.02), name='U_bias')
-        V_bias = tf.Variable(tf.truncated_normal(shape=[n], stddev=0.005,mean=0.02), name='V_bias')
+        reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+        reg_biase = tf.constant(self.regB, dtype=tf.float32)
 
 
-        U_embed = tf.nn.embedding_lookup(self.U, u_idx)
-        V_embed = tf.nn.embedding_lookup(self.V, v_idx)
 
-        U_bias_embed = tf.nn.embedding_lookup(U_bias, u_idx)
-        V_bias_embed = tf.nn.embedding_lookup(V_bias, v_idx)
+        self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.m], stddev=0.005,mean=0.02), name='U_bias')
+        self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.n], stddev=0.005,mean=0.02), name='V_bias')
 
-        r_hat = tf.reduce_sum(tf.multiply(U_embed, V_embed), reduction_indices=1)
-        r_hat = tf.add(r_hat, U_bias_embed)
-        r_hat = tf.add(r_hat, V_bias_embed)
-        r_hat = tf.add(r_hat, global_mean)
+        self.U_bias_embed = tf.nn.embedding_lookup(self.U_bias, self.u_idx)
+        self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
 
-        loss = tf.nn.l2_loss(tf.subtract(r, r_hat))
-        reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U)),
-                          tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V)))
-        reg_loss = tf.add(reg_loss,tf.multiply(self.reg_biase, tf.nn.l2_loss(U_bias)))
-        reg_loss = tf.add(reg_loss, tf.multiply(self.reg_biase, tf.nn.l2_loss(V_bias)))
-        total_loss = tf.add(loss, reg_loss)
+        self.r_hat = tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), reduction_indices=1)
+        self.r_hat = tf.add(self.r_hat, self.U_bias_embed)
+        self.r_hat = tf.add(self.r_hat, self.V_bias_embed)
+        self.r_hat = tf.add(self.r_hat, global_mean)
+
+        self.loss = tf.nn.l2_loss(tf.subtract(self.r, self.r_hat))
+        reg_loss = tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.U)),
+                          tf.multiply(reg_lambda, tf.nn.l2_loss(self.V)))
+        reg_loss = tf.add(reg_loss,tf.multiply(reg_biase, tf.nn.l2_loss(self.U_bias)))
+        reg_loss = tf.add(reg_loss, tf.multiply(reg_biase, tf.nn.l2_loss(self.V_bias)))
+        self.total_loss = tf.add(self.loss, reg_loss)
         optimizer = tf.train.AdamOptimizer(self.lRate)
-        train_U = optimizer.minimize(total_loss, var_list=[self.U, U_bias])
-        train_V = optimizer.minimize(total_loss, var_list=[self.V, V_bias])
+        train_U = optimizer.minimize(self.total_loss, var_list=[self.U, self.U_bias])
+        train_V = optimizer.minimize(self.total_loss, var_list=[self.V, self.V_bias])
 
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
@@ -86,24 +78,24 @@ class SVD(IterativeRecommender):
 
                 batch_size = self.batch_size
 
-                batch_idx = np.random.randint(train_size, size=batch_size)
+                batch_idx = np.random.randint(self.train_size, size=batch_size)
 
                 user_idx = [self.dao.user[self.dao.trainingData[idx][0]] for idx in batch_idx]
                 item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
                 g_mean = [self.dao.globalMean]*batch_size
                 rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
 
-                sess.run(train_U, feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx,global_mean:g_mean})
-                sess.run(train_V, feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx, global_mean: g_mean})
+                sess.run(train_U, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
+                sess.run(train_V, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx, global_mean: g_mean})
 
-                print 'iteration:', step, 'loss:', sess.run(loss,
-                                                            feed_dict={r: rating, u_idx: user_idx, v_idx: item_idx,global_mean:g_mean})
+                print 'iteration:', step, 'loss:', sess.run(self.total_loss,
+                                                            feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
 
 
             self.P = sess.run(self.U)
             self.Q = sess.run(self.V)
-            self.Bu = sess.run(U_bias)
-            self.Bi = sess.run(V_bias)
+            self.Bu = sess.run(self.U_bias)
+            self.Bi = sess.run(self.V_bias)
 
     def predict(self,u,i):
         if self.dao.containsUser(u) and self.dao.containsItem(i):
