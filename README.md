@@ -1,6 +1,6 @@
 <h1>RecQ</h1>
 
-<h2>Latest News<h2>
+<h2>Latest News</h2>
 <p>
 <b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
 07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
