@@ -1,14 +1,17 @@
 <h1>RecQ</h1>
+<h2>Latest News</h2>
 <p>
 <b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
-Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
+07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
 </p>
+
+<h2>Introduction</h2>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 Released by School of Software Engineering, Chongqing University</br>
 <b>More algorithms (ranking based and context-aware) can be found in another project of mine <a href="https://github.com/Coder-Yu/Yue/">Yue</a></b>
-<h2>Introduction</h2>
+</br>
 
 **RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
 
