@@ -46,6 +46,7 @@ class SVD(IterativeRecommender):
         r = tf.placeholder(tf.float32, [None], name="rating")
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
         self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+        self.reg_biase = tf.constant(self.regB, dtype=tf.float32)
 
         m, n, train_size = self.dao.trainingSize()
         self.U = tf.Variable(tf.truncated_normal(shape=[m, self.k], stddev=0.005), name='U')
@@ -69,6 +70,8 @@ class SVD(IterativeRecommender):
         loss = tf.nn.l2_loss(tf.subtract(r, r_hat))
         reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U)),
                           tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V)))
+        reg_loss = tf.add(reg_loss,tf.multiply(self.reg_biase, tf.nn.l2_loss(U_bias)))
+        reg_loss = tf.add(reg_loss, tf.multiply(self.reg_biase, tf.nn.l2_loss(V_bias)))
         total_loss = tf.add(loss, reg_loss)
         optimizer = tf.train.AdamOptimizer(self.lRate)
         train_U = optimizer.minimize(total_loss, var_list=[self.U, U_bias])
