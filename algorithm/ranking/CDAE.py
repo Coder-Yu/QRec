@@ -52,7 +52,6 @@ class CDAE(IterativeRecommender):
     def readConfiguration(self):
         super(CDAE, self).readConfiguration()
         eps = config.LineConfig(self.config['CDAE'])
-        self.batch_size = int(eps['-bs'])
         self.corruption = float(eps['-co'])
         self.n_hidden = int(eps['-nh'])
 
