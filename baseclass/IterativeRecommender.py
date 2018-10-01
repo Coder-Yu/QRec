@@ -32,8 +32,8 @@ class IterativeRecommender(Recommender):
         print '='*80
 
     def initModel(self):
-        self.P = np.random.rand(self.dao.trainingSize()[0], self.k)/3 # latent user matrix
-        self.Q = np.random.rand(self.dao.trainingSize()[1], self.k)/3  # latent item matrix
+        self.P = np.random.rand(len(self.dao.user), self.k)/3 # latent user matrix
+        self.Q = np.random.rand(len(self.dao.item), self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
     def buildModel_tf(self):
@@ -96,7 +96,10 @@ class IterativeRecommender(Recommender):
         value = [item.strip()for item in measure]
         #with open(self.algorName+' iteration.txt')
         deltaLoss = (self.lastLoss-self.loss)
-        print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate,measure[0][:11],measure[1][:12])
+        if self.ranking.isMainOn():
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
+        else:
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s' % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0][:11], measure[1][:12])
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond

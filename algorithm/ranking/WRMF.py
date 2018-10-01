@@ -3,13 +3,6 @@
 # this algorithm refers to the following paper:
 # Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets
 from baseclass.IterativeRecommender import IterativeRecommender
-import math
-import numpy as np
-from tool import qmath
-from random import choice
-from tool.qmath import sigmoid
-from math import log
-from collections import defaultdict
 from scipy.sparse import *
 from scipy import *
 

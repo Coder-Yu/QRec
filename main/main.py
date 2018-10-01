@@ -27,6 +27,10 @@ if __name__ == '__main__':
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
+
+    print 'Deep Recommenders:'
+    print 'd1. CDAE'
+
     print '='*80
     algor = -1
     conf = -1
@@ -123,6 +127,9 @@ if __name__ == '__main__':
 
     elif order == 'b4':
         conf = Config('../config/rand.conf')
+
+    elif order == 'd1':
+        conf = Config('../config/CDAE.conf')
 
     else:
         print 'Error num!'

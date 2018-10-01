@@ -352,16 +352,16 @@ class IF_BPR(SocialRecommender):
                 self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
             self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/(self.topK/2)
-        import pickle
-        ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
-
-        pickle.dump(self.pSimilarity, ps)
-        av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
-
-        pickle.dump(self.avg_sim, av)
-
-        th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
-        pickle.dump(self.threshold, th)
+        # import pickle
+        # ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
+        #
+        # pickle.dump(self.pSimilarity, ps)
+        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
+        #
+        # pickle.dump(self.avg_sim, av)
+        #
+        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
+        # pickle.dump(self.threshold, th)
         i=0
         for user1 in self.negative:
             uSim = []
@@ -396,23 +396,23 @@ class IF_BPR(SocialRecommender):
 
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        psimilarity = open(self.config['ratings']+self.foldInfo+'p.pkl', 'wb')
-        nsimilarity = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'wb')
+        # psimilarity = open(self.config['ratings']+self.foldInfo+'p.pkl', 'wb')
+        # nsimilarity = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'wb')
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
-        pickle.dump(self.pTopKSim, psimilarity)
-        pickle.dump(self.nTopKSim, nsimilarity)
-
-        psimilarity = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'wb')
-        nsimilarity = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'wb')
+        # pickle.dump(self.pTopKSim, psimilarity)
+        # pickle.dump(self.nTopKSim, nsimilarity)
+        #
+        # psimilarity = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'wb')
+        # nsimilarity = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'wb')
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
 
 
-        pickle.dump(self.pSimilarity, psimilarity)
-        pickle.dump(self.nSimilarity, nsimilarity)
+        # pickle.dump(self.pSimilarity, psimilarity)
+        # pickle.dump(self.nSimilarity, nsimilarity)
 
 
         #pickle.dump((self.W,self.G),vectors)
