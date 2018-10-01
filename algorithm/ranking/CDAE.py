@@ -2,7 +2,7 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 import numpy as np
 from random import choice,random
-
+from tool import config
 try:
     import tensorflow as tf
 except ImportError:
@@ -37,7 +37,7 @@ class CDAE(IterativeRecommender):
             ratedItems, values = self.dao.userRated(user)
             for item in ratedItems:
                 iid = self.dao.item[item]
-                if random()>0.9:
+                if random()>self.corruption:
                     vec[iid]=0
                 evaluated[n][iid]=True
             for i in range(self.negative_sp*len(ratedItems)):
@@ -49,28 +49,33 @@ class CDAE(IterativeRecommender):
             X[n]=vec
         return X,uids,evaluated
 
-
+    def readConfiguration(self):
+        super(CDAE, self).readConfiguration()
+        eps = config.LineConfig(self.config['CDAE'])
+        self.batch_size = int(eps['-bs'])
+        self.corruption = float(eps['-co'])
+        self.n_hidden = int(eps['-nh'])
 
     def initModel(self):
         super(CDAE, self).initModel()
         n_input = len(self.dao.item)
-        n_hidden = 128
+        self.n_hidden = 128
         n_output = len(self.dao.item)
         self.negative_sp = 5
         self.X = tf.placeholder("float", [None, n_input])
         self.sample = tf.placeholder("bool", [None, n_input])
         self.zeros = np.zeros((self.batch_size,n_input))
-        self.V = tf.Variable(tf.random_normal([len(self.dao.user), n_hidden]))
+        self.V = tf.Variable(tf.random_normal([len(self.dao.user), self.n_hidden]))
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
 
 
         self.weights = {
-            'encoder': tf.Variable(tf.random_normal([n_input, n_hidden])),
-            'decoder': tf.Variable(tf.random_normal([n_hidden, n_output])),
+            'encoder': tf.Variable(tf.random_normal([n_input, self.n_hidden])),
+            'decoder': tf.Variable(tf.random_normal([self.n_hidden, n_output])),
         }
         self.biases = {
-            'encoder': tf.Variable(tf.random_normal([n_hidden])),
+            'encoder': tf.Variable(tf.random_normal([self.n_hidden])),
             'decoder': tf.Variable(tf.random_normal([n_output])),
         }
 
