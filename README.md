@@ -257,6 +257,12 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 		<th>Paper</th>
   </tr>
     <tr>
+	<td scope="row">CDAE</td>
+    <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
+    </td>
+  </tr>
+  </tr>
+    <tr>
 	<td scope="row">BPR</td>
     <td>Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback, UAI 2009.<br>
     </td>
@@ -278,13 +284,13 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   </tr>
       <tr>
     <td scope="row">TBPR</td>
-    <td>Wang, Xin, et al. Social Recommendation with Strong and Weak Ties, CIKM 2016.
+    <td>Wang et al. Social Recommendation with Strong and Weak Ties, CIKM 2016.
      </td>
   </tr>
     </tr>
       <tr>
     <td scope="row">IF-BPR</td>
-    <td>Junliang Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
+    <td>Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
      </td>
   </tr>
   </table>
