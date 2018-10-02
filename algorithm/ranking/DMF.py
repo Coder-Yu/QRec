@@ -11,16 +11,17 @@ except ImportError:
 from tensorflow import set_random_seed
 set_random_seed(2)
 
+#According to the paper, we only
 class DMF(IterativeRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(DMF, self).__init__(conf,trainingSet,testSet,fold)
 
 
-    def next_batch(self):
-        rows = np.zeros((self.batch_size,self.n))
-        cols = np.zeros((self.batch_size,self.m))
-        batch_idx = np.random.randint(self.train_size, size=self.batch_size)
+    def next_batch(self,i):
+        rows = np.zeros(((self.negative_sp+1)*self.batch_size,self.n))
+        cols = np.zeros(((self.negative_sp+1)*self.batch_size,self.m))
+        batch_idx = range(self.batch_size*i,self.batch_size*(i+1))
 
         users = [self.dao.trainingData[idx][0] for idx in batch_idx]
         items = [self.dao.trainingData[idx][1] for idx in batch_idx]
@@ -32,6 +33,19 @@ class DMF(IterativeRecommender):
             rows[i] = self.dao.row(user)
         for i,item in enumerate(items):
             cols[i] = self.dao.col(item)
+
+        #negative sample
+        for i in range(self.negative_sp*self.batch_size):
+            u = choice(self.dao.user)
+            v = choice(self.dao.item)
+            while self.dao.contains(u,v):
+                u = choice(self.dao.user)
+                v = choice(self.dao.item)
+            rows[self.batch_size-1+i]=self.dao.row(u)
+            cols[self.batch_size-1+i]=self.dao.col(i)
+            u_idx.append(self.dao.user[u])
+            v_idx.append(self.dao.item[u])
+            ratings.append(0)
         return rows,cols,ratings,u_idx,v_idx
 
     def initModel(self):
@@ -39,8 +53,8 @@ class DMF(IterativeRecommender):
         n_input_u = len(self.dao.item)
         n_input_i = len(self.dao.user)
         self.negative_sp = 5
-        self.n_hidden_u=[50,50]
-        self.n_hidden_i=[50,50]
+        self.n_hidden_u=[64,128]
+        self.n_hidden_i=[64,128]
         self.input_u = tf.placeholder("float", [None, n_input_u])
         self.input_i = tf.placeholder("float", [None, n_input_i])
 
@@ -96,18 +110,20 @@ class DMF(IterativeRecommender):
         total_batch = int(len(self.dao.trainingData)/ self.batch_size)
         for epoch in range(self.maxIter):
             for i in range(total_batch):
-                users,items,ratings,u_idx,v_idx = self.next_batch()
+                users,items,ratings,u_idx,v_idx = self.next_batch(i)
 
                 _,loss= self.sess.run([optimizer, self.loss], feed_dict={self.input_u: users,self.input_i:items,self.r:ratings})
 
                 #save the output layer
-                U_embedding, V_embedding = self.sess.run([self.user_out, self.item_out], feed_dict={self.input_u: users,self.input_i:items})
-                for ue,u in zip(U_embedding,u_idx):
-                    self.U[u]=ue
-                for ve,v in zip(V_embedding,v_idx):
-                    self.V[v]=ve
+                if epoch == self.maxIter-1:
+                    U_embedding, V_embedding = self.sess.run([self.user_out, self.item_out], feed_dict={self.input_u: users,self.input_i:items})
+                    for ue,u in zip(U_embedding,u_idx):
+                        self.U[u]=ue
+                    for ve,v in zip(V_embedding,v_idx):
+                        self.V[v]=ve
 
                 print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"Batch:", '%03d' %(i+1),"loss=", "{:.9f}".format(loss)
+
         print("Optimization Finished!")
 
         self.normalized_V = np.sqrt(np.sum(self.V*self.V,axis=1))

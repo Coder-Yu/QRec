@@ -110,14 +110,10 @@ class RatingDAO(object):
     def getUserId(self,u):
         if self.user.has_key(u):
             return self.user[u]
-        else:
-            return -1
 
     def getItemId(self,i):
         if self.item.has_key(i):
             return self.item[i]
-        else:
-            return -1
 
     def trainingSize(self):
         return (len(self.user),len(self.item),len(self.trainingData))
