@@ -261,6 +261,13 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
     </td>
   </tr>
+
+   <tr>
+	<td scope="row">CDAE</td>
+    <td>Xue et al., Deep Matrix Factorization Models for Recommender Systems, IJCAI 2017.<br>
+    </td>
+  </tr>
+
   </tr>
     <tr>
 	<td scope="row">BPR</td>
