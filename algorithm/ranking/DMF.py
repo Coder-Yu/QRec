@@ -118,7 +118,7 @@ class DMF(IterativeRecommender):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
             uid = self.dao.user[u]
-            return np.divde((self.V).dot(self.U[uid],self.normalized_U[uid]*self.normalized_V))
+            return np.divide(self.V.dot(self.U[uid]),self.normalized_U[uid]*self.normalized_V)
         else:
             return [self.dao.globalMean] * self.n
 
