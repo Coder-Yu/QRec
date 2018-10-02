@@ -263,7 +263,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   </tr>
 
    <tr>
-	<td scope="row">CDAE</td>
+	<td scope="row">DMF</td>
     <td>Xue et al., Deep Matrix Factorization Models for Recommender Systems, IJCAI 2017.<br>
     </td>
   </tr>
