@@ -8,6 +8,8 @@ try:
 except ImportError:
     print 'This method can only be run tensorflow!'
     exit(-1)
+from tensorflow import set_random_seed
+set_random_seed(2)
 
 class CDAE(IterativeRecommender):
 
@@ -16,6 +18,7 @@ class CDAE(IterativeRecommender):
 
     def encoder(self,x,v):
         layer = tf.nn.sigmoid(tf.add(tf.add(tf.matmul(x, self.weights['encoder']), self.biases['encoder']),v))
+        #layer = tf.nn.sigmoid(tf.add(tf.matmul(x, self.weights['encoder']), self.biases['encoder']))
         return layer
 
     def decoder(self,x):
@@ -61,21 +64,22 @@ class CDAE(IterativeRecommender):
         self.n_hidden = 128
         n_output = len(self.dao.item)
         self.negative_sp = 5
+        initializer = tf.contrib.layers.xavier_initializer()
         self.X = tf.placeholder("float", [None, n_input])
         self.sample = tf.placeholder("bool", [None, n_input])
         self.zeros = np.zeros((self.batch_size,n_input))
-        self.V = tf.Variable(tf.random_normal([len(self.dao.user), self.n_hidden]))
+        self.V = tf.Variable(initializer([len(self.dao.user), self.n_hidden]))
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
 
 
         self.weights = {
-            'encoder': tf.Variable(tf.random_normal([n_input, self.n_hidden])),
-            'decoder': tf.Variable(tf.random_normal([self.n_hidden, n_output])),
+            'encoder': tf.Variable(initializer([n_input, self.n_hidden])),
+            'decoder': tf.Variable(initializer([self.n_hidden, n_output])),
         }
         self.biases = {
-            'encoder': tf.Variable(tf.random_normal([self.n_hidden])),
-            'decoder': tf.Variable(tf.random_normal([n_output])),
+            'encoder': tf.Variable(initializer([self.n_hidden])),
+            'decoder': tf.Variable(initializer([n_output])),
         }
 
 

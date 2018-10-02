@@ -29,7 +29,7 @@ if __name__ == '__main__':
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
 
     print 'Deep Recommenders:'
-    print 'd1. CDAE'
+    print 'd1. CDAE          d2. DMF'
 
     print '='*80
     algor = -1
@@ -130,6 +130,9 @@ if __name__ == '__main__':
 
     elif order == 'd1':
         conf = Config('../config/CDAE.conf')
+
+    elif order == 'd2':
+        conf = Config('../config/DMF.conf')
 
     else:
         print 'Error num!'
