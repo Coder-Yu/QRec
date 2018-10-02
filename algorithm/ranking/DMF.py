@@ -18,22 +18,21 @@ class DMF(IterativeRecommender):
 
 
     def next_batch(self):
-        rows = np.zeros((self.batch_size,len(self.dao.item)))
-        cols = np.zeros((self.batch_size,len(self.dao.user)))
+        rows = np.zeros((self.batch_size,self.n))
+        cols = np.zeros((self.batch_size,self.m))
         batch_idx = np.random.randint(self.train_size, size=self.batch_size)
 
         users = [self.dao.trainingData[idx][0] for idx in batch_idx]
         items = [self.dao.trainingData[idx][1] for idx in batch_idx]
+        u_idx = [self.dao.user[u] for u in users]
+        v_idx = [self.dao.item[i] for i in items]
+        ratings = [float(self.dao.trainingData[idx][2]) for idx in batch_idx]
 
-        ratings = [self.dao.trainingData[idx][2] for idx in batch_idx]
-
-        for user in range(users):
-            uid = self.dao.user[user]
-            rows[uid] = self.dao.row(user)
-        for item in range(items):
-            iid = self.dao.item[item]
-            cols[iid] = self.dao.col(item)
-        return rows,cols,ratings
+        for i,user in enumerate(users):
+            rows[i] = self.dao.row(user)
+        for i,item in enumerate(items):
+            cols[i] = self.dao.col(item)
+        return rows,cols,ratings,u_idx,v_idx
 
     def initModel(self):
         super(DMF, self).initModel()
@@ -47,41 +46,49 @@ class DMF(IterativeRecommender):
 
 
     def buildModel_tf(self):
+        super(DMF, self).buildModel_tf()
 
-        def init_variable(shape, name):
-            return tf.Variable(tf.truncated_normal(shape=shape, dtype=tf.float32, stddev=0.01), name=name)
+        initializer = tf.contrib.layers.xavier_initializer()
+        #user net
+        user_W1 = tf.Variable(initializer([self.n, self.n_hidden_u[0]]))
+        self.user_out = tf.matmul(self.input_u, user_W1)
+        self.regLoss = tf.nn.l2_loss(user_W1)
+        for i in range(1, len(self.n_hidden_u)):
+            W = tf.Variable(initializer([self.n_hidden_u[i-1], self.n_hidden_u[i]]))
+            b = tf.Variable(initializer([self.n_hidden_u[i]]))
+            self.regLoss = tf.add(self.regLoss,tf.nn.l2_loss(W))
+            self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(b))
+            self.user_out = tf.nn.relu(tf.add(tf.matmul(self.user_out, W), b))
 
-        with tf.name_scope("User_Layer"):
-            user_W1 = init_variable([len(self.dao.item), self.n_hidden_u[0]], "user_W1")
-            self.user_out = tf.matmul(self.input_u, user_W1)
-            self.regLoss = tf.nn.l2_loss(user_W1)
-            for i in range(1, len(self.n_hidden_u)):
-                W = init_variable([self.n_hidden_u[i-1], self.n_hidden_u[i]], "user_W" + str(i))
-                b = init_variable([self.n_hidden_u[i]], "user_b" + str(i))
-                self.regLoss = tf.add(self.regLoss,tf.nn.l2_loss(W))
-                self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(b))
-                self.user_out = tf.nn.relu(tf.add(tf.matmul(self.user_out, W), b))
-
-        with tf.name_scope("Item_Layer"):
-            item_W1 = init_variable([len(self.dao.user), self.n_hidden_i[0]], "item_W1")
-            self.item_out = tf.matmul(self.input_i, item_W1)
-            self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(item_W1))
-            for i in range(1, len(self.n_hidden_i)):
-                W = init_variable([self.input_i[i-1], self.input_i[i]], "item_W" + str(i))
-                b = init_variable([self.input_i[i]], "item_b" + str(i))
-                self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
-                self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
-                self.item_out = tf.nn.relu(tf.add(tf.matmul(self.item_out, W), b))
+        #item net
+        item_W1 = tf.Variable(initializer([self.m, self.n_hidden_i[0]]))
+        self.item_out = tf.matmul(self.input_i, item_W1)
+        self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(item_W1))
+        for i in range(1, len(self.n_hidden_i)):
+            W = tf.Variable(initializer([self.n_hidden_i[i-1], self.n_hidden_i[i]]))
+            b = tf.Variable(initializer([self.n_hidden_i[i]]))
+            self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
+            self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
+            self.item_out = tf.nn.relu(tf.add(tf.matmul(self.item_out, W), b))
 
         norm_user_output = tf.sqrt(tf.reduce_sum(tf.square(self.user_out), axis=1))
         norm_item_output = tf.sqrt(tf.reduce_sum(tf.square(self.item_out), axis=1))
-        self.y_ = tf.reduce_sum(tf.multiply(self.user_out, self.item_out), axis=1, keep_dims=False) / (
+
+        self.y_ = tf.reduce_sum(tf.multiply(self.user_out, self.item_out), axis=1) / (
                 norm_item_output * norm_user_output)
         self.y_ = tf.maximum(1e-6, self.y_)
 
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.y_,labels=self.r)
+        self.loss = tf.reduce_mean(self.loss)
+        reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+        self.regLoss = tf.multiply(reg_lambda,self.regLoss)
         self.loss = tf.add(self.loss,self.regLoss)
+
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
+
+        self.U = np.zeros((self.m, self.n_hidden_u[-1]))
+        self.V = np.zeros((self.n, self.n_hidden_u[-1]))
+
         self.sess = tf.Session()
         init = tf.global_variables_initializer()
         self.sess.run(init)
@@ -89,39 +96,30 @@ class DMF(IterativeRecommender):
         total_batch = int(len(self.dao.trainingData)/ self.batch_size)
         for epoch in range(self.maxIter):
             for i in range(total_batch):
-                users,items,ratings = self.next_batch()
+                users,items,ratings,u_idx,v_idx = self.next_batch()
 
-                _, loss = self.sess.run([optimizer, self.loss], feed_dict={self.input_u: users,self.input_i:items,self.r:ratings})
+                _,loss= self.sess.run([optimizer, self.loss], feed_dict={self.input_u: users,self.input_i:items,self.r:ratings})
+
+                #save the output layer
+                U_embedding, V_embedding = self.sess.run([self.user_out, self.item_out], feed_dict={self.input_u: users,self.input_i:items})
+                for ue,u in zip(U_embedding,u_idx):
+                    self.U[u]=ue
+                for ve,v in zip(V_embedding,v_idx):
+                    self.V[v]=ve
 
                 print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"Batch:", '%03d' %(i+1),"loss=", "{:.9f}".format(loss)
         print("Optimization Finished!")
 
+        self.normalized_V = np.sqrt(np.sum(self.V*self.V,axis=1))
+        self.normalized_U = np.sqrt(np.sum(self.U*self.U,axis=1))
 
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.dao.containsUser(u):
-            res = np.zeros(len(self.dao.item))
-            input_u = np.zeros((1000,len(self.dao.item)))
-            input_i = np.zeros((1000,len(self.dao.user)))
-            row = self.dao.row(u)
-            for i in range(1000):
-                input_u[i]=row
-            for i in range(len(self.dao.item)/1000):
-                for n in range(1000):
-                    col = self.dao.col(self.dao.id2item[i*1000+n])
-                    input_i[n]=col
-                res[i*1000:(i+1)*1000]=self.sess.run(self.y_, feed_dict={self.input_u: input_u, self.input_i:input_i})[0]
-            remain = len(self.dao.item)-len(self.dao.item)/1000*1000
-            input_u = np.zeros((remain, len(self.dao.item)))
-            input_i = np.zeros((remain, len(self.dao.user)))
-            for i in range(len(self.dao.item)/1000*1000,len(self.dao.iten)):
-                col = self.dao.col(self.dao.id2item[len(self.dao.item)/1000*1000+i])
-                input_i[i]=col
-            res[len(self.dao.item)/1000*1000:len(self.dao.iten)] = self.sess.run(self.y_, feed_dict={self.input_u: input_u, self.input_i: input_i})[0]
-
-            return res
+            uid = self.dao.user[u]
+            return np.divde((self.V).dot(self.U[uid],self.normalized_U[uid]*self.normalized_V))
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.dao.globalMean] * self.n
 
 

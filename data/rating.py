@@ -171,7 +171,17 @@ class RatingDAO(object):
             vec[uid]=pair[1]
         return vec
 
-
+    def matrix(self):
+        m = np.zeros((len(self.user),len(self.item)))
+        for u in self.user:
+            k, v = self.userRated(u)
+            vec = np.zeros(len(self.item))
+            # print vec
+            for pair in zip(k, v):
+                iid = self.item[pair[0]]
+                vec[iid] = pair[1]
+            m[self.user[u]]=vec
+        return m
     # def row(self,u):
     #     return self.trainingMatrix.row(self.getUserId(u))
     #
