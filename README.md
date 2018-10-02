@@ -2,7 +2,7 @@
 <h2>Latest News</h2>
 <p>
 <b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
-02/10/2018 - Two deep models: DMF CDAE have been implemented. Still tuning.
+02/10/2018 - Two deep models: DMF CDAE have been implemented. Still tuning.</br>
 07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
 </p>
 
