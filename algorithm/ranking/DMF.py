@@ -1,7 +1,7 @@
 #coding:utf8
 from baseclass.IterativeRecommender import IterativeRecommender
 import numpy as np
-from random import choice,random,randint
+from random import choice,random,randint,shuffle
 from tool import config
 try:
     import tensorflow as tf
@@ -67,7 +67,7 @@ class DMF(IterativeRecommender):
         initializer = tf.truncated_normal#tf.contrib.layers.xavier_initializer()
         #user net
         user_W1 = tf.Variable(initializer([self.n, self.n_hidden_u[0]],stddev=0.01))
-        self.user_out = tf.nn.sigmoid(tf.matmul(self.input_u, user_W1))
+        self.user_out = tf.nn.relu(tf.matmul(self.input_u, user_W1))
         self.regLoss = tf.nn.l2_loss(user_W1)
         for i in range(1, len(self.n_hidden_u)):
             W = tf.Variable(initializer([self.n_hidden_u[i-1], self.n_hidden_u[i]],stddev=0.01))
@@ -78,7 +78,7 @@ class DMF(IterativeRecommender):
 
         #item net
         item_W1 = tf.Variable(initializer([self.m, self.n_hidden_i[0]],stddev=0.01))
-        self.item_out = tf.nn.sigmoid(tf.matmul(self.input_i, item_W1))
+        self.item_out = tf.nn.relu(tf.matmul(self.input_i, item_W1))
         self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(item_W1))
         for i in range(1, len(self.n_hidden_i)):
             W = tf.Variable(initializer([self.n_hidden_i[i-1], self.n_hidden_i[i]],stddev=0.01))
@@ -112,6 +112,7 @@ class DMF(IterativeRecommender):
 
         total_batch = int(len(self.dao.trainingData)/ self.batch_size)
         for epoch in range(self.maxIter):
+            shuffle(self.dao.trainingData)
             for i in range(total_batch):
                 users,items,ratings,u_idx,v_idx = self.next_batch(i)
 

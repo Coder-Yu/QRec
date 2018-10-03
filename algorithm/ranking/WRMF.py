@@ -5,7 +5,7 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 from scipy.sparse import *
 from scipy import *
-
+import numpy as np
 class WRMF(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(WRMF, self).__init__(conf,trainingSet,testSet,fold)

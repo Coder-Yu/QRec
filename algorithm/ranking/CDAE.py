@@ -36,12 +36,10 @@ class CDAE(IterativeRecommender):
             user = choice(userList)
             uids.append(self.dao.user[user])
             vec = self.dao.row(user)
-            #corrupt
+
             ratedItems, values = self.dao.userRated(user)
             for item in ratedItems:
                 iid = self.dao.item[item]
-                if random()>self.corruption:
-                    vec[iid]=0
                 evaluated[n][iid]=True
             for i in range(self.negative_sp*len(ratedItems)):
                 ng = choice(itemList)
@@ -55,17 +53,17 @@ class CDAE(IterativeRecommender):
     def readConfiguration(self):
         super(CDAE, self).readConfiguration()
         eps = config.LineConfig(self.config['CDAE'])
-        self.corruption = float(eps['-co'])
+        self.corruption_level = float(eps['-co'])
         self.n_hidden = int(eps['-nh'])
 
     def initModel(self):
         super(CDAE, self).initModel()
         n_input = len(self.dao.item)
-        self.n_hidden = 128
         n_output = len(self.dao.item)
         self.negative_sp = 5
         initializer = tf.contrib.layers.xavier_initializer()
         self.X = tf.placeholder("float", [None, n_input])
+        self.mask_corruption = tf.placeholder("float", [None, n_input])
         self.sample = tf.placeholder("bool", [None, n_input])
         self.zeros = np.zeros((self.batch_size,n_input))
         self.V = tf.Variable(initializer([len(self.dao.user), self.n_hidden]))
@@ -84,13 +82,13 @@ class CDAE(IterativeRecommender):
 
 
     def buildModel_tf(self):
-
-        self.encoder_op = self.encoder(self.X,self.V_embed)
+        self.corrupted_input = tf.multiply(self.X,self.mask_corruption)
+        self.encoder_op = self.encoder(self.corrupted_input,self.V_embed)
         self.decoder_op = self.decoder(self.encoder_op)
 
 
         y_pred = tf.where(self.sample,self.decoder_op,self.zeros)
-        y_true = tf.where(self.sample,self.X,self.zeros)
+        y_true = tf.where(self.sample,self.corrupted_input,self.zeros)
 
         # self.cost1 = tf.multiply(self.X, tf.log(self.decoder_op))
         # self.cost2 = tf.multiply((1 - self.X), tf.log(1 - self.decoder_op))
@@ -117,9 +115,10 @@ class CDAE(IterativeRecommender):
         total_batch = int(len(self.dao.user)/ self.batch_size)
         for epoch in range(self.maxIter):
             for i in range(total_batch):
+                mask = np.random.binomial(1, self.corruption_level,(self.batch_size, len(self.dao.item)))
                 batch_xs,users,sample = self.next_batch()
 
-                _, loss = self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.v_idx:users,self.sample:sample})
+                _, loss = self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,self.v_idx:users,self.sample:sample})
 
                 print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"Batch:", '%03d' %(i+1),"loss=", "{:.9f}".format(loss)
         print("Optimization Finished!")
@@ -131,7 +130,7 @@ class CDAE(IterativeRecommender):
         if self.dao.containsUser(u):
             vec = self.dao.row(u).reshape((1,len(self.dao.item)))
             uid = [self.dao.user[u]]
-            return self.sess.run(self.decoder_op,feed_dict={self.X:vec,self.v_idx:uid})[0]
+            return self.sess.run(self.decoder_op,feed_dict={self.X:vec,self.mask_corruption:np.ones((1,len(self.dao.item))),self.v_idx:uid})[0]
         else:
             return [self.dao.globalMean] * len(self.dao.item)
 
