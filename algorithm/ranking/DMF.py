@@ -34,17 +34,19 @@ class DMF(IterativeRecommender):
         for i,item in enumerate(items):
             cols[i] = self.dao.col(item)
 
+        userList = self.dao.user.keys()
+        itemList = self.dao.item.keys()
         #negative sample
         for i in range(self.negative_sp*self.batch_size):
-            u = choice(self.dao.user)
-            v = choice(self.dao.item)
+            u = choice(userList)
+            v = choice(itemList)
             while self.dao.contains(u,v):
-                u = choice(self.dao.user)
-                v = choice(self.dao.item)
+                u = choice(userList)
+                v = choice(itemList)
             rows[self.batch_size-1+i]=self.dao.row(u)
             cols[self.batch_size-1+i]=self.dao.col(i)
             u_idx.append(self.dao.user[u])
-            v_idx.append(self.dao.item[u])
+            v_idx.append(self.dao.item[v])
             ratings.append(0)
         return rows,cols,ratings,u_idx,v_idx
 
@@ -52,9 +54,9 @@ class DMF(IterativeRecommender):
         super(DMF, self).initModel()
         n_input_u = len(self.dao.item)
         n_input_i = len(self.dao.user)
-        self.negative_sp = 5
-        self.n_hidden_u=[64,128]
-        self.n_hidden_i=[64,128]
+        self.negative_sp = 0
+        self.n_hidden_u=[64,64]
+        self.n_hidden_i=[64,64]
         self.input_u = tf.placeholder("float", [None, n_input_u])
         self.input_i = tf.placeholder("float", [None, n_input_i])
 
@@ -62,25 +64,25 @@ class DMF(IterativeRecommender):
     def buildModel_tf(self):
         super(DMF, self).buildModel_tf()
 
-        initializer = tf.contrib.layers.xavier_initializer()
+        initializer = tf.truncated_normal#tf.contrib.layers.xavier_initializer()
         #user net
-        user_W1 = tf.Variable(initializer([self.n, self.n_hidden_u[0]]))
-        self.user_out = tf.matmul(self.input_u, user_W1)
+        user_W1 = tf.Variable(initializer([self.n, self.n_hidden_u[0]],stddev=0.01))
+        self.user_out = tf.nn.sigmoid(tf.matmul(self.input_u, user_W1))
         self.regLoss = tf.nn.l2_loss(user_W1)
         for i in range(1, len(self.n_hidden_u)):
-            W = tf.Variable(initializer([self.n_hidden_u[i-1], self.n_hidden_u[i]]))
-            b = tf.Variable(initializer([self.n_hidden_u[i]]))
+            W = tf.Variable(initializer([self.n_hidden_u[i-1], self.n_hidden_u[i]],stddev=0.01))
+            b = tf.Variable(initializer([self.n_hidden_u[i]],stddev=0.01))
             self.regLoss = tf.add(self.regLoss,tf.nn.l2_loss(W))
             self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(b))
             self.user_out = tf.nn.relu(tf.add(tf.matmul(self.user_out, W), b))
 
         #item net
-        item_W1 = tf.Variable(initializer([self.m, self.n_hidden_i[0]]))
-        self.item_out = tf.matmul(self.input_i, item_W1)
+        item_W1 = tf.Variable(initializer([self.m, self.n_hidden_i[0]],stddev=0.01))
+        self.item_out = tf.nn.sigmoid(tf.matmul(self.input_i, item_W1))
         self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(item_W1))
         for i in range(1, len(self.n_hidden_i)):
-            W = tf.Variable(initializer([self.n_hidden_i[i-1], self.n_hidden_i[i]]))
-            b = tf.Variable(initializer([self.n_hidden_i[i]]))
+            W = tf.Variable(initializer([self.n_hidden_i[i-1], self.n_hidden_i[i]],stddev=0.01))
+            b = tf.Variable(initializer([self.n_hidden_i[i]],stddev=0.01))
             self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
             self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
             self.item_out = tf.nn.relu(tf.add(tf.matmul(self.item_out, W), b))
@@ -93,6 +95,7 @@ class DMF(IterativeRecommender):
         self.y_ = tf.maximum(1e-6, self.y_)
 
         self.loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.y_,labels=self.r)
+        #self.loss = tf.nn.l2_loss(tf.subtract(self.y_,self.r))
         self.loss = tf.reduce_mean(self.loss)
         reg_lambda = tf.constant(self.regU, dtype=tf.float32)
         self.regLoss = tf.multiply(reg_lambda,self.regLoss)
