@@ -2,7 +2,8 @@ from baseclass.Recommender import Recommender
 from tool import config
 import numpy as np
 from random import shuffle
-
+from tool.qmath import denormalize
+from evaluation.measure import Measure
 
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -92,14 +93,15 @@ class IterativeRecommender(Recommender):
         if isnan(self.loss):
             print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
             exit(-1)
-        measure = self.performance()
-        value = [item.strip()for item in measure]
-        #with open(self.algorName+' iteration.txt')
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
-            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
+            measure = self.ranking_performance()
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s (Top-10 On 500 users)' \
+                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate, measure[-3].strip()[:11], measure[-2].strip()[:12])
         else:
-            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s' % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0][:11], measure[1][:12])
+            measure = self.rating_performance()
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
+                  % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12])
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
@@ -108,4 +110,82 @@ class IterativeRecommender(Recommender):
         self.lastLoss = self.loss
         shuffle(self.dao.trainingData)
         return converged
+
+    def rating_performance(self):
+
+        res = []
+        for ind, entry in enumerate(self.dao.testData):
+            user, item, rating = entry
+
+            # predict
+            prediction = self.predict(user, item)
+            # denormalize
+            prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+            #####################################
+            pred = self.checkRatingBoundary(prediction)
+            # add prediction in order to measure
+            res.append([user,item,rating,pred])
+
+        self.measure = Measure.ratingMeasure(res)
+
+        return self.measure
+
+    def ranking_performance(self):
+        N = 10
+        recList = {}
+        testSample = {}
+        for user in self.dao.testSet_u:
+            if len(testSample) == 500:
+                break
+            testSample[user] = self.dao.testSet_u[user]
+
+        for user in testSample:
+            itemSet = {}
+            predictedItems = self.predictForRanking(user)
+            for id, rating in enumerate(predictedItems):
+                itemSet[self.dao.id2item[id]] = rating
+
+            ratedList, ratingList = self.dao.userRated(user)
+            for item in ratedList:
+                del itemSet[item]
+
+            Nrecommendations = []
+            for item in itemSet:
+                if len(Nrecommendations) < N:
+                    Nrecommendations.append((item, itemSet[item]))
+                else:
+                    break
+
+            Nrecommendations.sort(key=lambda d: d[1], reverse=True)
+            recommendations = [item[1] for item in Nrecommendations]
+            resNames = [item[0] for item in Nrecommendations]
+
+            # find the K biggest scores
+            for item in itemSet:
+                ind = N
+                l = 0
+                r = N - 1
+
+                if recommendations[r] < itemSet[item]:
+                    while True:
+
+                        mid = (l + r) / 2
+                        if recommendations[mid] >= itemSet[item]:
+                            l = mid + 1
+                        elif recommendations[mid] < itemSet[item]:
+                            r = mid - 1
+                        else:
+                            ind = mid
+                            break
+                        if r < l:
+                            ind = r
+                            break
+                # ind = bisect(recommendations, itemSet[item])
+
+                if ind < N - 1:
+                    recommendations[ind + 1] = itemSet[item]
+                    resNames[ind + 1] = item
+            recList[user] = zip(resNames, recommendations)
+        measure = Measure.rankingMeasure(testSample, recList, [10])
+        return measure
 

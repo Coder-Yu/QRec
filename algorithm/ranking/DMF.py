@@ -1,5 +1,5 @@
 #coding:utf8
-from baseclass.IterativeRecommender import IterativeRecommender
+from baseclass.DeepRecommender import DeepRecommender
 import numpy as np
 from random import choice,random,randint,shuffle
 from tool import config
@@ -12,7 +12,7 @@ from tensorflow import set_random_seed
 set_random_seed(2)
 
 #According to the paper, we only
-class DMF(IterativeRecommender):
+class DMF(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(DMF, self).__init__(conf,trainingSet,testSet,fold)
@@ -55,8 +55,8 @@ class DMF(IterativeRecommender):
         n_input_u = len(self.dao.item)
         n_input_i = len(self.dao.user)
         self.negative_sp = 5
-        self.n_hidden_u=[64,64]
-        self.n_hidden_i=[128,64]
+        self.n_hidden_u=[256,512]
+        self.n_hidden_i=[256,512]
         self.input_u = tf.placeholder("float", [None, n_input_u])
         self.input_i = tf.placeholder("float", [None, n_input_i])
 
@@ -84,7 +84,7 @@ class DMF(IterativeRecommender):
             W = tf.Variable(initializer([self.n_hidden_i[i-1], self.n_hidden_i[i]],stddev=0.01))
             b = tf.Variable(initializer([self.n_hidden_i[i]],stddev=0.01))
             self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
-            self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(W))
+            self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(b))
             self.item_out = tf.nn.relu(tf.add(tf.matmul(self.item_out, W), b))
 
         norm_user_output = tf.sqrt(tf.reduce_sum(tf.square(self.user_out), axis=1))
@@ -115,28 +115,29 @@ class DMF(IterativeRecommender):
             shuffle(self.dao.trainingData)
             for i in range(total_batch):
                 users,items,ratings,u_idx,v_idx = self.next_batch(i)
+
                 shuffle_idx=np.random.permutation(range(len(users)))
                 users = users[shuffle_idx]
                 items = items[shuffle_idx]
                 ratings = ratings[shuffle_idx]
                 u_idx = u_idx[shuffle_idx]
                 v_idx = v_idx[shuffle_idx]
+
                 _,loss= self.sess.run([optimizer, self.loss], feed_dict={self.input_u: users,self.input_i:items,self.r:ratings})
+                print self.foldInfo, "Epoch:", '%04d' % (epoch + 1), "Batch:", '%03d' % (i + 1), "loss=", "{:.9f}".format(loss)
+            #save the output layer
 
-                #save the output layer
-                if epoch == self.maxIter-1:
-                    U_embedding, V_embedding = self.sess.run([self.user_out, self.item_out], feed_dict={self.input_u: users,self.input_i:items})
-                    for ue,u in zip(U_embedding,u_idx):
-                        self.U[u]=ue
-                    for ve,v in zip(V_embedding,v_idx):
-                        self.V[v]=ve
-
-                print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"Batch:", '%03d' %(i+1),"loss=", "{:.9f}".format(loss)
-
+                U_embedding, V_embedding = self.sess.run([self.user_out, self.item_out], feed_dict={self.input_u: users,self.input_i:items})
+                for ue,u in zip(U_embedding,u_idx):
+                    self.U[u]=ue
+                for ve,v in zip(V_embedding,v_idx):
+                    self.V[v]=ve
+            self.normalized_V = np.sqrt(np.sum(self.V * self.V, axis=1))
+            self.normalized_U = np.sqrt(np.sum(self.U * self.U, axis=1))
+            self.ranking_performance()
         print("Optimization Finished!")
 
-        self.normalized_V = np.sqrt(np.sum(self.V*self.V,axis=1))
-        self.normalized_U = np.sqrt(np.sum(self.U*self.U,axis=1))
+
 
 
     def predictForRanking(self, u):

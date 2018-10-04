@@ -1,5 +1,5 @@
 #coding:utf8
-from baseclass.IterativeRecommender import IterativeRecommender
+from baseclass.DeepRecommender import DeepRecommender
 import numpy as np
 from random import choice,random
 from tool import config
@@ -11,7 +11,7 @@ except ImportError:
 from tensorflow import set_random_seed
 set_random_seed(2)
 
-class CDAE(IterativeRecommender):
+class CDAE(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(CDAE, self).__init__(conf,trainingSet,testSet,fold)
@@ -124,6 +124,7 @@ class CDAE(IterativeRecommender):
                 _, loss = self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,self.v_idx:users,self.sample:sample})
 
                 print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"Batch:", '%03d' %(i+1),"loss=", "{:.9f}".format(loss)
+            self.ranking_performance()
         print("Optimization Finished!")
 
 

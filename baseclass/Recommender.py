@@ -265,21 +265,4 @@ class Recommender(object):
         return self.measure
 
 
-    def performance(self):
 
-        res = []
-        for ind, entry in enumerate(self.dao.testData):
-            user, item, rating = entry
-
-            # predict
-            prediction = self.predict(user, item)
-            # denormalize
-            prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
-            #####################################
-            pred = self.checkRatingBoundary(prediction)
-            # add prediction in order to measure
-            res.append([user,item,rating,pred])
-
-        self.measure = Measure.ratingMeasure(res)
-
-        return self.measure
