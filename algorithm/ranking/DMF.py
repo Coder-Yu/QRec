@@ -48,15 +48,15 @@ class DMF(IterativeRecommender):
             u_idx.append(self.dao.user[u])
             v_idx.append(self.dao.item[v])
             ratings.append(0)
-        return rows,cols,ratings,u_idx,v_idx
+        return rows,cols,np.array(ratings),np.array(u_idx),np.array(v_idx)
 
     def initModel(self):
         super(DMF, self).initModel()
         n_input_u = len(self.dao.item)
         n_input_i = len(self.dao.user)
-        self.negative_sp = 0
+        self.negative_sp = 5
         self.n_hidden_u=[64,64]
-        self.n_hidden_i=[64,64]
+        self.n_hidden_i=[128,64]
         self.input_u = tf.placeholder("float", [None, n_input_u])
         self.input_i = tf.placeholder("float", [None, n_input_i])
 
@@ -94,9 +94,9 @@ class DMF(IterativeRecommender):
                 norm_item_output * norm_user_output)
         self.y_ = tf.maximum(1e-6, self.y_)
 
-        self.loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.y_,labels=self.r)
+        self.loss = self.r*tf.log(self.y_) + (1 - self.r) * tf.log(1 - self.y_)#tf.nn.sigmoid_cross_entropy_with_logits(logits=self.y_,labels=self.r)
         #self.loss = tf.nn.l2_loss(tf.subtract(self.y_,self.r))
-        self.loss = tf.reduce_mean(self.loss)
+        self.loss = -tf.reduce_sum(self.loss)
         reg_lambda = tf.constant(self.regU, dtype=tf.float32)
         self.regLoss = tf.multiply(reg_lambda,self.regLoss)
         self.loss = tf.add(self.loss,self.regLoss)
@@ -115,7 +115,12 @@ class DMF(IterativeRecommender):
             shuffle(self.dao.trainingData)
             for i in range(total_batch):
                 users,items,ratings,u_idx,v_idx = self.next_batch(i)
-
+                shuffle_idx=np.random.permutation(range(len(users)))
+                users = users[shuffle_idx]
+                items = items[shuffle_idx]
+                ratings = ratings[shuffle_idx]
+                u_idx = u_idx[shuffle_idx]
+                v_idx = v_idx[shuffle_idx]
                 _,loss= self.sess.run([optimizer, self.loss], feed_dict={self.input_u: users,self.input_i:items,self.r:ratings})
 
                 #save the output layer

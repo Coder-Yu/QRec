@@ -80,6 +80,7 @@ class CDAE(IterativeRecommender):
             'decoder': tf.Variable(initializer([n_output])),
         }
 
+    #def pretrain(self,var,data):
 
     def buildModel_tf(self):
         self.corrupted_input = tf.multiply(self.X,self.mask_corruption)
@@ -107,6 +108,8 @@ class CDAE(IterativeRecommender):
         self.loss = tf.add(self.loss,self.reg_loss)
 
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
+
+
 
         self.sess = tf.Session()
         init = tf.global_variables_initializer()
