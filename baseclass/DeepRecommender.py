@@ -2,7 +2,7 @@ from baseclass.IterativeRecommender import IterativeRecommender
 from tool import config
 import numpy as np
 from random import shuffle
-
+import tensorflow as tf
 
 class DeepRecommender(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -21,7 +21,6 @@ class DeepRecommender(IterativeRecommender):
 
 
     def initModel(self):
-        import tensorflow as tf
         self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.r = tf.placeholder(tf.float32, [None], name="rating")
@@ -69,8 +68,3 @@ class DeepRecommender(IterativeRecommender):
         shuffle(self.dao.trainingData)
         return converged
 
-    def ranking_performance(self):
-        measure = super(DeepRecommender, self).ranking_performance()
-        print '-'*80
-        print self.foldInfo,'Ranking Performance: %s %s (Top-10 On 500 sampled users)' %(measure[-3].strip()[:11], measure[-2].strip()[:12])
-        print '-'*80

@@ -95,9 +95,9 @@ class IterativeRecommender(Recommender):
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
+                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
             measure = self.ranking_performance()
-            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s (Top-10 On 500 users)' \
-                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate, measure[-3].strip()[:11], measure[-2].strip()[:12])
         else:
             measure = self.rating_performance()
             print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
@@ -135,7 +135,7 @@ class IterativeRecommender(Recommender):
         recList = {}
         testSample = {}
         for user in self.dao.testSet_u:
-            if len(testSample) == 500:
+            if len(testSample) == 300:
                 break
             testSample[user] = self.dao.testSet_u[user]
 
@@ -187,5 +187,10 @@ class IterativeRecommender(Recommender):
                     resNames[ind + 1] = item
             recList[user] = zip(resNames, recommendations)
         measure = Measure.rankingMeasure(testSample, recList, [10])
+        print '-'*80
+        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 300 sampled users)'
+        for m in measure[1:]:
+            print m.strip()
+        print '-'*80
         return measure
 
