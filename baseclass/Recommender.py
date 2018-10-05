@@ -184,15 +184,11 @@ class Recommender(object):
 
                 if recommendations[r] < itemSet[item]:
                     while True:
-
                         mid = (l + r) / 2
                         if recommendations[mid] >= itemSet[item]:
                             l = mid + 1
                         elif recommendations[mid] < itemSet[item]:
                             r = mid - 1
-                        else:
-                            ind = mid
-                            break
                         if r < l:
                             ind = r
                             break
@@ -201,6 +197,7 @@ class Recommender(object):
                 if ind < N - 1:
                     recommendations[ind + 1] = itemSet[item]
                     resNames[ind + 1] = item
+
             recList[user] = zip(resNames, recommendations)
 
 

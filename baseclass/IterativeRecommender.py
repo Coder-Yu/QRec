@@ -168,20 +168,15 @@ class IterativeRecommender(Recommender):
 
                 if recommendations[r] < itemSet[item]:
                     while True:
-
                         mid = (l + r) / 2
                         if recommendations[mid] >= itemSet[item]:
                             l = mid + 1
                         elif recommendations[mid] < itemSet[item]:
                             r = mid - 1
-                        else:
-                            ind = mid
-                            break
                         if r < l:
                             ind = r
                             break
                 # ind = bisect(recommendations, itemSet[item])
-
                 if ind < N - 1:
                     recommendations[ind + 1] = itemSet[item]
                     resNames[ind + 1] = item
