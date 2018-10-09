@@ -256,6 +256,13 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   <tr>
 		<th>Item Ranking</th>
 		<th>Paper</th>
+
+   </tr>
+    <tr>
+	<td scope="row">AMF</td>
+    <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
+    </td>
+  </tr>
   </tr>
     <tr>
 	<td scope="row">CDAE</td>
