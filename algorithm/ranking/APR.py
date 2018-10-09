@@ -15,20 +15,20 @@ except ImportError:
 from tensorflow import set_random_seed
 set_random_seed(2)
 
-class AMF(DeepRecommender):
+class APR(DeepRecommender):
 
-    # AMF：Bayesian Personalized Ranking from Implicit Feedback
+    # APR：Bayesian Personalized Ranking from Implicit Feedback
     # Steffen Rendle,Christoph Freudenthaler,Zeno Gantner and Lars Schmidt-Thieme
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(AMF, self).__init__(conf,trainingSet,testSet,fold)
+        super(APR, self).__init__(conf,trainingSet,testSet,fold)
 
     # def readConfiguration(self):
-    #     super(AMF, self).readConfiguration()
+    #     super(APR, self).readConfiguration()
 
     def readConfiguration(self):
-        super(AMF, self).readConfiguration()
-        args = config.LineConfig(self.config['AMF'])
+        super(APR, self).readConfiguration()
+        args = config.LineConfig(self.config['APR'])
         self.eps = float(args['-eps'])
         self.regAdv = float(args['-regA'])
         self.advEpoch = int(args['-advEpoch'])
@@ -87,7 +87,7 @@ class AMF(DeepRecommender):
 
 
     def initModel(self):
-        super(AMF, self).initModel()
+        super(APR, self).initModel()
         self._create_variables()
         self._create_loss()
         self._create_adversarial()
