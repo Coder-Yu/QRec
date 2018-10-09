@@ -110,14 +110,10 @@ class RatingDAO(object):
     def getUserId(self,u):
         if self.user.has_key(u):
             return self.user[u]
-        else:
-            return -1
 
     def getItemId(self,i):
         if self.item.has_key(i):
             return self.item[i]
-        else:
-            return -1
 
     def trainingSize(self):
         return (len(self.user),len(self.item),len(self.trainingData))
@@ -153,6 +149,35 @@ class RatingDAO(object):
     def itemRated(self,i):
         return self.trainSet_i[i].keys(),self.trainSet_i[i].values()
 
+    def row(self,u):
+        k,v = self.userRated(u)
+        vec = np.zeros(len(self.item))
+        #print vec
+        for pair in zip(k,v):
+            iid = self.item[pair[0]]
+            vec[iid]=pair[1]
+        return vec
+
+    def col(self,i):
+        k,v = self.itemRated(i)
+        vec = np.zeros(len(self.user))
+        #print vec
+        for pair in zip(k,v):
+            uid = self.user[pair[0]]
+            vec[uid]=pair[1]
+        return vec
+
+    def matrix(self):
+        m = np.zeros((len(self.user),len(self.item)))
+        for u in self.user:
+            k, v = self.userRated(u)
+            vec = np.zeros(len(self.item))
+            # print vec
+            for pair in zip(k, v):
+                iid = self.item[pair[0]]
+                vec[iid] = pair[1]
+            m[self.user[u]]=vec
+        return m
     # def row(self,u):
     #     return self.trainingMatrix.row(self.getUserId(u))
     #

@@ -1,10 +1,18 @@
+<h1>RecQ</h1>
+<h2>Latest News</h2>
+<p>
+<b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
+02/10/2018 - Two deep models: DMF CDAE have been implemented. Still tuning.</br>
+07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
+</p>
 
-![RecQ](http://i2.muimg.com/1949/44c429091e3bd3d2.png)
+<h2>Introduction</h2>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
-**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) <br>
-Released by School of Software Engineering, Chongqing University<br>
-<h2>Introduction</h2>
+**Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
+Released by School of Software Engineering, Chongqing University</br>
+<b>More algorithms (ranking based and context-aware) can be found in another project of mine <a href="https://github.com/Coder-Yu/Yue/">Yue</a></b>
+</br>
 
 **RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
 
@@ -23,7 +31,6 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 <li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
 </ul>
 
-![Visualization](http://i1.piimg.com/1949/176acec1f8fd03aa.png)
 <h2>How to Run it</h2>
 <ul>
 <li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
@@ -75,16 +82,18 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
       -testSet path/to/test/file   (need to specify the test set manually)</br>
       -ap ratio   (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)</br>
       -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)</br>
-      Secondary option:-b, -p<br>
+      Secondary option:-b, -p, -cold<br>
       -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）</br>
-      -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one)
+      -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one) </br>
+      <b>-tf </b> (model training would be conducted on TensorFlow if TensorFlow has been installed) </br>
+      -cold threshold (evaluation on cold-start users, users in training set with ratings more than threshold will be removed from the test set)
      </td>
   </tr>
   <tr>
     <td scope="row">item.ranking</td>
     <td>off -topN -1 </td>
     <td>Main option: whether to do item ranking<br>
-      -topN N: the length of the recommendation list for item recommendation, default -1 for full list; </br>
+      -topN N1,N2,N3...: the length of the recommendation list. *RecQ can generate multiple evaluation results for different N at the same time</br>
     </td>
   </tr>
   <tr>
@@ -189,6 +198,12 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Jamali and Ester, A Matrix Factorization Technique with Trust Propagation for Recommendation in Social Networks, RecSys 2010.
      </td>
   </tr>
+    <tr>
+    <td scope="row">LOCABAL</td>
+    <td>Tang, Jiliang, et al. Exploiting local and global social context for recommendation, AAAI 2013.
+     </td>
+  </tr>
+  
   <tr>
     <td scope="row">RSTE</td>
     <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
@@ -229,6 +244,11 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
      </td>
   </tr>
+    <tr>
+    <td scope="row">SocialFD</td>
+    <td>Yu et al., A Social Recommender Based on Factorization and Distance Metric Learning, IEEE Access.
+     </td>
+  </tr>
   </table>
 
   </br>
@@ -236,6 +256,26 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   <tr>
 		<th>Item Ranking</th>
 		<th>Paper</th>
+
+   </tr>
+    <tr>
+	<td scope="row">APR</td>
+    <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
+    </td>
+  </tr>
+  </tr>
+    <tr>
+	<td scope="row">CDAE</td>
+    <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
+    </td>
+  </tr>
+
+   <tr>
+	<td scope="row">DMF</td>
+    <td>Xue et al., Deep Matrix Factorization Models for Recommender Systems, IJCAI 2017.<br>
+    </td>
+  </tr>
+
   </tr>
     <tr>
 	<td scope="row">BPR</td>
@@ -250,6 +290,22 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   <tr>
     <td scope="row">CUNE-BPR</td>
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
+     </td>
+  </tr>
+    <tr>
+    <td scope="row">WRMF</td>
+    <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
+     </td>
+  </tr>
+      <tr>
+    <td scope="row">TBPR</td>
+    <td>Wang et al. Social Recommendation with Strong and Weak Ties, CIKM 2016.
+     </td>
+  </tr>
+    </tr>
+      <tr>
+    <td scope="row">IF-BPR</td>
+    <td>Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
      </td>
   </tr>
   </table>
@@ -304,6 +360,17 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td width="5%">35,770</td>
     <td>Trust</td>
     </tr> 
+	 <tr>
+    <td><a href="http://files.grouplens.org/datasets/hetrec2011/hetrec2011-lastfm-2k.zip" target="_blank"><b>LastFM</b></a> [4]</td>
+    <td>1,892</td>
+    <td>17,632</td>
+    <td width="6%">92,834</td>
+    <td width="10%">implicit</td>
+    <td>0.27%</td>
+    <td width="4%">1,892</td>
+    <td width="5%">25,434</td>
+    <td>Trust</td>
+    </tr> 
   </table>
 </div>
 
@@ -311,3 +378,4 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 <p>[1]. Tang, J., Gao, H., Liu, H.: mtrust:discerning multi-faceted trust in a connected world. In: International Conference on Web Search and Web Data Mining, WSDM 2012, Seattle, Wa, Usa, February. pp. 93–102 (2012)</p>
 <p>[2]. Massa, P., Avesani, P.: Trust-aware recommender systems. In: Proceedings of the 2007 ACM conference on Recommender systems. pp. 17–24. ACM (2007) </p>
 <p>[3].  G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
+<p>[4] Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>

@@ -1,129 +1,131 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 from tool import config
+from random import randint
 from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
 from tool.qmath import sigmoid,cosine
 from math import log
+import gensim.models.word2vec as w2v
 from structure.symmetricMatrix import SymmetricMatrix
-class Node(object):
-    def __init__(self):
-        self.val = 0
-        self.last = None
-        self.next = None
-
-class OrderedLinkList(object):
-    def __init__(self):
-        self.head=None
-        self.tail=None
-        self.length = 0
-
-    def __len__(self):
-        return self.length
-
-    def insert(self,node):
-        self.length+=1
-        if self.head:
-            tmp = self.head
-            while tmp.val < node.val:
-                if tmp==self.tail:
-                    break
-                tmp = tmp.next
-
-            if tmp is self.head:
-
-                if self.head.val < node.val:
-                    node.next = self.head
-                    self.head.last = node
-                    self.head = node
-                else:
-                    node.next = self.head
-                    self.head.last = node
-                    self.head = node
-                return
-
-            node.next = tmp.next
-            tmp.next = node
-            node.last = tmp
-            if not node.next:
-                self.tail = node
-
-        else:
-            self.head = node
-            self.tail = node
-
-    def removeHead(self):
-        if self.head:
-            self.head = self.head.next
-            self.length -= 1
-
-    def removeNode(self,node):
-        if self.head:
-            tmp = self.head
-            while tmp is not node and tmp.next:
-                tmp = tmp.next
-            if tmp.next:
-                tmp.last.next = tmp.next
-                tmp.next.last = tmp.last
-            self.length-=1
-
-
-class HTreeNode(object):
-    def __init__(self,left,right,freq,id,code=None):
-        self.left = left
-        self.right = right
-        self.weight = freq
-        self.id = id
-        self.code = code
-
-    def __lt__(self, other):
-        if self.weight < other.weight:
-            return True
-        else:
-            return False
-
-class HuffmanTree(object):
-    def __init__(self,root=None,vecLength=10):
-        self.root = root
-        self.weight = 0
-        self.code = {}
-        self.vecLength = vecLength
-        self.vector = {}
-
-    def buildFromTrees(self,left,right):
-        root = HTreeNode(left.val,right.val,left.val.weight+right.val.weight,None)
-        return root
-
-    def buildTree(self,nodeList):
-        if len(nodeList)<2:
-            self.root = nodeList.head
-            return
-
-        while(len(nodeList)>1):
-            left = nodeList.head
-            right = nodeList.head.next
-            nodeList.removeHead()
-            nodeList.removeHead()
-            tree = self.buildFromTrees(left,right)
-            node = Node()
-            node.val = tree
-            nodeList.insert(node)
-
-        self.root = nodeList.head.val
-
-    def coding(self,root,prefix,hierarchy):
-        if root:
-            root.code = prefix
-            self.vector[prefix] = np.random.random(self.vecLength)
-            if root.id:
-                self.code[root.id] = prefix
-
-            # if root.id:
-            #     print 'level', hierarchy
-            #     print root.id,prefix,root.weight
-
-            self.coding(root.left,prefix+'0',hierarchy+1)
-            self.coding(root.right,prefix+'1',hierarchy+1)
+# class Node(object):
+#     def __init__(self):
+#         self.val = 0
+#         self.last = None
+#         self.next = None
+#
+# class OrderedLinkList(object):
+#     def __init__(self):
+#         self.head=None
+#         self.tail=None
+#         self.length = 0
+#
+#     def __len__(self):
+#         return self.length
+#
+#     def insert(self,node):
+#         self.length+=1
+#         if self.head:
+#             tmp = self.head
+#             while tmp.val < node.val:
+#                 if tmp==self.tail:
+#                     break
+#                 tmp = tmp.next
+#
+#             if tmp is self.head:
+#
+#                 if self.head.val < node.val:
+#                     node.next = self.head
+#                     self.head.last = node
+#                     self.head = node
+#                 else:
+#                     node.next = self.head
+#                     self.head.last = node
+#                     self.head = node
+#                 return
+#
+#             node.next = tmp.next
+#             tmp.next = node
+#             node.last = tmp
+#             if not node.next:
+#                 self.tail = node
+#
+#         else:
+#             self.head = node
+#             self.tail = node
+#
+#     def removeHead(self):
+#         if self.head:
+#             self.head = self.head.next
+#             self.length -= 1
+#
+#     def removeNode(self,node):
+#         if self.head:
+#             tmp = self.head
+#             while tmp is not node and tmp.next:
+#                 tmp = tmp.next
+#             if tmp.next:
+#                 tmp.last.next = tmp.next
+#                 tmp.next.last = tmp.last
+#             self.length-=1
+#
+#
+# class HTreeNode(object):
+#     def __init__(self,left,right,freq,id,code=None):
+#         self.left = left
+#         self.right = right
+#         self.weight = freq
+#         self.id = id
+#         self.code = code
+#
+#     def __lt__(self, other):
+#         if self.weight < other.weight:
+#             return True
+#         else:
+#             return False
+#
+# class HuffmanTree(object):
+#     def __init__(self,root=None,vecLength=10):
+#         self.root = root
+#         self.weight = 0
+#         self.code = {}
+#         self.vecLength = vecLength
+#         self.vector = {}
+#
+#     def buildFromTrees(self,left,right):
+#         root = HTreeNode(left.val,right.val,left.val.weight+right.val.weight,None)
+#         return root
+#
+#     def buildTree(self,nodeList):
+#         if len(nodeList)<2:
+#             self.root = nodeList.head
+#             return
+#
+#         while(len(nodeList)>1):
+#             left = nodeList.head
+#             right = nodeList.head.next
+#             nodeList.removeHead()
+#             nodeList.removeHead()
+#             tree = self.buildFromTrees(left,right)
+#             node = Node()
+#             node.val = tree
+#             nodeList.insert(node)
+#
+#         self.root = nodeList.head.val
+#
+#     def coding(self,root,prefix,hierarchy):
+#         if root:
+#             root.code = prefix
+#             self.vector[prefix] = np.random.random(self.vecLength)
+#             if root.id:
+#                 self.code[root.id] = prefix
+#
+#             # if root.id:
+#             #     print 'level', hierarchy
+#             #     print root.id,prefix,root.weight
+#
+#             self.coding(root.left,prefix+'0',hierarchy+1)
+#             self.coding(root.right,prefix+'1',hierarchy+1)
 
 class CUNE_MF(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -140,8 +142,8 @@ class CUNE_MF(IterativeRecommender):
         self.walkDim = int(options['-l'])
         self.winSize = int(options['-w'])
         self.topK = int(options['-k'])
-        self.alpha = float(options['-a'])
         self.epoch = int(options['-ep'])
+        self.alpha = float(options['-a'])
 
     def printAlgorConfig(self):
         super(CUNE_MF, self).printAlgorConfig()
@@ -155,8 +157,7 @@ class CUNE_MF(IterativeRecommender):
         print 'Kind Note: This method will probably take much time.'
         #build C-U-NET
         print 'Building collaborative user network...'
-        #filter isolated nodes and low ratings
-
+        #filter isolated nodes
         self.itemNet = {}
         for item in self.dao.trainSet_i:
             if len(self.dao.trainSet_i[item])>1:
@@ -165,7 +166,7 @@ class CUNE_MF(IterativeRecommender):
         self.filteredRatings = defaultdict(list)
         for item in self.itemNet:
             for user in self.itemNet[item]:
-                if self.itemNet[item][user]>0.75:
+                if self.itemNet[item][user]>=1:
                     self.filteredRatings[user].append(item)
 
         self.CUNet = defaultdict(list)
@@ -201,85 +202,84 @@ class CUNE_MF(IterativeRecommender):
         # self.HTree.buildTree(nodeList)
         # print 'Coding for all users...'
         # self.HTree.coding(self.HTree.root,'',0)
-        #
-        #
-        # print 'Generating random deep walks...'
-        # self.walks = []
-        # self.visited = defaultdict(dict)
-        # for user in self.CUNet:
-        #     for t in range(self.walkCount):
-        #         path = [user]
-        #         for i in range(1,self.walkLength):
-        #             nextNode = choice(self.CUNet[user])
-        #             count=0
-        #             while(self.visited[user].has_key(nextNode)):
-        #                 nextNode = choice(self.CUNet[user])
-        #                 #break infinite loop
-        #                 count+=1
-        #                 if count==10:
-        #                     break
-        #             path.append(nextNode)
-        #             self.visited[user][nextNode]=1
-        #         self.walks.append(path)
-        #         #print path
-        # shuffle(self.walks)
-        #
-        # #Training get top-k friends
-        # print 'Generating user embedding...'
+
+
+        print 'Generating random deep walks...'
+        self.walks = []
+        self.visited = defaultdict(dict)
+        for user in self.CUNet:
+            for t in range(self.walkCount):
+                path = [user]
+                lastNode = user
+                for i in range(1,self.walkLength):
+                    nextNode = choice(self.CUNet[lastNode])
+                    count=0
+                    while(self.visited[lastNode].has_key(nextNode)):
+                        nextNode = choice(self.CUNet[lastNode])
+                        #break infinite loop
+                        count+=1
+                        if count==10:
+                            break
+                    path.append(nextNode)
+                    self.visited[user][nextNode] = 1
+                    lastNode = nextNode
+                self.walks.append(path)
+                #print path
+        shuffle(self.walks)
+
+        #Training get top-k friends
+        print 'Generating user embedding...'
         # iteration = 1
         # while iteration <= self.epoch:
         #     loss = 0
-        #     for walk in self.walks:
-        #         for user in walk:
-        #             centerUser = walk[len(walk)/2]
-        #             if user <> centerUser:
-        #                 code = self.HTree.code[user]
-        #                 centerCode = self.HTree.code[centerUser]
-        #                 x = self.HTree.vector[centerCode]
-        #                 for i in range(1,len(code)):
-        #                     prefix = code[0:i]
-        #                     w = self.HTree.vector[prefix]
-        #                     self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
-        #                     self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
-        #                     loss += -log(sigmoid(w.dot(x)))
+        #     #slide windows randomly
+        #
+        #     for n in range(self.walkLength/self.winSize):
+        #
+        #         for walk in self.walks:
+        #             center = randint(0, len(walk)-1)
+        #             s = max(0,center-self.winSize/2)
+        #             e = min(center+self.winSize/2,len(walk)-1)
+        #             for user in walk[s:e]:
+        #                 centerUser = walk[center]
+        #                 if user <> centerUser:
+        #                     code = self.HTree.code[user]
+        #                     centerCode = self.HTree.code[centerUser]
+        #                     x = self.HTree.vector[centerCode]
+        #                     for i in range(1,len(code)):
+        #                         prefix = code[0:i]
+        #                         w = self.HTree.vector[prefix]
+        #                         self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
+        #                         self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
+        #                         loss += -log(sigmoid(w.dot(x)),2)
         #     print 'iteration:', iteration, 'loss:', loss
         #     iteration+=1
-        # print 'User embedding generated.'
-        #
-        # print 'Constructing similarity matrix...'
-        # self.Sim = SymmetricMatrix(len(self.CUNet))
-        # self.topKSim = {}
-        # i = 0
-        # for user1 in self.CUNet:
-        #     prefix1 = self.HTree.code[user1]
-        #     vec1 = self.HTree.vector[prefix1]
-        #     sims = []
-        #     for user2 in self.CUNet:
-        #         if user1 <> user2:
-        #             prefix2 = self.HTree.code[user2]
-        #             vec2 = self.HTree.vector[prefix2]
-        #             sim = cosine(vec1,vec2)
-        #             sims.append((user2,sim))
-        #     self.topKSim[user1] = sorted(sims,key=lambda d:d[1],reverse=True)[:self.topK]
-        #     i+=1
-        #     if i%200==0:
-        #         print 'progress:',i,'/',len(self.CUNet)
-        #
-        # print 'Similarity matrix finished.'
+        model = w2v.Word2Vec(self.walks, size=self.walkDim, window=5, min_count=0, iter=3)
+        print 'User embedding generated.'
+
+        print 'Constructing similarity matrix...'
+        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
+        self.topKSim = {}
+        i = 0
+        for user1 in self.CUNet:
+            # prefix1 = self.HTree.code[user1]
+            # vec1 = self.HTree.vector[prefix1]
+            sims = []
+            u1 = self.dao.user[user1]
+            self.W[u1] = model.wv[user1]
+            for user2 in self.CUNet:
+                if user1 <> user2:
+                    u2 = self.dao.user[user2]
+                    self.W[u2] = model.wv[user2]
+                    sims.append((user2,cosine(self.W[u1],self.W[u2])))
+            self.topKSim[user1] = sorted(sims, key=lambda d: d[1], reverse=True)[:self.topK]
+            i += 1
+            if i % 200 == 0:
+                print 'progress:', i, '/', len(self.CUNet)
+        print 'Similarity matrix finished.'
+        
         #print self.topKSim
-        import pickle
-        #from time import localtime, time, strftime
-        #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        #similarity = open('CUNE-Epinions-sim'+self.foldInfo+'.pkl', 'wb')
-        #vectors = open('vec'+recordTime+'.pkl', 'wb')
-        #Pickle dictionary using protocol 0.
-        # matrix decomposition
-        pkl_file = open('CUNE-Ciao-sim' + self.foldInfo + '.pkl', 'rb')
-        self.topKSim = pickle.load(pkl_file)
-        #pickle.dump(self.topKSim, similarity)
-        #pickle.dump((self.W,self.G),vectors)
-        #similarity.close()
-        #vectors.close()
+
         #matrix decomposition
         print 'Decomposing...'
 

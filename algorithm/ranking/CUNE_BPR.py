@@ -227,16 +227,6 @@ class CUNE_BPR(IterativeRecommender):
                 #print path
         shuffle(self.walks)
 
-        uList = []
-        coldCount = 0
-        while len(uList)<1000:
-            cp = choice(self.walks)
-            su = choice(cp)
-            if len(self.dao.trainSet_u[su])<10:
-                coldCount+=1
-            uList.append(su)
-        print 'cold rate:',float(coldCount)/1000
-
         #Training get top-k friends
         print 'Generating user embedding...'
         # iteration = 1
@@ -297,8 +287,7 @@ class CUNE_BPR(IterativeRecommender):
 
         for user in self.topKSim:
             for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item]>=1:
-                    self.PositiveSet[user][item]=1
+                 self.PositiveSet[user][item]=1
                 # else:
                 #     self.NegativeSet[user].append(item)
 
@@ -318,11 +307,9 @@ class CUNE_BPR(IterativeRecommender):
                 kItems = self.IPositiveSet[user].keys()
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    for ind in range(2):
-                        if len(kItems) > 0:
-
-                            item_k = choice(itemList)
-
+                    for n in range(3): #negative sampling for 3 times
+                        if len(self.IPositiveSet[user]) > 0:
+                            item_k = choice(kItems)
                             k = self.dao.item[item_k]
                             self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
                             self.Q[i] - self.Q[k])
@@ -335,7 +322,9 @@ class CUNE_BPR(IterativeRecommender):
                             # if len(self.NegativeSet[user])>0:
                             #     item_j = choice(self.NegativeSet[user])
                             # else:
-                            item_j=choice(kItems)
+                            item_j = choice(itemList)
+                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
+                                item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.P[u] += (1 / self.s) * self.lRate * (
                             1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
@@ -366,12 +355,8 @@ class CUNE_BPR(IterativeRecommender):
 
                             self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
-            # for user in self.topKSim:
-            #     for friend in self.topKSim[user]:
-            #         u = self.dao.user[user]
-            #         f = self.dao.user[friend[0]]
-            #         self.P[u] -= 0.1*self.lRate*(self.P[u]-self.P[f])
-            self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
+
+                self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break

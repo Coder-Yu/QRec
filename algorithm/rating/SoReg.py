@@ -43,31 +43,40 @@ class SoReg(SocialRecommender):
             for entry in self.dao.trainingData:
                 user, item, rating = entry
                 uid = self.dao.user[user]
-                id = self.dao.item[item]
+                vid = self.dao.item[item]
 
                 # add the followees' influence
 
-                error = rating - self.P[uid].dot(self.Q[id])
+                error = rating - self.P[uid].dot(self.Q[vid])
                 p = self.P[uid]
-                q = self.Q[id]
+                q = self.Q[vid]
 
                 self.loss += error**2
 
                 #update latent vectors
                 self.P[uid] += self.lRate*(error*q - self.regU * p)
-                self.Q[id] += self.lRate*(error*p - self.regI * q)
+                self.Q[vid] += self.lRate*(error*p - self.regI * q)
 
-            for user in self.dao.user:
-                simSumf = 0
-                simSum2 = 0
+            for user in self.sao.user:
+                simSum = 0
+                simSumf1 = 0
+                if not self.dao.containsUser(user):
+                    continue
                 uid = self.dao.user[user]
                 for f in self.sao.getFollowees(user):
                     if self.dao.containsUser(f):
                         fid = self.dao.user[f]
-                        simSumf += self.Sim[user][f] * (self.P[uid] - self.P[fid])
-                        simSum2 += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
-                        self.loss += simSum2
-                self.P[uid] += self.lRate * (- self.alpha * simSumf)
+                        simSumf1 += self.Sim[user][f] * (self.P[uid] - self.P[fid])
+                        simSum += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
+                        self.loss += simSum
+
+                simSumf2 = 0
+                for g in self.sao.getFollowers(user):
+                    if self.dao.containsUser(g):
+                        gid = self.dao.user[g]
+                        simSumf2 += self.Sim[user][g] * (self.P[uid]-self.P[gid])
+
+                self.P[uid] += self.lRate * (- self.alpha * (simSumf1+simSumf2))
 
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1

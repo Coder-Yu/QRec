@@ -43,9 +43,11 @@ class FileIO(object):
             ratings = ratings[1:]
         # order of the columns
         order = ratingConfig['-columns'].strip().split()
-
+        delim = ' |,|\t'
+        if ratingConfig.contains('-delim'):
+            delim=ratingConfig['-delim']
         for lineNo, line in enumerate(ratings):
-            items = split(' |,|\t', line.strip())
+            items = split(delim,line.strip())
             if not bTest and len(order) < 2:
                 print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
                 exit(-1)
@@ -57,7 +59,7 @@ class FileIO(object):
                 else:
                     rating  = items[int(order[2])]
                 if binarized:
-                    if len(order)>=3 and float(items[int(order[2])])<threshold:
+                    if float(items[int(order[2])])<threshold:
                         continue
                     else:
                         rating = 1

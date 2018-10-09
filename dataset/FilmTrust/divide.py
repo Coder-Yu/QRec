@@ -1,12 +1,13 @@
 test = []
 train = []
+import random
 with open('ratings.txt') as f:
-    import random
     for line in f:
-        if random.random()<0.1:
-            test.append(line)
-        else:
+        #items= line.strip().split()
+        if random.random()>0.05:
             train.append(line)
+        else:
+            test.append(line)
 
 with open('testset.txt','w') as f:
     f.writelines(test)

@@ -3,11 +3,7 @@ from tool import config
 import numpy as np
 from random import shuffle
 from tool.qmath import denormalize
-from tool.file import FileIO
-from os.path import abspath
-from time import strftime,localtime,time
 from evaluation.measure import Measure
-from bisect import bisect
 
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -23,6 +19,8 @@ class IterativeRecommender(Recommender):
         learningRate = config.LineConfig(self.config['learnRate'])
         self.lRate = float(learningRate['-init'])
         self.maxLRate = float(learningRate['-max'])
+        if self.evalSettings.contains('-tf'):
+            self.batch_size = int(self.config['batch_size'])
         # regularization parameter
         regular = config.LineConfig(self.config['reg.lambda'])
         self.regU,self.regI,self.regB= float(regular['-u']),float(regular['-i']),float(regular['-b'])
@@ -35,9 +33,25 @@ class IterativeRecommender(Recommender):
         print '='*80
 
     def initModel(self):
-        self.P = np.ones((self.dao.trainingSize()[0], self.k))/10  # latent user matrix
-        self.Q = np.ones((self.dao.trainingSize()[1], self.k))/10  # latent item matrix
+        self.P = np.random.rand(len(self.dao.user), self.k)/3 # latent user matrix
+        self.Q = np.random.rand(len(self.dao.item), self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
+
+
+    def buildModel_tf(self):
+        # initialization
+        import tensorflow as tf
+        self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
+        self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
+        self.r = tf.placeholder(tf.float32, [None], name="rating")
+
+        self.m, self.n, self.train_size = self.dao.trainingSize()
+        self.U = tf.Variable(tf.truncated_normal(shape=[self.m, self.k], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[self.n, self.k], stddev=0.005), name='V')
+
+        self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
+        self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
+
 
     def saveModel(self):
         pass
@@ -48,7 +62,7 @@ class IterativeRecommender(Recommender):
     def updateLearningRate(self,iter):
         if iter > 1:
             if abs(self.lastLoss) > abs(self.loss):
-                self.lRate -= (self.lRate)/(500.0)
+                self.lRate *= 1.05
             else:
                 self.lRate *= 0.5
 
@@ -57,6 +71,7 @@ class IterativeRecommender(Recommender):
 
 
     def predict(self,u,i):
+
         if self.dao.containsUser(u) and self.dao.containsItem(i):
             return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
         elif self.dao.containsUser(u) and not self.dao.containsItem(i):
@@ -65,6 +80,7 @@ class IterativeRecommender(Recommender):
             return self.dao.itemMeans[i]
         else:
             return self.dao.globalMean
+
 
     def predictForRanking(self,u):
         'used to rank all the items for the user'
@@ -78,11 +94,15 @@ class IterativeRecommender(Recommender):
         if isnan(self.loss):
             print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
             exit(-1)
-        measure = self.performance()
-        value = [item.strip()for item in measure]
-        #with open(self.algorName+' iteration.txt')
         deltaLoss = (self.lastLoss-self.loss)
-        print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s' %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate,measure[0][:11],measure[1][:12])
+        if self.ranking.isMainOn():
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
+                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
+            measure = self.ranking_performance()
+        else:
+            measure = self.rating_performance()
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
+                  % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12])
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
@@ -92,55 +112,44 @@ class IterativeRecommender(Recommender):
         shuffle(self.dao.trainingData)
         return converged
 
-    def evalRanking(self):
-        res = []  # used to contain the text of the result
-        N = 0
-        threshold = 0
-        bThres = False
-        bTopN = False
-        if self.ranking.contains('-topN'):
-            bTopN = True
-            N = int(self.ranking['-topN'])
-            if N < 0:
-                print 'N can not be larger than 100! It has been reassigned with 100'
-                N = 10
-            if N > len(self.dao.item):
-                N = len(self.dao.item)
-        elif self.ranking.contains('-threshold'):
-            threshold = float(self.ranking['-threshold'])
-            bThres = True
-        else:
-            print 'No correct evaluation metric is specified!'
-            exit(-1)
+    def rating_performance(self):
 
-        res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
-        # predict
+        res = []
+        for ind, entry in enumerate(self.dao.testData):
+            user, item, rating = entry
+
+            # predict
+            prediction = self.predict(user, item)
+            # denormalize
+            prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+            #####################################
+            pred = self.checkRatingBoundary(prediction)
+            # add prediction in order to measure
+            res.append([user,item,rating,pred])
+
+        self.measure = Measure.ratingMeasure(res)
+
+        return self.measure
+
+    def ranking_performance(self):
+        N = 10
         recList = {}
-        userN = {}
-        userCount = len(self.dao.testSet_u)
-        rawRes = {}
-        for i, user in enumerate(self.dao.testSet_u):
+        testSample = {}
+        for user in self.dao.testSet_u:
+            if len(testSample) == 300:
+                break
+            testSample[user] = self.dao.testSet_u[user]
+
+        for user in testSample:
             itemSet = {}
-            line = user + ':'
             predictedItems = self.predictForRanking(user)
-            # predictedItems = denormalize(predictedItems, self.dao.rScale[-1], self.dao.rScale[0])
             for id, rating in enumerate(predictedItems):
-                # if not self.dao.rating(user, self.dao.id2item[id]):
-                # prediction = self.checkRatingBoundary(prediction)
-                # pred = self.checkRatingBoundary(prediction)
-                #####################################
-                # add prediction in order to measure
-                # if bThres:
-                #     if rating > threshold:
-                #         itemSet[self.dao.id2item[id]]= rating
-                # else:
                 itemSet[self.dao.id2item[id]] = rating
 
             ratedList, ratingList = self.dao.userRated(user)
             for item in ratedList:
                 del itemSet[item]
 
-            rawRes[user] = itemSet
             Nrecommendations = []
             for item in itemSet:
                 if len(Nrecommendations) < N:
@@ -152,8 +161,6 @@ class IterativeRecommender(Recommender):
             recommendations = [item[1] for item in Nrecommendations]
             resNames = [item[0] for item in Nrecommendations]
 
-            # itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
-            # if bTopN:
             # find the K biggest scores
             for item in itemSet:
                 ind = N
@@ -162,69 +169,25 @@ class IterativeRecommender(Recommender):
 
                 if recommendations[r] < itemSet[item]:
                     while True:
-
                         mid = (l + r) / 2
                         if recommendations[mid] >= itemSet[item]:
                             l = mid + 1
                         elif recommendations[mid] < itemSet[item]:
                             r = mid - 1
-                        else:
-                            ind = mid
-                            break
                         if r < l:
                             ind = r
                             break
                 # ind = bisect(recommendations, itemSet[item])
-
                 if ind < N - 1:
                     recommendations[ind + 1] = itemSet[item]
                     resNames[ind + 1] = item
             recList[user] = zip(resNames, recommendations)
-            # elif bThres:
-            #     itemSet = sorted(itemSet.iteritems(), key=lambda d: d[1], reverse=True)
-            #     recList[user] = itemSet[:]
-            #     userN[user] = len(itemSet)
+        measure = Measure.rankingMeasure(testSample, recList, [10])
+        print '-'*80
+        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 300 sampled users)'
+        for m in measure[1:]:
+            print m.strip()
+        print '-'*80
+        #self.record.append(measure[3].strip()+' '+measure[4])
+        return measure
 
-            if i % 100 == 0:
-                print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
-            for item in recList[user]:
-                line += ' (' + item[0] + ',' + str(item[1]) + ')'
-                if self.dao.testSet_u[user].has_key(item[0]):
-                    line += '*'
-
-            line += '\n'
-            res.append(line)
-            if i==1000:
-                break
-        currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # output prediction result
-        if self.isOutput:
-            fileName = ''
-            outDir = self.output['-dir']
-            if self.ranking.contains('-topN'):
-                fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
-                    N) + 'items' + self.foldInfo + '.txt'
-            elif self.ranking.contains('-threshold'):
-                fileName = self.config['recommender'] + '@' + currentTime + '-threshold-' + str(
-                    threshold) + self.foldInfo + '.txt'
-            FileIO.writeFile(outDir, fileName, res)
-            print 'The result has been output to ', abspath(outDir), '.'
-        # output evaluation result
-        outDir = self.output['-dir']
-        fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
-        if self.ranking.contains('-topN'):
-            origin = {}
-            for user in recList:
-                origin[user] = self.dao.testSet_u[user]
-            self.measure = Measure.rankingMeasure(origin, recList, N)
-        # elif self.ranking.contains('-threshold'):
-        #     origin = self.dao.testSet_u.copy()
-        #     for user in origin:
-        #         temp = {}
-        #         for item in origin[user]:
-        #             if origin[user][item] >= threshold:
-        #                 temp[item] = threshold
-        #         origin[user] = temp
-        #     self.measure = Measure.rankingMeasure_threshold(origin, recList, userN)
-        FileIO.writeFile(outDir, fileName, self.measure)
-        print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))

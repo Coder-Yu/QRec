@@ -32,7 +32,8 @@ class BPR(IterativeRecommender):
             for item in self.dao.trainSet_u[user]:
                 if self.dao.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
-
+                # else:
+                #     self.NegativeSet[user].append(item)
         print 'training...'
         iteration = 0
         itemList = self.dao.item.keys()
@@ -42,24 +43,28 @@ class BPR(IterativeRecommender):
                 u = self.dao.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.dao.item[item]
-                    for ind in range(1):
+                    for n in range(3): #negative sampling (3 times)
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
                         j = self.dao.item[item_j]
-                        s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
-                        self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
-                        self.Q[i] += self.lRate * (1 - s) * self.P[u]
-                        self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+                        self.optimization(u,i,j)
 
-                        self.P[u] -= self.lRate * self.regU * self.P[u]
-                        self.Q[i] -= self.lRate * self.regI * self.Q[i]
-                        self.Q[j] -= self.lRate * self.regI * self.Q[j]
-                        self.loss += -log(s)
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
                 break
+
+    def optimization(self,u,i,j):
+        s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
+        self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
+        self.Q[i] += self.lRate * (1 - s) * self.P[u]
+        self.Q[j] -= self.lRate * (1 - s) * self.P[u]
+
+        self.P[u] -= self.lRate * self.regU * self.P[u]
+        self.Q[i] -= self.lRate * self.regI * self.Q[i]
+        self.Q[j] -= self.lRate * self.regI * self.Q[j]
+        self.loss += -log(s)
 
     def predict(self,user,item):
 
