@@ -60,7 +60,7 @@ class EE(IterativeRecommender):
         self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
 
         difference = tf.subtract(self.U_embed, self.V_embed)
-        self.r_hat = tf.reduce_sum(tf.multiply(difference, difference), reduction_indices=1)
+        self.r_hat = tf.reduce_sum(tf.multiply(difference, difference), axis=1)
         self.r_hat = tf.subtract(self.U_bias_embed, self.r_hat)
         self.r_hat = tf.add(self.r_hat, self.V_bias_embed)
         self.r_hat = tf.add(self.r_hat, global_mean)

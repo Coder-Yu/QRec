@@ -18,12 +18,12 @@ if __name__ == '__main__':
     print '6. PMF            7. SVD++          8. EE             9. BPR             10. WRMF'
 
     print 'Social Recommenders:'
-    print '11. RSTE          12. SoRec         13. SoReg         14. SocialMF     15. SBPR'
+    print '11. RSTE          12. SoRec         13. SoReg         14. SocialMF       15. SBPR'
     print '16. SREE          17. LOCABAL       18. SocialFD      19. TBPR'
 
 
     print 'Advanced Recommenders:'
-    print 'a1. CoFactor      a2. CUNE-MF       a3. CUNE-BPR      a4. IF-BPR'
+    print 'a1. CoFactor      a2. CUNE-MF       a3. CUNE-BPR      a4. IF-BPR         a5. AMF'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
@@ -115,6 +115,9 @@ if __name__ == '__main__':
 
     elif order == 'a4':
         conf = Config('../config/IF_BPR.conf')
+
+    elif order == 'a5':
+        conf = Config('../config/AMF.conf')
 
     elif order == 'b1':
         conf = Config('../config/UserMean.conf')

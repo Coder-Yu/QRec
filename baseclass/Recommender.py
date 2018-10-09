@@ -26,6 +26,7 @@ class Recommender(object):
         self.foldInfo = fold
         self.evalSettings = LineConfig(self.config['evaluation.setup'])
         self.measure = []
+        self.record = []
         if self.evalSettings.contains('-cold'):
             #evaluation on cold-start users
             threshold = int(self.evalSettings['-cold'])
@@ -258,7 +259,8 @@ class Recommender(object):
         if self.isSaveModel:
             print 'Saving model %s...' %(self.foldInfo)
             self.saveModel()
-
+        # with open(self.foldInfo+'measure.txt','w') as f:
+        #     f.writelines(self.record)
         return self.measure
 
 

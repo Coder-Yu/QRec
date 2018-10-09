@@ -23,6 +23,7 @@ class DeepRecommender(IterativeRecommender):
     def initModel(self):
         self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
+
         self.r = tf.placeholder(tf.float32, [None], name="rating")
 
         self.m, self.n, self.train_size = self.dao.trainingSize()
@@ -31,7 +32,7 @@ class DeepRecommender(IterativeRecommender):
 
         self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
         self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
-
+        self.sess = tf.Session()
 
 
 
@@ -53,7 +54,7 @@ class DeepRecommender(IterativeRecommender):
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
             measure = self.ranking_performance()
-            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s (Top-10 On 200 users)' \
+            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s (Top-10 On 300 users)' \
                   %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate, measure[-3].strip()[:11], measure[-2].strip()[:12])
         else:
             measure = self.rating_performance()

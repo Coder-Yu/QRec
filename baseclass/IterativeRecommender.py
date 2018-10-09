@@ -37,6 +37,7 @@ class IterativeRecommender(Recommender):
         self.Q = np.random.rand(len(self.dao.item), self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
+
     def buildModel_tf(self):
         # initialization
         import tensorflow as tf
@@ -187,5 +188,6 @@ class IterativeRecommender(Recommender):
         for m in measure[1:]:
             print m.strip()
         print '-'*80
+        #self.record.append(measure[3].strip()+' '+measure[4])
         return measure
 

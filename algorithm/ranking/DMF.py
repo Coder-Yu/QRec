@@ -106,7 +106,7 @@ class DMF(DeepRecommender):
         self.U = np.zeros((self.m, self.n_hidden_u[-1]))
         self.V = np.zeros((self.n, self.n_hidden_u[-1]))
 
-        self.sess = tf.Session()
+
         init = tf.global_variables_initializer()
         self.sess.run(init)
 

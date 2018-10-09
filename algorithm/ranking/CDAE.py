@@ -52,9 +52,9 @@ class CDAE(DeepRecommender):
 
     def readConfiguration(self):
         super(CDAE, self).readConfiguration()
-        eps = config.LineConfig(self.config['CDAE'])
-        self.corruption_level = float(eps['-co'])
-        self.n_hidden = int(eps['-nh'])
+        args = config.LineConfig(self.config['CDAE'])
+        self.corruption_level = float(args['-co'])
+        self.n_hidden = int(args['-nh'])
 
     def initModel(self):
         super(CDAE, self).initModel()
@@ -110,8 +110,6 @@ class CDAE(DeepRecommender):
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
 
 
-
-        self.sess = tf.Session()
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
