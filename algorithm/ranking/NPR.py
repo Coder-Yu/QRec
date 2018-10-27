@@ -113,7 +113,7 @@ class NPR(SocialRecommender,DeepRecommender):
     def _create_adv_friend_inference(self):
         self.U_plus_delta = tf.add(self.U_embed, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
         self.V_friend_plus_delta = tf.add(self.V_friend_embed, tf.nn.embedding_lookup(self.adv_V, self.friend_item_idx))
-        self.V_neg_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
+        self.V_neg_plus_delta = tf.add(self.V_neg_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
 
 
         result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_friend_plus_delta), 1),
@@ -189,7 +189,7 @@ class NPR(SocialRecommender,DeepRecommender):
             f_item = random.choice(self.FSet_list[user])
             while self.dao.trainSet_u[user].has_key(f_item):
                 f_item = random.choice(self.FSet_list[user])
-            for j in range(self.negativeCount): #negative sampling
+            for j in range(1): #negative sampling
                 item_j = random.randint(0,self.n-1)
                 while self.dao.trainSet_u[user].has_key(self.dao.id2item[item_j]) and self.FSet_dict[user].has_key(item_j):
                     item_j = random.randint(0, self.n - 1)
@@ -230,8 +230,8 @@ class NPR(SocialRecommender,DeepRecommender):
 
             # train the model until converged
             for epoch in range(self.maxIter):
-                #user_idx, item_idx, neg_item_idx = self.next_batch_v2()
-                #_,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
+                user_idx, item_idx, neg_item_idx = self.next_batch_v2()
+                _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
 
                 user_idx, item_idx, friend_item_idx, neg_item_idx = self.next_batch()
                 _,loss = sess.run([self.train_friend, self.total_friend_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.friend_item_idx:friend_item_idx,self.neg_idx: neg_item_idx})
