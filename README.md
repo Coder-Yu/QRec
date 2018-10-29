@@ -258,20 +258,19 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
 		<th>Paper</th>
 
    </tr>
-
     <tr>
 	<td scope="row">APR</td>
     <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
     </td>
   </tr>
-
-    <tr>
+  </tr>
+  <tr>
 	<td scope="row">ExpoMF</td>
     <td>Liang et al., Modeling User Exposure in Recommendation, WWW 2016.<br>
     </td>
   </tr>
 
-
+  </tr>
     <tr>
 	<td scope="row">CDAE</td>
     <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
