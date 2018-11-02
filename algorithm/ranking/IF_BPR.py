@@ -69,36 +69,7 @@ class IF_BPR(SocialRecommender):
     def buildModel(self):
         # self.P = np.ones((self.dao.trainingSize()[0], self.k))/10  # latent user matrix
         # self.Q = np.ones((self.dao.trainingSize()[1], self.k))/10  # latent item matrix
-        #data clean
-        cleanList = []
-        cleanPair = []
-        for user in self.sao.followees:
-            if not self.dao.user.has_key(user):
-                cleanList.append(user)
-            for u2 in self.sao.followees[user]:
-                if not self.dao.user.has_key(u2):
-                    cleanPair.append((user, u2))
-        for u in cleanList:
-            del self.sao.followees[u]
 
-        for pair in cleanPair:
-            if self.sao.followees.has_key(pair[0]):
-                del self.sao.followees[pair[0]][pair[1]]
-
-        cleanList = []
-        cleanPair = []
-        for user in self.sao.followers:
-            if not self.dao.user.has_key(user):
-                cleanList.append(user)
-            for u2 in self.sao.followers[user]:
-                if not self.dao.user.has_key(u2):
-                    cleanPair.append((user, u2))
-        for u in cleanList:
-            del self.sao.followers[u]
-
-        for pair in cleanPair:
-            if self.sao.followers.has_key(pair[0]):
-                del self.sao.followers[pair[0]][pair[1]]
 
         # li = self.sao.followees.keys()
         #

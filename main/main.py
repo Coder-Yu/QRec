@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     print 'Social Recommenders:'
     print 's1. RSTE          s2. SoRec         s3. SoReg         s4. SocialMF       s5. SBPR'
-    print 's6. SREE          s7. LOCABAL       s8. SocialFD      s9. TBPR'
+    print 's6. SREE          s7. LOCABAL       s8. SocialFD      s9. TBPR           s10. SERec'
 
 
     print 'Advanced Recommenders:'
@@ -106,6 +106,9 @@ if __name__ == '__main__':
 
     elif order == 's9':
         conf = Config('../config/TBPR.conf')
+
+    elif order == 's10':
+        conf = Config('../config/SERec.conf')
 
     elif order == 'a1':
         conf = Config('../config/CoFactor.conf')

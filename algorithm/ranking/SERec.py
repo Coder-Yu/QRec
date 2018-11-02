@@ -1,38 +1,37 @@
-from baseclass.IterativeRecommender import IterativeRecommender
+from baseclass.SocialRecommender import SocialRecommender
 from scipy.sparse import *
 from scipy import *
 import numpy as np
-
-
 from numpy import linalg as LA
-
 from joblib import Parallel, delayed
 from math import sqrt
 
 EPS = 1e-8
 # this algorithm refers to the following paper:
-# #########----  Modeling User Exposure in Recommendation   ----#############
+# #########----  Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation   ----#############
+# SEREC_boost
 
-class ExpoMF(IterativeRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(ExpoMF, self).__init__(conf,trainingSet,testSet,fold)
+class SERec(SocialRecommender):
+    def __init__(self,conf,trainingSet=None,testSet=None,relation=None,fold='[1]'):
+        super(SERec, self).__init__(conf,trainingSet,testSet,relation,fold)
 
     def initModel(self):
-        super(ExpoMF, self).initModel()
+        super(SERec, self).initModel()
         self.lam_theta = 1e-5
         self.lam_beta = 1e-5
-        self.lam_y = 0.5
+        self.lam_y = 1.0
         self.init_mu = 0.01
         self.a = 1.0
-        self.b = 1.0
-        self.init_std = 0.01
+        self.b = 99.0
+        self.s= 5
+        self.init_std = 0.5
         self.theta = self.init_std * \
             np.random.randn(self.m, self.k).astype(np.float32)
         self.beta = self.init_std * \
             np.random.randn(self.n, self.k).astype(np.float32)
-        self.mu = self.init_mu * np.ones(self.n, dtype=np.float32)
+        self.mu = self.init_mu * np.ones((self.m,self.n), dtype=np.float32)
         self.n_jobs=4
-        self.batch_size=300
+        self.batch_size=1000
         row,col,val = [],[],[]
         for user in self.dao.trainSet_u:
             for item in self.dao.trainSet_u[user]:
@@ -43,15 +42,35 @@ class ExpoMF(IterativeRecommender):
                 val.append(1)
 
         self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.m,self.n))
+        row,col,val = [],[],[]
+        for user in self.sao.followees:
+            for f in self.sao.followees[user]:
+                u = self.dao.user[user]
+                i = self.dao.user[f]
+                row.append(u)
+                col.append(i)
+                val.append(1)
+        self.T = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.m, self.m))
+
 
     def buildModel(self):
         print 'training...'
-        n_users = self.X.shape[0]
-        XT = self.X.T.tocsr()  # pre-compute this
+        iteration = 0
+
+        self._update(self.X)
+
+    def _update(self, X):
+        '''Model training and evaluation on validation set'''
+        n_users = X.shape[0]
+        XT = X.T.tocsr()  # pre-compute this
+        self.vad_ndcg = -np.inf
         for i in xrange(self.maxIter):
+
             print 'ITERATION #%d' % i
-            self._update_factors(self.X, XT)
-            self._update_expo(self.X, n_users)
+            self._update_factors(X, XT)
+            print self.mu
+            self._update_expo(X, n_users)
+
 
 
     def _update_factors(self, X, XT):
@@ -78,12 +97,15 @@ class ExpoMF(IterativeRecommender):
         start_idx = range(0, n_users, self.batch_size)
         end_idx = start_idx[1:] + [n_users]
 
-        A_sum = np.zeros_like(self.mu)
+        A_sum = np.zeros(self.n)
         for lo, hi in zip(start_idx, end_idx):
             A_sum += a_row_batch(X[lo:hi], self.theta[lo:hi], self.beta,
-                                 self.lam_y, self.mu).sum(axis=0)
-        print self.mu
-        self.mu = (self.a + A_sum - 1) / (self.a + self.b + n_users - 2)
+                                 self.lam_y, self.mu[lo:hi]).sum(axis=0)
+
+        A_sum=np.tile(A_sum,[self.m,1])
+        print A_sum
+        #S_sum = self.T.dot(A_sum)
+        self.mu = (self.a + A_sum - 1) / (self.a + self.b + +n_users - 2)
 
 
     def predictForRanking(self,u):
@@ -108,7 +130,7 @@ def a_row_batch(Y_batch, theta_batch, beta, lam_y, mu):
     '''Compute the posterior of exposure latent variables A by batch'''
     pEX = sqrt(lam_y / 2 * np.pi) * \
           np.exp(-lam_y * theta_batch.dot(beta.T) ** 2 / 2)
-    #print pEX.shape,mu.shape
+
     A = (pEX + EPS) / (pEX + EPS + (1 - mu) / mu)
     A[Y_batch.nonzero()] = 1.
     return A
@@ -125,11 +147,10 @@ def _solve_batch(lo, hi, X, X_old_batch, Y, m, f, lam, lam_y, mu):
     keep the parallel process busy'''
     assert X_old_batch.shape[0] == hi - lo
 
-    if mu.size == X.shape[0]:  # update users
-        A_batch = a_row_batch(Y[lo:hi], X_old_batch, X, lam_y, mu)
+    if mu.shape[1] == X.shape[0]:  # update users
+        A_batch = a_row_batch(Y[lo:hi], X_old_batch, X, lam_y, mu[lo:hi])
     else:  # update items
-        A_batch = a_row_batch(Y[lo:hi], X_old_batch, X, lam_y, mu[lo:hi,
-                                                               np.newaxis])
+        A_batch = a_row_batch(Y[lo:hi], X_old_batch, X, lam_y, mu.T[lo:hi])
 
     X_batch = np.empty_like(X_old_batch, dtype=X_old_batch.dtype)
     for ib, k in enumerate(xrange(lo, hi)):
@@ -147,10 +168,12 @@ def recompute_factors(X, X_old, Y, lam, lam_y, mu, n_jobs, batch_size=1000):
 
     start_idx = range(0, m, batch_size)
     end_idx = start_idx[1:] + [m]
-
     res = Parallel(n_jobs=n_jobs)(delayed(_solve_batch)(
         lo, hi, X, X_old[lo:hi], Y, m, f, lam, lam_y, mu)
-                                  for lo, hi in zip(start_idx, end_idx))
+                                   for lo, hi in zip(start_idx, end_idx))
+    # res = []
+    # for lo, hi in zip(start_idx, end_idx):
+    #     res.append(_solve_batch(lo, hi, X, X_old[lo:hi], Y, m, f, lam, lam_y, mu))
 
     X_new = np.vstack(res)
     return X_new
