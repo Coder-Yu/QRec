@@ -21,10 +21,10 @@ class ExpoMF(IterativeRecommender):
         super(ExpoMF, self).initModel()
         self.lam_theta = 1e-5
         self.lam_beta = 1e-5
-        self.lam_y = 0.5
+        self.lam_y = 1.0
         self.init_mu = 0.01
         self.a = 1.0
-        self.b = 1.0
+        self.b = 99.0
         self.init_std = 0.01
         self.theta = self.init_std * \
             np.random.randn(self.m, self.k).astype(np.float32)

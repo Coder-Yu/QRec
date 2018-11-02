@@ -19,11 +19,11 @@ class SERec(SocialRecommender):
         super(SERec, self).initModel()
         self.lam_theta = 1e-5
         self.lam_beta = 1e-5
-        self.lam_y = 1.0
+        self.lam_y = 0.01
         self.init_mu = 0.01
         self.a = 1.0
         self.b = 99.0
-        self.s= 5
+        self.s= 1.2
         self.init_std = 0.5
         self.theta = self.init_std * \
             np.random.randn(self.m, self.k).astype(np.float32)
@@ -103,9 +103,8 @@ class SERec(SocialRecommender):
                                  self.lam_y, self.mu[lo:hi]).sum(axis=0)
 
         A_sum=np.tile(A_sum,[self.m,1])
-        print A_sum
-        #S_sum = self.T.dot(A_sum)
-        self.mu = (self.a + A_sum - 1) / (self.a + self.b + +n_users - 2)
+        S_sum = self.T.dot(A_sum)
+        self.mu = (self.a + A_sum +(self.s-1)*S_sum- 1) / (self.a + self.b + (self.s-1)*S_sum+n_users - 2)
 
 
     def predictForRanking(self,u):
