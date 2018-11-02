@@ -2,7 +2,8 @@
 <h2>Latest News</h2>
 <p>
 <b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
-02/10/2018 - Two deep models: DMF CDAE have been implemented. Still tuning.</br>
+10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
+10/02/2018 - Two deep models: DMF CDAE have been implemented.</br>
 07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
 </p>
 
@@ -263,13 +264,19 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
     <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
     </td>
   </tr>
+
   </tr>
   <tr>
 	<td scope="row">ExpoMF</td>
     <td>Liang et al., Modeling User Exposure in Recommendation, WWW 2016.<br>
     </td>
   </tr>
-
+      </tr>
+  <tr>
+	<td scope="row">ExpoMF</td>
+    <td>Wang et al., Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation, AAAI 2018.<br>
+    </td>
+  </tr>
   </tr>
     <tr>
 	<td scope="row">CDAE</td>
