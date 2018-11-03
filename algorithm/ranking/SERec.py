@@ -23,7 +23,7 @@ class SERec(SocialRecommender):
         self.init_mu = 0.01
         self.a = 1.0
         self.b = 99.0
-        self.s= 1.2
+        self.s= 2.2
         self.init_std = 0.5
         self.theta = self.init_std * \
             np.random.randn(self.m, self.k).astype(np.float32)
@@ -70,7 +70,7 @@ class SERec(SocialRecommender):
             self._update_factors(X, XT)
             print self.mu
             self._update_expo(X, n_users)
-
+            self.ranking_performance()
 
 
     def _update_factors(self, X, XT):

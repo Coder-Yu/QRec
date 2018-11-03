@@ -273,7 +273,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
   </tr>
       </tr>
   <tr>
-	<td scope="row">ExpoMF</td>
+	<td scope="row">SERec</td>
     <td>Wang et al., Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation, AAAI 2018.<br>
     </td>
   </tr>
