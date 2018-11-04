@@ -45,9 +45,7 @@ class IF_BPR(SocialRecommender):
                 self.nItems[items[1]].append(items[0])
                 if not self.dao.user.has_key(items[0]):
                     self.dao.user[items[0]]=len(self.dao.user)
-                # if not self.dao.item.has_key(items[1]):
-                #     self.dao.item[items[1]]=len(self.dao.item)
-                #     self.dao.id2item[self.dao.item[items[1]]] = items[1]
+
 
 
     def initModel(self):
@@ -71,36 +69,7 @@ class IF_BPR(SocialRecommender):
     def buildModel(self):
         # self.P = np.ones((self.dao.trainingSize()[0], self.k))/10  # latent user matrix
         # self.Q = np.ones((self.dao.trainingSize()[1], self.k))/10  # latent item matrix
-        #data clean
-        cleanList = []
-        cleanPair = []
-        for user in self.sao.followees:
-            if not self.dao.user.has_key(user):
-                cleanList.append(user)
-            for u2 in self.sao.followees[user]:
-                if not self.dao.user.has_key(u2):
-                    cleanPair.append((user, u2))
-        for u in cleanList:
-            del self.sao.followees[u]
 
-        for pair in cleanPair:
-            if self.sao.followees.has_key(pair[0]):
-                del self.sao.followees[pair[0]][pair[1]]
-
-        cleanList = []
-        cleanPair = []
-        for user in self.sao.followers:
-            if not self.dao.user.has_key(user):
-                cleanList.append(user)
-            for u2 in self.sao.followers[user]:
-                if not self.dao.user.has_key(u2):
-                    cleanPair.append((user, u2))
-        for u in cleanList:
-            del self.sao.followers[u]
-
-        for pair in cleanPair:
-            if self.sao.followers.has_key(pair[0]):
-                del self.sao.followers[pair[0]][pair[1]]
 
         # li = self.sao.followees.keys()
         #
@@ -354,16 +323,16 @@ class IF_BPR(SocialRecommender):
                 self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
             self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/(self.topK/2)
-        import pickle
-        ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
-
-        pickle.dump(self.pSimilarity, ps)
-        av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
-
-        pickle.dump(self.avg_sim, av)
-
-        th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
-        pickle.dump(self.threshold, th)
+        # import pickle
+        # ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
+        #
+        # pickle.dump(self.pSimilarity, ps)
+        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
+        #
+        # pickle.dump(self.avg_sim, av)
+        #
+        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
+        # pickle.dump(self.threshold, th)
         i=0
         for user1 in self.negative:
             uSim = []
@@ -398,23 +367,23 @@ class IF_BPR(SocialRecommender):
 
         # # # #
         # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        psimilarity = open(self.config['ratings']+self.foldInfo+'p.pkl', 'wb')
-        nsimilarity = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'wb')
+        # psimilarity = open(self.config['ratings']+self.foldInfo+'p.pkl', 'wb')
+        # nsimilarity = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'wb')
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
-        pickle.dump(self.pTopKSim, psimilarity)
-        pickle.dump(self.nTopKSim, nsimilarity)
-
-        psimilarity = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'wb')
-        nsimilarity = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'wb')
+        # pickle.dump(self.pTopKSim, psimilarity)
+        # pickle.dump(self.nTopKSim, nsimilarity)
+        #
+        # psimilarity = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'wb')
+        # nsimilarity = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'wb')
         # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
         # #Pickle dictionary using protocol 0.
         #
 
 
-        pickle.dump(self.pSimilarity, psimilarity)
-        pickle.dump(self.nSimilarity, nsimilarity)
+        # pickle.dump(self.pSimilarity, psimilarity)
+        # pickle.dump(self.nSimilarity, nsimilarity)
 
 
         #pickle.dump((self.W,self.G),vectors)
@@ -446,8 +415,7 @@ class IF_BPR(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            print self.foldInfo,'100',self.threshold['100']
-            print self.foldInfo, '2',self.threshold['2']
+
             self.IPositiveSet = defaultdict(dict)
             self.OKSet = defaultdict(dict)
             for user in self.dao.user:
@@ -486,9 +454,7 @@ class IF_BPR(SocialRecommender):
                 kItems = self.IPositiveSet[user].keys()
                 okItems = self.OKSet[user].keys()
                 nItems = self.NegSets[user].keys()
-                # print kItems
-                # print okItems
-                # print nItems
+
                 u = self.dao.user[user]
 
                 for item in self.PositiveSet[user]:
@@ -551,7 +517,6 @@ class IF_BPR(SocialRecommender):
                             self.optimization(u,j,n)
                 if self.thres_count[user]>0:
                     self.threshold[user] -= self.lRate * self.thres_d[user] / self.thres_count[user]
-                    #print user, self.thres_d[user], self.thres_count[user]
                     self.thres_d[user]=0
                     self.thres_count[user]=0
                     li = [sim for sim in self.pSimilarity[user].values() if sim>=self.threshold[user]]
@@ -573,88 +538,6 @@ class IF_BPR(SocialRecommender):
                 break
 
 
-
-
-
-
-        # import seaborn as sns
-        # np.random.seed(sum(map(ord, "aesthetics")))
-        # sns.set_style("dark")
-        # import matplotlib.pyplot as plt
-        # pointN = []
-        # pointX = []
-        # f= plt.figure(figsize=(12,4))
-        # ax1=f.add_subplot(121)
-        # ax2=f.add_subplot(122)
-        # for user in self.dao.user:
-        #     count = 0
-        #     for friend in self.pSimilarity[user]:
-        #         if self.pSimilarity[user][friend]>self.threshold[user]:
-        #             count+=1
-        #     pointX.append(count)
-        #     count = 0
-        #     for friend in self.nSimilarity[user]:
-        #         if self.nSimilarity[user][friend]>self.threshold[user]:
-        #             count+=1
-        #     pointN.append(count)
-        #     # if self.sao.user.has_key(user):
-        #     #     pointY.append(len(self.sao.followees[user]))
-        #     # else:
-        #     #     pointY.append(0)
-        # # ax[0].scatter(x=pointY,y=pointX,s=5,c='red')
-        # # ax[0].set_xlabel('Count of Explicit Friends')
-        # # ax[0].set_ylabel('Count of Implicit Friends')
-        # pointX.sort()
-        # pointN.sort()
-        # # ax1.plot(range(len(pointX)),pointX,color='green')
-        # # ax2.plot(range(len(pointN)), pointN, color='red')
-        # # ax1.set_ylabel('Count of Positive Implicit Friends')
-        # # ax2.set_ylabel('Count of Negative Implicit Friends')
-        # # plt.tight_layout()
-        # # #ax[1].set_xticklabels((' '))
-        # # plt.savefig('./friends'+self.foldInfo+'.pdf')
-        #
-        # th = open(self.config['ratings'] + self.foldInfo + 'pc.pkl', 'wb')
-        # pickle.dump(pointX,th)
-        # th = open(self.config['ratings'] + self.foldInfo + 'nc.pkl', 'wb')
-        # pickle.dump(pointN,th)
-        # #json
-        # u1 = choice(self.sao.followees.keys())
-        # while len(self.sao.followees[u1]) < 20 and self.dao.user.has_key(u1):
-        #     u1 = choice(self.sao.user.keys())
-        #
-        # nodes = []
-        # names2names = {}
-        # for user in self.dao.user:
-        #     if self.sao.followees[u1].has_key(user) and user in self.trueTopKFriends[u1]:
-        #         nodes.append({"id":"both "+user,"group":1})
-        #         names2names[user]="both "+user
-        #         print '1 hit!'
-        #     elif self.sao.followees[u1].has_key(user) and user not in self.trueTopKFriends[u1]:
-        #         nodes.append({"id":"explicit "+user, "group": 2})
-        #         names2names[user] = "explicit " + user
-        #     elif not self.sao.followees[u1].has_key(user) and user in self.trueTopKFriends[u1]:
-        #         nodes.append({"id":"implicit "+user, "group": 3})
-        #         names2names[user] = "implicit " + user
-        #
-        # nodes.append({"id": u1, "group": 4})
-        # names2names[u1] = u1
-        # print '5 hit!'
-        # links = []
-        # for user in self.sao.followees:
-        #     if not names2names.has_key(user):
-        #         continue
-        #     for u2 in self.sao.followees[user]:
-        #         if not names2names.has_key(u2):
-        #             continue
-        #         links.append({"source":names2names[user],"target":names2names[u2],"value":1})
-        #
-        #
-        #
-        # with open("./nodes"+self.foldInfo+".json", 'w') as json_file:
-        #     json.dump(nodes, json_file, ensure_ascii=False)
-        # with open("./links"+self.foldInfo+".json", 'w') as json_file:
-        #     json.dump(links, json_file, ensure_ascii=False)
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))

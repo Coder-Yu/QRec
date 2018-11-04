@@ -51,7 +51,7 @@ class APR(DeepRecommender):
     def _create_adv_inference(self):
         self.U_plus_delta = tf.add(self.U_embed, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
         self.V_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.v_idx))
-        self.V_neg_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
+        self.V_neg_plus_delta = tf.add(self.V_neg_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
         result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_plus_delta), 1),
                              tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_neg_plus_delta), 1))
         return result

@@ -7,6 +7,37 @@ class SocialRecommender(IterativeRecommender):
         super(SocialRecommender, self).__init__(conf,trainingSet,testSet,fold)
         self.sao = SocialDAO(self.config,relation) #social relations access control
 
+        # data clean
+        cleanList = []
+        cleanPair = []
+        for user in self.sao.followees:
+            if not self.dao.user.has_key(user):
+                cleanList.append(user)
+            for u2 in self.sao.followees[user]:
+                if not self.dao.user.has_key(u2):
+                    cleanPair.append((user, u2))
+        for u in cleanList:
+            del self.sao.followees[u]
+
+        for pair in cleanPair:
+            if self.sao.followees.has_key(pair[0]):
+                del self.sao.followees[pair[0]][pair[1]]
+
+        cleanList = []
+        cleanPair = []
+        for user in self.sao.followers:
+            if not self.dao.user.has_key(user):
+                cleanList.append(user)
+            for u2 in self.sao.followers[user]:
+                if not self.dao.user.has_key(u2):
+                    cleanPair.append((user, u2))
+        for u in cleanList:
+            del self.sao.followers[u]
+
+        for pair in cleanPair:
+            if self.sao.followers.has_key(pair[0]):
+                del self.sao.followers[pair[0]][pair[1]]
+
     def readConfiguration(self):
         super(SocialRecommender, self).readConfiguration()
         regular = config.LineConfig(self.config['reg.lambda'])

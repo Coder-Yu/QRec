@@ -16,10 +16,11 @@ if __name__ == '__main__':
     print 'Rating-based Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
     print '6. PMF            7. SVD++          8. EE             9. BPR             10. WRMF'
+    print '11. ExpoMF'
 
     print 'Social Recommenders:'
-    print '11. RSTE          12. SoRec         13. SoReg         14. SocialMF       15. SBPR'
-    print '16. SREE          17. LOCABAL       18. SocialFD      19. TBPR'
+    print 's1. RSTE          s2. SoRec         s3. SoReg         s4. SocialMF       s5. SBPR'
+    print 's6. SREE          s7. LOCABAL       s8. SocialFD      s9. TBPR           s10. SERec'
 
 
     print 'Advanced Recommenders:'
@@ -76,33 +77,38 @@ if __name__ == '__main__':
     elif order == '10':
         conf = Config('../config/WRMF.conf')
 
-
     elif order == '11':
+        conf = Config('../config/ExpoMF.conf')
+
+    elif order == 's1':
         conf = Config('../config/RSTE.conf')
 
-    elif order == '12':
+    elif order == 's2':
         conf = Config('../config/SoRec.conf')
 
-    elif order == '13':
+    elif order == 's3':
         conf = Config('../config/SoReg.conf')
 
-    elif order == '14':
+    elif order == 's4':
         conf = Config('../config/SocialMF.conf')
 
-    elif order == '15':
+    elif order == 's5':
         conf = Config('../config/SBPR.conf')
 
-    elif order == '16':
+    elif order == 's6':
         conf = Config('../config/SREE.conf')
 
-    elif order == '17':
+    elif order == 's7':
         conf = Config('../config/LOCABAL.conf')
 
-    elif order == '18':
+    elif order == 's8':
         conf = Config('../config/SocialFD.conf')
 
-    elif order == '19':
+    elif order == 's9':
         conf = Config('../config/TBPR.conf')
+
+    elif order == 's10':
+        conf = Config('../config/SERec.conf')
 
     elif order == 'a1':
         conf = Config('../config/CoFactor.conf')
