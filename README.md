@@ -21,8 +21,6 @@ Released by School of Software Engineering, Chongqing University</br>
 
 ![RecQ Architecture](http://ww3.sinaimg.cn/large/88b98592gw1f9fh8jpencj21d40ouwlf.jpg)
 
-To design it exquisitely, we refer to the library [**LibRec**](https://github.com/guoguibing/librec), which is implemented with Java.
-
 <h2>Features</h2>
 <ul>
 <li><b>Cross-platform</b>: as a Python software, RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
@@ -85,7 +83,7 @@ To design it exquisitely, we refer to the library [**LibRec**](https://github.co
       -cv k   (-cv means cross validation, k is the number of the fold. e.g. -cv 5)</br>
       Secondary option:-b, -p, -cold<br>
       -b val （binarizing the rating values. Ratings equal or greater than val will be changed into 1, and ratings lower than val will be changed into 0. e.g. -b 3.0）</br>
-      -p (if this option is added, the cross validation wll be excuted parallelly, otherwise excuted one by one) </br>
+      -p (if this option is added, the cross validation wll be executed parallelly, otherwise executed one by one) </br>
       <b>-tf </b> (model training would be conducted on TensorFlow if TensorFlow has been installed) </br>
       -cold threshold (evaluation on cold-start users, users in training set with ratings more than threshold will be removed from the test set)
      </td>
