@@ -6,7 +6,7 @@ from tool import config
 try:
     import tensorflow as tf
 except ImportError:
-    print 'This method can only be run tensorflow!'
+    print 'This method can only run on tensorflow!'
     exit(-1)
 from tensorflow import set_random_seed
 set_random_seed(2)
