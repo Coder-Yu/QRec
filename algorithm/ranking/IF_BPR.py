@@ -108,36 +108,31 @@ class IF_BPR(SocialRecommender):
         p5 = 'UFUIU'
         mPaths = [p1,p2,p3,p4,p5]
 
-        self.G = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
-        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
-
-
+        self.G = np.random.rand(self.dao.trainingSize()[0], self.walkDim)*0.1
+        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim)*0.1
 
         self.UFNet = defaultdict(list)
 
-        for user1 in self.sao.followees:
-            s1 = set(self.sao.followees[user1])
-            for user2 in self.sao.followees[user1]:
-                if self.sao.followees.has_key(user2):
-                    if user1 <> user2:
-                        s2 = set(self.sao.followees[user2])
+        for u in self.sao.followees:
+            s1 = set(self.sao.followees[u])
+            for v in self.sao.followees[u]:
+                if v in self.sao.followees: #make sure that v has out links
+                    if u <> v:
+                        s2 = set(self.sao.followees[v])
                         weight = len(s1.intersection(s2))
-                        self.UFNet[user1] += [user2] * (weight + 1)
+                        self.UFNet[u] += [v] * (weight + 1)
 
         self.UTNet = defaultdict(list)
 
-        for user1 in self.sao.followers:
-            s1 = set(self.sao.followers[user1])
-            for user2 in self.sao.followers[user1]:
-                if self.sao.followers.has_key(user2):
-                    if user1 <> user2:
-                        s2 = set(self.sao.followers[user2])
+        for u in self.sao.followers:
+            s1 = set(self.sao.followers[u])
+            for v in self.sao.followers[u]:
+                if self.sao.followers.has_key(v): #make sure that v has out links
+                    if u <> v:
+                        s2 = set(self.sao.followers[v])
                         weight = len(s1.intersection(s2))
-                        self.UTNet[user1] += [user2] * (weight + 1)
-        #
-        #
-        #
-        #
+                        self.UTNet[u] += [v] * (weight + 1)
+
         print 'Generating random meta-path random walks... (Positive)'
         self.pWalks = []
         #self.usercovered = {}
@@ -167,11 +162,9 @@ class IF_BPR(SocialRecommender):
                         for tp in mp[1:]:
                             try:
                                 if tp == 'I':
-
                                     nextNode = choice(self.positive[lastNode])
 
                                 if tp == 'U':
-
                                     if lastType == 'I':
                                         nextNode = choice(self.pItems[lastNode])
                                     elif lastType == 'F':
@@ -183,16 +176,12 @@ class IF_BPR(SocialRecommender):
                                         while not self.dao.user.has_key(nextNode):
                                             nextNode = choice(self.UTNet[lastNode])
 
-
-
                                 if tp == 'F':
-
                                     nextNode = choice(self.UFNet[lastNode])
                                     while not self.dao.user.has_key(nextNode):
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
-
                                     nextNode = choice(self.UFNet[lastNode])
                                     while not self.dao.user.has_key(nextNode):
                                         nextNode = choice(self.UFNet[lastNode])
@@ -239,7 +228,6 @@ class IF_BPR(SocialRecommender):
                                     nextNode = choice(self.negative[lastNode])
 
                                 if tp == 'U':
-
                                     if lastType == 'I':
                                         nextNode = choice(self.nItems[lastNode])
                                     elif lastType == 'F':
@@ -252,13 +240,11 @@ class IF_BPR(SocialRecommender):
                                             nextNode = choice(self.UTNet[lastNode])
 
                                 if tp == 'F':
-
                                     nextNode = choice(self.UFNet[lastNode])
                                     while not self.dao.user.has_key(nextNode):
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
-
                                     nextNode = choice(self.UFNet[lastNode])
                                     while not self.dao.user.has_key(nextNode):
                                         nextNode = choice(self.UFNet[lastNode])
@@ -279,7 +265,6 @@ class IF_BPR(SocialRecommender):
         print 'nwalks:', len(self.nWalks)
         # Training get top-k friends
         print 'Generating user embedding...'
-
         self.pTopKSim = {}
         self.nTopKSim = {}
         self.pSimilarity = defaultdict(dict)
@@ -304,8 +289,6 @@ class IF_BPR(SocialRecommender):
 
         print 'Constructing similarity matrix...'
         i = 0
-
-
         for user1 in self.positive:
             uSim = []
             i+=1
@@ -323,16 +306,7 @@ class IF_BPR(SocialRecommender):
                 self.pSimilarity[user1][pair[0]]=pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
             self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/(self.topK/2)
-        # import pickle
-        # ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
-        #
-        # pickle.dump(self.pSimilarity, ps)
-        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
-        #
-        # pickle.dump(self.avg_sim, av)
-        #
-        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
-        # pickle.dump(self.threshold, th)
+
         i=0
         for user1 in self.negative:
             uSim = []
@@ -350,13 +324,23 @@ class IF_BPR(SocialRecommender):
                 self.nSimilarity[user1][pair[0]]=pair[1]
             self.nTopKSim[user1] = [item[0] for item in fList]
 
+        # import pickle
+        # ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
+        #
+        # pickle.dump(self.pSimilarity, ps)
+        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
+        #
+        # pickle.dump(self.avg_sim, av)
+        #
+        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
+        # pickle.dump(self.threshold, th)
+
+
 
         self.trueTopKFriends=defaultdict(list)
         for user in self.pTopKSim:
             trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
             self.trueTopKFriends[user] = trueFriends
-            # if len(trueFriends)>0:
-            #     print trueFriends
             self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
 
 
@@ -416,43 +400,40 @@ class IF_BPR(SocialRecommender):
         while iteration < self.maxIter:
             self.loss = 0
 
-            self.IPositiveSet = defaultdict(dict)
-            self.OKSet = defaultdict(dict)
+            self.JointSet = defaultdict(dict)
+            self.PS_Set = defaultdict(dict)
             for user in self.dao.user:
-                if self.trueTopKFriends.has_key(user):
-                    for friend in self.trueTopKFriends[user][:self.topK]:
-                        if self.dao.user.has_key(friend) and self.pSimilarity[user][friend]>=self.threshold[user]:
+                if user in self.trueTopKFriends:
+                    for friend in self.trueTopKFriends[user]:
+                        if friend in self.dao.user and self.pSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.positive[friend]:
-                                if not self.PositiveSet[user].has_key(item) and not self.NegSets[user].has_key(item):
-                                    self.IPositiveSet[user][item]=friend
+                                if item not in self.PositiveSet[user] and item not in self.NegSets[user]:
+                                    self.JointSet[user][item]=friend
 
 
                 if self.pTopKSim.has_key(user):
                     for friend in self.pTopKSim[user][:self.topK]:
-                        if self.dao.user.has_key(friend) and self.pSimilarity[user][friend]>=self.threshold[user]:
+                        if friend in self.dao.user and self.pSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.positive[friend]:
-                                if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(
-                                        item) and not self.NegSets[user].has_key(item):
-                                        self.OKSet[user][item] = friend
+                                if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
+                                        and item not in self.NegSets[user]:
+                                        self.PS_Set[user][item] = friend
 
 
                 if self.nTopKSim.has_key(user):
                     for friend in self.nTopKSim[user][:self.topK]:
-                        if self.dao.user.has_key(friend): #and self.nSimilarity[user][friend]>=self.threshold[user]:
+                        if friend in self.dao.user: #and self.nSimilarity[user][friend]>=self.threshold[user]:
                             for item in self.negative[friend]:
-                                if self.dao.item.has_key(item):
-                                    if not self.PositiveSet[user].has_key(item) and not self.IPositiveSet[user].has_key(
-                                            item) \
-                                            and not self.OKSet.has_key(item):
-                                        if not self.NegSets[user].has_key(item):
-                                            self.NegSets[user][item] = 1
-                                        else:
-                                            self.NegSets[user][item] += 1
+                                if item in self.dao.item:
+                                    if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
+                                        and item not in self.PS_Set[user]:
+                                        self.NegSets[user][item] = 1
+
             itemList = self.dao.item.keys()
             for user in self.PositiveSet:
                 #itemList = self.NegSets[user].keys()
-                kItems = self.IPositiveSet[user].keys()
-                okItems = self.OKSet[user].keys()
+                kItems = self.JointSet[user].keys()
+                okItems = self.PS_Set[user].keys()
                 nItems = self.NegSets[user].keys()
 
                 u = self.dao.user[user]
@@ -464,7 +445,7 @@ class IF_BPR(SocialRecommender):
                         if len(kItems) > 0 and len(okItems) > 0:
 
                             item_k = choice(kItems)
-                            uf = self.IPositiveSet[user][item_k]
+                            uf = self.JointSet[user][item_k]
                             k = self.dao.item[item_k]
                             self.optimization_thres(u,i,k,user,uf)
 
@@ -474,7 +455,7 @@ class IF_BPR(SocialRecommender):
                             self.optimization(u,k,ok)
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j) or self.OKSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u,ok,j)
@@ -483,31 +464,31 @@ class IF_BPR(SocialRecommender):
                             item_ok = choice(okItems)
                             ok = self.dao.item[item_ok]
 
-                            uf = self.OKSet[user][item_ok]
+                            uf = self.PS_Set[user][item_ok]
                             self.optimization_thres(u, i, ok, user, uf)
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j) or self.OKSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u,ok,j)
 
                         elif len(kItems)>0 and len(okItems)==0:
                             item_k = choice(kItems)
-                            uf = self.IPositiveSet[user][item_k]
+                            uf = self.JointSet[user][item_k]
                             k = self.dao.item[item_k]
                             self.optimization_thres(u,i,k,user,uf)
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j) or self.OKSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u,k,j)
 
                         else:
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet[user].has_key(item_j) or
-                                   self.OKSet[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or
+                                   self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.dao.item[item_j]
                             self.optimization(u, i, j)
@@ -515,6 +496,7 @@ class IF_BPR(SocialRecommender):
                             item_n = choice(nItems)
                             n = self.dao.item[item_n]
                             self.optimization(u,j,n)
+
                 if self.thres_count[user]>0:
                     self.threshold[user] -= self.lRate * self.thres_d[user] / self.thres_count[user]
                     self.thres_d[user]=0
@@ -525,7 +507,7 @@ class IF_BPR(SocialRecommender):
                     else:
                         self.avg_sim[user]= sum(li)/(len(li)+0.0)
 
-            for abc in range(2):
+
                 for friend in self.trueTopKFriends[user]:
                     if self.pSimilarity[user][friend]>self.threshold[user]:
                         u = self.dao.user[user]
