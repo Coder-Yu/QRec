@@ -22,9 +22,9 @@ class ExpoMF(IterativeRecommender):
         self.lam_theta = 1e-5
         self.lam_beta = 1e-5
         self.lam_y = 1.0
-        self.init_mu = 0.01
+        self.init_mu = 0.05
         self.a = 1.0
-        self.b = 99.0
+        self.b = 20.0
         self.init_std = 0.01
         self.theta = self.init_std * \
             np.random.randn(self.m, self.k).astype(np.float32)
@@ -52,6 +52,7 @@ class ExpoMF(IterativeRecommender):
             print 'ITERATION #%d' % i
             self._update_factors(self.X, XT)
             self._update_expo(self.X, n_users)
+            self.ranking_performance()
 
 
     def _update_factors(self, X, XT):

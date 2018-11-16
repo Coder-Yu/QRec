@@ -1,4 +1,4 @@
-from baseclass.SocialRecommender import SocialRecommender
+from baseclass.IterativeRecommender import IterativeRecommender
 from scipy.sparse import *
 from scipy import *
 import numpy as np
@@ -9,29 +9,30 @@ from math import sqrt
 EPS = 1e-8
 # this algorithm refers to the following paper:
 # #########----  Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation   ----#############
-# SEREC_boost
+# MERec_boost
 
-class SERec(SocialRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,relation=None,fold='[1]'):
-        super(SERec, self).__init__(conf,trainingSet,testSet,relation,fold)
+class MERec(IterativeRecommender):
+    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+        super(MERec, self).__init__(conf,trainingSet,testSet,fold)
 
     def initModel(self):
-        super(SERec, self).initModel()
+        super(MERec, self).initModel()
         self.lam_theta = 1e-5
         self.lam_beta = 1e-5
-        self.lam_y = 0.01
-        self.init_mu = 0.01
+        self.lam_y = 1.0
+        self.init_mu = 0.05
         self.a = 1.0
-        self.b = 99.0
-        self.s= 2.2
-        self.init_std = 0.5
+        self.b = 20.0
+        self.s= 5
+        self.init_std = 0.1
         self.theta = self.init_std * \
             np.random.randn(self.m, self.k).astype(np.float32)
         self.beta = self.init_std * \
             np.random.randn(self.n, self.k).astype(np.float32)
         self.mu = self.init_mu * np.ones((self.m,self.n), dtype=np.float32)
         self.n_jobs=4
-        self.batch_size=1000
+        self.batch_size=300
+        self.loadMetaInfo()
         row,col,val = [],[],[]
         for user in self.dao.trainSet_u:
             for item in self.dao.trainSet_u[user]:
@@ -42,19 +43,75 @@ class SERec(SocialRecommender):
                 val.append(1)
 
         self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.m,self.n))
+
         row,col,val = [],[],[]
-        for user in self.sao.followees:
-            for f in self.sao.followees[user]:
+        for user in self.user2art:
+            for a in self.user2art[user]:
                 u = self.dao.user[user]
-                i = self.dao.user[f]
+                i = self.id['artist'][a]
                 row.append(u)
                 col.append(i)
                 val.append(1)
-        self.T = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.m, self.m))
+        self.U2A = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.m, len(self.id['artist'])))
+
+        row,col,val = [],[],[]
+        for artist in self.art2song:
+            for item in self.art2song[artist]:
+                a = self.id['artist'][artist]
+                i = self.dao.item[item]
+                row.append(a)
+                col.append(i)
+                val.append(1.0/len(self.art2song[artist]))
+        self.A2S = csr_matrix((np.array(val), (np.array(row), np.array(col))), (len(self.id['artist']),self.n))
+
+        row,col,val = [],[],[]
+        for user in self.user2album:
+            for a in self.user2album[user]:
+                u = self.dao.user[user]
+                i = self.id['album'][a]
+                row.append(u)
+                col.append(i)
+                val.append(1)
+        self.U2Al = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.m, len(self.id['album'])))
+
+        row,col,val = [],[],[]
+        for album in self.album2song:
+            for item in self.album2song[album]:
+                a = self.id['album'][album]
+                i = self.dao.item[item]
+                row.append(a)
+                col.append(i)
+                val.append(1.0/len(self.album2song[album]))
+        self.Al2S = csr_matrix((np.array(val), (np.array(row), np.array(col))), (len(self.id['album']),self.n))
+
+        self.commuteMatrix_a = np.array(self.U2A.dot(self.A2S).todense())
+        self.commuteMatrix_al = np.array(self.U2Al.dot(self.Al2S).todense())
+
+    def loadMetaInfo(self):
+        from collections import defaultdict
+        self.user2art = defaultdict(dict)
+        self.art2song = defaultdict(dict)
+        self.user2album = defaultdict(dict)
+        self.album2song = defaultdict(dict)
+        self.id=defaultdict(dict)
+        with open(self.config['ratings']) as f:
+            for line in f:
+                items = line.strip().split(',')
+                if self.dao.trainSet_u.has_key(items[0]) and self.dao.trainSet_u[items[0]].has_key(items[1]):
+                    self.art2song[items[2]][items[1]]=1
+                    self.user2art[items[0]][items[2]]=1
+                    self.album2song[items[3]][items[1]]=1
+                    self.user2album[items[0]][items[3]]=1
+                    if items[2] not in self.id['artist']:
+                        self.id['artist'][items[2]]=len(self.id['artist'])
+                    if items[3] not in self.id['album']:
+                        self.id['album'][items[3]] = len(self.id['album'])
 
 
     def buildModel(self):
         print 'training...'
+        iteration = 0
+
         self._update(self.X)
 
     def _update(self, X):
@@ -101,8 +158,10 @@ class SERec(SocialRecommender):
                                  self.lam_y, self.mu[lo:hi]).sum(axis=0)
 
         A_sum=np.tile(A_sum,[self.m,1])
-        S_sum = self.T.dot(A_sum)
-        self.mu = (self.a + A_sum +(self.s-1)*S_sum- 1) / (self.a + self.b + (self.s-1)*S_sum+n_users - 2)
+        S_sum = 1*self.commuteMatrix_a*A_sum
+        S_sum += 0.2*self.commuteMatrix_al*A_sum
+        print  A_sum +self.s*S_sum
+        self.mu = (self.a + A_sum +self.s*S_sum- 1) / (self.a + self.b + self.s*S_sum+n_users - 2)
 
 
     def predictForRanking(self,u):

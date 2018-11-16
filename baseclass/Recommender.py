@@ -259,8 +259,8 @@ class Recommender(object):
         if self.isSaveModel:
             print 'Saving model %s...' %(self.foldInfo)
             self.saveModel()
-        # with open(self.foldInfo+'measure.txt','w') as f:
-        #     f.writelines(self.record)
+        with open(self.foldInfo+self.config['recommender']+' measure.txt','w') as f:
+            f.writelines(self.record)
         return self.measure
 
 

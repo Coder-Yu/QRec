@@ -71,6 +71,7 @@ class WRMF(IterativeRecommender):
             print 'iteration:',iteration,'loss:',self.loss
             # if self.isConverged(iteration):
             #     break
+            self.ranking_performance()
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'

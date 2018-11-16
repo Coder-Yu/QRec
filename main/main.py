@@ -16,7 +16,7 @@ if __name__ == '__main__':
     print 'Rating-based Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
     print '6. PMF            7. SVD++          8. EE             9. BPR             10. WRMF'
-    print '11. ExpoMF'
+    print '11. ExpoMF        12. MERec'
 
     print 'Social Recommenders:'
     print 's1. RSTE          s2. SoRec         s3. SoReg         s4. SocialMF       s5. SBPR'
@@ -79,6 +79,9 @@ if __name__ == '__main__':
 
     elif order == '11':
         conf = Config('../config/ExpoMF.conf')
+
+    elif order == '12':
+        conf = Config('../config/MERec.conf')
 
     elif order == 's1':
         conf = Config('../config/RSTE.conf')

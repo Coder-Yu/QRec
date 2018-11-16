@@ -135,7 +135,7 @@ class IterativeRecommender(Recommender):
         recList = {}
         testSample = {}
         for user in self.dao.testSet_u:
-            if len(testSample) == 300:
+            if len(testSample) == 1000:
                 break
             testSample[user] = self.dao.testSet_u[user]
 
@@ -183,10 +183,10 @@ class IterativeRecommender(Recommender):
             recList[user] = zip(resNames, recommendations)
         measure = Measure.rankingMeasure(testSample, recList, [10])
         print '-'*80
-        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 300 sampled users)'
+        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 1000 sampled users)'
         for m in measure[1:]:
             print m.strip()
         print '-'*80
-        #self.record.append(measure[3].strip()+' '+measure[4])
+        self.record.append(measure[3].strip()+' '+measure[4])
         return measure
 
