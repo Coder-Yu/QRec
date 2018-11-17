@@ -46,8 +46,6 @@ class IF_BPR(SocialRecommender):
                 if items[0] not in self.data.user:
                     self.data.user[items[0]]=len(self.data.user)
 
-
-
     def initModel(self):
         super(IF_BPR, self).initModel()
         self.positive = defaultdict(list)
@@ -58,7 +56,6 @@ class IF_BPR(SocialRecommender):
                 self.pItems[item].append(user)
         self.readNegativeFeedbacks()
         self.P = np.ones((len(self.data.user), self.k))*0.1  # latent user matrix
-        #self.Q = np.ones((len(self.data.item), self.k)) / 10  # latent item matrix
         self.threshold = {}
         self.avg_sim = {}
         self.thres_d = dict.fromkeys(self.data.user.keys(),0)
@@ -93,8 +90,7 @@ class IF_BPR(SocialRecommender):
         self.G = np.random.rand(self.data.trainingSize()[0], self.walkDim) * 0.1
         self.W = np.random.rand(self.data.trainingSize()[0], self.walkDim) * 0.1
 
-        self.UFNet = defaultdict(list)
-
+        self.UFNet = defaultdict(list) # a -> b #a trusts b
         for u in self.social.followees:
             s1 = set(self.social.followees[u])
             for v in self.social.followees[u]:
@@ -104,8 +100,7 @@ class IF_BPR(SocialRecommender):
                         weight = len(s1.intersection(s2))
                         self.UFNet[u] += [v] * (weight + 1)
 
-        self.UTNet = defaultdict(list)
-
+        self.UTNet = defaultdict(list) # a <- b #a is trusted by b
         for u in self.social.followers:
             s1 = set(self.social.followers[u])
             for v in self.social.followers[u]:
@@ -121,7 +116,6 @@ class IF_BPR(SocialRecommender):
 
         # positive
         for user in self.data.user:
-
             for mp in mPaths:
                 if mp == p1:
                     self.walkCount = 10
@@ -134,13 +128,11 @@ class IF_BPR(SocialRecommender):
                 if mp == p5:
                     self.walkCount = 5
                 for t in range(self.walkCount):
-
                     path = ['U' + user]
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
                     for i in range(self.walkLength / len(mp[1:])):
-
                         for tp in mp[1:]:
                             try:
                                 if tp == 'I':
@@ -184,7 +176,6 @@ class IF_BPR(SocialRecommender):
 
         # negative
         for user in self.data.user:
-
             for mp in mPaths:
                 if mp == p1:
                     self.walkCount = 10
@@ -197,13 +188,11 @@ class IF_BPR(SocialRecommender):
                 if mp == p5:
                     self.walkCount = 5
                 for t in range(self.walkCount):
-
                     path = ['U' + user]
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
                     for i in range(self.walkLength / len(mp[1:])):
-
                         for tp in mp[1:]:
                             try:
                                 if tp == 'I':
@@ -253,20 +242,18 @@ class IF_BPR(SocialRecommender):
         self.nTopKSim = {}
         self.pSimilarity = defaultdict(dict)
         self.nSimilarity = defaultdict(dict)
-        model = w2v.Word2Vec(self.pWalks, size=self.walkDim, window=5, min_count=0, iter=10)
-        model2 = w2v.Word2Vec(self.nWalks, size=self.walkDim, window=5, min_count=0, iter=10)
-
+        pos_model = w2v.Word2Vec(self.pWalks, size=self.walkDim, window=5, min_count=0, iter=10)
+        neg_model = w2v.Word2Vec(self.nWalks, size=self.walkDim, window=5, min_count=0, iter=10)
         for user in self.positive:
             uid = self.data.user[user]
             try:
-                self.W[uid] = model.wv['U' + user]
+                self.W[uid] = pos_model.wv['U' + user]
             except KeyError:
                 continue
-
         for user in self.negative:
             uid = self.data.user[user]
             try:
-                self.G[uid] = model2.wv['U' + user]
+                self.G[uid] = neg_model.wv['U' + user]
             except KeyError:
                 continue
         print 'User embedding generated.'
@@ -421,7 +408,6 @@ class IF_BPR(SocialRecommender):
             self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
 
         print 'Decomposing...'
-
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
@@ -437,10 +423,8 @@ class IF_BPR(SocialRecommender):
 
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
-
                     for ind in range(1):
                         if len(kItems) > 0 and len(okItems) > 0:
-
                             item_k = choice(kItems)
                             uf = self.JointSet[user][item_k]
                             k = self.data.item[item_k]
@@ -452,7 +436,8 @@ class IF_BPR(SocialRecommender):
                             self.optimization(u,k,ok)
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or self.PS_Set[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j)
+                                   or self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             self.optimization(u,ok,j)
@@ -465,7 +450,8 @@ class IF_BPR(SocialRecommender):
                             self.optimization_thres(u, i, ok, user, uf)
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or self.PS_Set[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j)
+                                   or self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             self.optimization(u,ok,j)
@@ -477,7 +463,8 @@ class IF_BPR(SocialRecommender):
                             self.optimization_thres(u,i,k,user,uf)
 
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or self.PS_Set[user].has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j)
+                                   or self.PS_Set[user].has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             self.optimization(u,k,j)
@@ -489,6 +476,7 @@ class IF_BPR(SocialRecommender):
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             self.optimization(u, i, j)
+
                         if len(nItems)>0:
                             item_n = choice(nItems)
                             n = self.data.item[item_n]
@@ -504,7 +492,6 @@ class IF_BPR(SocialRecommender):
                     else:
                         self.avg_sim[user]= sum(li)/(len(li)+0.0)
 
-
                 for friend in self.trueTopKFriends[user]:
                     if self.pSimilarity[user][friend]>self.threshold[user]:
                         u = self.data.user[user]
@@ -515,8 +502,6 @@ class IF_BPR(SocialRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
-
-
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
@@ -552,15 +537,6 @@ class IF_BPR(SocialRecommender):
         #print 'derivative', t_derivative
         self.thres_d[user] += t_derivative
         self.thres_count[user] += 1
-    def predict(self,user,item):
-
-        if self.data.containsUser(user) and self.data.containsItem(item):
-            u = self.data.getUserId(user)
-            i = self.data.getItemId(item)
-            predictRating = sigmoid(self.Q[i].dot(self.P[u]))
-            return predictRating
-        else:
-            return sigmoid(self.data.globalMean)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
