@@ -20,23 +20,23 @@ class SVDPlusPlus(IterativeRecommender):
 
     def initModel(self):
         super(SVDPlusPlus, self).initModel()
-        self.Bu = np.random.rand(self.dao.trainingSize()[0])  # biased value of user
-        self.Bi = np.random.rand(self.dao.trainingSize()[1])  # biased value of item
-        self.Y = np.random.rand(self.dao.trainingSize()[1], self.k)
+        self.Bu = np.random.rand(self.data.trainingSize()[0])  # biased value of user
+        self.Bi = np.random.rand(self.data.trainingSize()[1])  # biased value of item
+        self.Y = np.random.rand(self.data.trainingSize()[1], self.k)
 
 
     def buildModel(self):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
-                items, ratings = self.dao.userRated(user)
+                items, ratings = self.data.userRated(user)
                 w = len(items)
                 #w = math.sqrt(len(itemIndexs))
                 error = rating - self.predict(user, item)
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+                u = self.data.user[user]
+                i = self.data.item[item]
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
@@ -50,7 +50,7 @@ class SVDPlusPlus(IterativeRecommender):
                 if w> 1:
                     indexes = []
                     for j in items:
-                        j = self.dao.item[j]
+                        j = self.data.item[j]
                         if i!=j:
                             indexes.append(j)
 
@@ -71,39 +71,39 @@ class SVDPlusPlus(IterativeRecommender):
 
     def predict(self,u,i):
         pred = 0
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            itemIndexs,rating = self.dao.userRated(u)
+        if self.data.containsUser(u) and self.data.containsItem(i):
+            itemIndexs,rating = self.data.userRated(u)
             w = len(itemIndexs)
             # w = math.sqrt(len(itemIndexs))
-            u = self.dao.user[u]
-            i = self.dao.item[i]
+            u = self.data.user[u]
+            i = self.data.item[i]
             sum = 0
             if w> 0:
                 for j in itemIndexs:
-                    j = self.dao.item[j]
+                    j = self.data.item[j]
                     sum += self.Y[j]
                 pred+= (sum/w).dot(self.Q[i])
-            pred += self.P[u].dot(self.Q[i]) + self.dao.globalMean + self.Bi[i] + self.Bu[u]
+            pred += self.P[u].dot(self.Q[i]) + self.data.globalMean + self.Bi[i] + self.Bu[u]
 
         else:
-            pred = self.dao.globalMean
+            pred = self.data.globalMean
         return pred
 
     def predictForRanking(self,u):
         pred = 0
-        if self.dao.containsUser(u):
-            itemIndexs, rating = self.dao.userRated(u)
+        if self.data.containsUser(u):
+            itemIndexs, rating = self.data.userRated(u)
             w = len(itemIndexs)
             # w = math.sqrt(len(itemIndexs))
-            u = self.dao.user[u]
+            u = self.data.user[u]
             sum = 0
             if w > 0:
                 for j in itemIndexs:
-                    j = self.dao.item[j]
+                    j = self.data.item[j]
                     sum += self.Y[j]
                 pred += self.Q.dot(sum / w)
-            pred += self.Q(self.P[u]) + self.dao.globalMean + self.Bi + self.Bu[u]
+            pred += self.Q(self.P[u]) + self.data.globalMean + self.Bi + self.Bu[u]
 
         else:
-            pred = [self.dao.globalMean] * len(self.dao.item)
+            pred = [self.data.globalMean] * len(self.data.item)
         return pred

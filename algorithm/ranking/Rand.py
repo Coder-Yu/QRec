@@ -15,9 +15,9 @@ class Rand(Recommender):
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            return np.random.random(self.dao.trainingSize()[1])
+        if self.data.containsUser(u):
+            return np.random.random(self.data.trainingSize()[1])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

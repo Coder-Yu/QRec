@@ -99,19 +99,19 @@ class APR(DeepRecommender):
     def next_batch(self):
         batch_idx = np.random.randint(self.train_size, size=self.batch_size)
 
-        users = [self.dao.trainingData[idx][0] for idx in batch_idx]
-        items = [self.dao.trainingData[idx][1] for idx in batch_idx]
+        users = [self.data.trainingData[idx][0] for idx in batch_idx]
+        items = [self.data.trainingData[idx][1] for idx in batch_idx]
         user_idx,item_idx=[],[]
         neg_item_idx = []
         for i,user in enumerate(users):
             for j in range(self.negativeCount): #negative sampling
                 item_j = random.randint(0,self.n-1)
 
-                while self.dao.trainSet_u[user].has_key(self.dao.id2item[item_j]):
+                while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
                     item_j = random.randint(0, self.n - 1)
 
-                user_idx.append(self.dao.user[user])
-                item_idx.append(self.dao.item[items[i]])
+                user_idx.append(self.data.user[user])
+                item_idx.append(self.data.item[items[i]])
                 neg_item_idx.append(item_j)
 
         return user_idx,item_idx,neg_item_idx
@@ -153,10 +153,10 @@ class APR(DeepRecommender):
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

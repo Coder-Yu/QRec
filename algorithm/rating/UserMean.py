@@ -5,7 +5,7 @@ class UserMean(Recommender):
         super(UserMean, self).__init__(conf,trainingSet,testSet,fold)
 
     def predict(self,u,i):
-        if self.dao.containsUser(u):
-            return self.dao.userMeans[u]
+        if self.data.containsUser(u):
+            return self.data.userMeans[u]
         else:
-            return self.dao.globalMean
+            return self.data.globalMean

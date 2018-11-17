@@ -12,12 +12,12 @@ class SlopeOne(Recommender,):
         self.computeAverage()
 
     def computeAverage(self):
-        for item in self.dao.testSet_i:
+        for item in self.data.testSet_i:
             freq_sub = {}
             diffAverage_sub = {}
-            for item2 in self.dao.item:
-                x1 = self.dao.sCol(item)
-                x2 = self.dao.sCol(item2)
+            for item2 in self.data.item:
+                x1 = self.data.sCol(item)
+                x2 = self.data.sCol(item2)
                 diff = 0.0
                 commonItem = 0
                 for key in x1:
@@ -37,10 +37,10 @@ class SlopeOne(Recommender,):
     def predict(self,u,i):
         pred = 0
         # check if the user existed in trainSet or not
-        if self.dao.containsUser(u):
+        if self.data.containsUser(u):
             sum = 0
             freqSum = 0
-            itemRated,ratings = self.dao.userRated(u)
+            itemRated,ratings = self.data.userRated(u)
             for item,rating in zip(itemRated,ratings):
                 diff = self.diffAverage[i][item]
                 count = self.freq[i][item]
@@ -49,11 +49,11 @@ class SlopeOne(Recommender,):
             try:
                 pred = float(sum)/freqSum
             except ZeroDivisionError:
-                pred = self.dao.userMeans[u]
-        elif self.dao.containsItem(i):
-            pred = self.dao.itemMeans[i]
+                pred = self.data.userMeans[u]
+        elif self.data.containsItem(i):
+            pred = self.data.itemMeans[i]
         else:
-            pred = self.dao.globalMean
+            pred = self.data.globalMean
 
         return pred
 

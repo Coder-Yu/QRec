@@ -12,22 +12,22 @@ class SBPR(SocialRecommender):
 
 
     def buildModel(self):
-        self.b = np.random.random(self.dao.trainingSize()[1])
+        self.b = np.random.random(self.data.trainingSize()[1])
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
         self.IPositiveSet = defaultdict(dict)
         # self.NegativeSet = defaultdict(list)
 
-        for user in self.dao.user:
-            for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item] >= 1:
+        for user in self.data.user:
+            for item in self.data.trainSet_u[user]:
+                if self.data.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
                     # else:
                     #     self.NegativeSet[user].append(item)
-            if self.sao.user.has_key(user):
-                for friend in self.sao.getFollowees(user):
-                    if self.dao.user.has_key(friend):
-                        for item in self.dao.trainSet_u[friend]:
+            if self.social.user.has_key(user):
+                for friend in self.social.getFollowees(user):
+                    if self.data.user.has_key(friend):
+                        for item in self.data.trainSet_u[friend]:
                             if not self.PositiveSet[user].has_key(item):
                                 if not self.IPositiveSet[user].has_key(item):
                                     self.IPositiveSet[user][item] = 1
@@ -38,16 +38,16 @@ class SBPR(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            itemList = self.dao.item.keys()
+            itemList = self.data.item.keys()
             for user in self.PositiveSet:
-                u = self.dao.user[user]
+                u = self.data.user[user]
                 kItems = self.IPositiveSet[user].keys()
                 for item in self.PositiveSet[user]:
-                    i = self.dao.item[item]
+                    i = self.data.item[item]
                     for n in range(3): #negative sampling for 3 times
                         if len(self.IPositiveSet[user]) > 0:
                             item_k = choice(kItems)
-                            k = self.dao.item[item_k]
+                            k = self.data.item[item_k]
                             s = sigmoid((self.P[u].dot(self.Q[i])+self.b[i] - self.P[u].dot(self.Q[k])-self.b[k])/ (Suk+1))
                             self.P[u] += 1 / (Suk+1) *self.lRate * (1 - s) * (self.Q[i] - self.Q[k])
                             self.Q[i] += 1 / (Suk+1) *self.lRate * (1 - s) * self.P[u]
@@ -61,7 +61,7 @@ class SBPR(SocialRecommender):
                             item_j = choice(itemList)
                             while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
                                 item_j = choice(itemList)
-                            j = self.dao.item[item_j]
+                            j = self.data.item[item_j]
                             s = sigmoid(self.P[u].dot(self.Q[k])+self.b[k] - self.P[u].dot(self.Q[j])-self.b[j])
                             self.P[u] +=  self.lRate * (1 - s) * (self.Q[k] - self.Q[j])
                             self.Q[k] += self.lRate * (1 - s) * self.P[u]
@@ -80,7 +80,7 @@ class SBPR(SocialRecommender):
                             item_j = choice(itemList)
                             while (self.PositiveSet[user].has_key(item_j)):
                                 item_j = choice(itemList)
-                            j = self.dao.item[item_j]
+                            j = self.data.item[item_j]
                             s = sigmoid(self.P[u].dot(self.Q[i])+self.b[i] - self.P[u].dot(self.Q[j])-self.b[j])
                             self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
                             self.Q[i] += self.lRate * (1 - s) * self.P[u]
@@ -98,20 +98,20 @@ class SBPR(SocialRecommender):
 
     def predict(self,user,item):
 
-        if self.dao.containsUser(user) and self.dao.containsItem(item):
-            u = self.dao.getUserId(user)
-            i = self.dao.getItemId(item)
+        if self.data.containsUser(user) and self.data.containsItem(item):
+            u = self.data.getUserId(user)
+            i = self.data.getItemId(item)
             predictRating = sigmoid(self.Q[i].dot(self.P[u])+self.b[i])
             return predictRating
         else:
-            return sigmoid(self.dao.globalMean)
+            return sigmoid(self.data.globalMean)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])+self.b
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

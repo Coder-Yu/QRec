@@ -19,20 +19,20 @@ class SREE(SocialRecommender):
 
     def initModel(self):
         super(SREE, self).initModel()
-        self.Bu = np.random.rand(self.dao.trainingSize()[0])/10  # bias value of user
-        self.Bi = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of item
-        # self.X = np.random.rand(self.dao.trainingSize()[0], self.Dim)/10
-        # self.Y = np.random.rand(self.dao.trainingSize()[1], self.Dim)/10
+        self.Bu = np.random.rand(self.data.trainingSize()[0])/10  # bias value of user
+        self.Bi = np.random.rand(self.data.trainingSize()[1])/10  # bias value of item
+        # self.X = np.random.rand(self.data.trainingSize()[0], self.Dim)/10
+        # self.Y = np.random.rand(self.data.trainingSize()[1], self.Dim)/10
 
     def buildModel(self):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
                 error = rating - self.predict(user,item)
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+                u = self.data.user[user]
+                i = self.data.item[item]
                 self.loss += error ** 2
                 self.loss += self.regU * (self.P[u] - self.Q[i]).dot(self.P[u] - self.Q[i])
                 bu = self.Bu[u]
@@ -45,13 +45,13 @@ class SREE(SocialRecommender):
                 self.Bi[i] += self.lRate * (error - self.regB * bi)
             self.loss+=self.regB*(self.Bu*self.Bu).sum()+self.regB*(self.Bi*self.Bi).sum()
 
-            for user in self.sao.user:
-                if self.dao.containsUser(user):
-                    u = self.dao.user[user]
-                    followees = self.sao.getFollowees(user)
+            for user in self.social.user:
+                if self.data.containsUser(user):
+                    u = self.data.user[user]
+                    followees = self.social.getFollowees(user)
                     for friend in followees:
-                        if self.dao.containsUser(friend):
-                            v = self.dao.user[friend]
+                        if self.data.containsUser(friend):
+                            v = self.data.user[friend]
                             weight = followees[friend]
                             p = self.P[u]
                             z = self.P[v]
@@ -63,19 +63,19 @@ class SREE(SocialRecommender):
             self.isConverged(iteration)
 
     def predict(self, u, i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.user[u]
-            i = self.dao.item[i]
-            return self.dao.globalMean + self.Bi[i] + self.Bu[u] - (self.P[u] - self.Q[i]).dot(self.P[u] - self.Q[i])
+        if self.data.containsUser(u) and self.data.containsItem(i):
+            u = self.data.user[u]
+            i = self.data.item[i]
+            return self.data.globalMean + self.Bi[i] + self.Bu[u] - (self.P[u] - self.Q[i]).dot(self.P[u] - self.Q[i])
         else:
-            return self.dao.globalMean
+            return self.data.globalMean
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.user[u]
-            res = ((self.Q-self.P[u])*(self.Q-self.P[u])).sum(axis=1)+self.Bi+self.Bu[u]+self.dao.globalMean
+        if self.data.containsUser(u):
+            u = self.data.user[u]
+            res = ((self.Q-self.P[u])*(self.Q-self.P[u])).sum(axis=1)+self.Bi+self.Bu[u]+self.data.globalMean
             return res
         else:
-            return [self.dao.globalMean]*len(self.dao.item)
+            return [self.data.globalMean]*len(self.data.item)
 

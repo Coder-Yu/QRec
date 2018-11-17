@@ -33,20 +33,20 @@ class SERec(SocialRecommender):
         self.n_jobs=4
         self.batch_size=1000
         row,col,val = [],[],[]
-        for user in self.dao.trainSet_u:
-            for item in self.dao.trainSet_u[user]:
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+        for user in self.data.trainSet_u:
+            for item in self.data.trainSet_u[user]:
+                u = self.data.user[user]
+                i = self.data.item[item]
                 row.append(u)
                 col.append(i)
                 val.append(1)
 
         self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.m,self.n))
         row,col,val = [],[],[]
-        for user in self.sao.followees:
-            for f in self.sao.followees[user]:
-                u = self.dao.user[user]
-                i = self.dao.user[f]
+        for user in self.social.followees:
+            for f in self.social.followees[user]:
+                u = self.data.user[user]
+                i = self.data.user[f]
                 row.append(u)
                 col.append(i)
                 val.append(1)
@@ -109,11 +109,11 @@ class SERec(SocialRecommender):
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.beta.dot(self.theta[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 # Utility functions #
 

@@ -33,10 +33,10 @@ class IterativeRecommender(Recommender):
         print '='*80
 
     def initModel(self):
-        self.P = np.random.rand(len(self.dao.user), self.k)/3 # latent user matrix
-        self.Q = np.random.rand(len(self.dao.item), self.k)/3  # latent item matrix
+        self.P = np.random.rand(len(self.data.user), self.k)/3 # latent user matrix
+        self.Q = np.random.rand(len(self.data.item), self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
-        self.m, self.n, self.train_size = self.dao.trainingSize()
+        self.m, self.n, self.train_size = self.data.trainingSize()
 
     def buildModel_tf(self):
         # initialization
@@ -71,22 +71,22 @@ class IterativeRecommender(Recommender):
 
     def predict(self,u,i):
 
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]])
-        elif self.dao.containsUser(u) and not self.dao.containsItem(i):
-            return self.dao.userMeans[u]
-        elif not self.dao.containsUser(u) and self.dao.containsItem(i):
-            return self.dao.itemMeans[i]
+        if self.data.containsUser(u) and self.data.containsItem(i):
+            return self.P[self.data.user[u]].dot(self.Q[self.data.item[i]])
+        elif self.data.containsUser(u) and not self.data.containsItem(i):
+            return self.data.userMeans[u]
+        elif not self.data.containsUser(u) and self.data.containsItem(i):
+            return self.data.itemMeans[i]
         else:
-            return self.dao.globalMean
+            return self.data.globalMean
 
 
     def predictForRanking(self,u):
         'used to rank all the items for the user'
-        if self.dao.containsUser(u):
-            return (self.Q).dot(self.P[self.dao.user[u]])
+        if self.data.containsUser(u):
+            return (self.Q).dot(self.P[self.data.user[u]])
         else:
-            return [self.dao.globalMean]*len(self.dao.item)
+            return [self.data.globalMean]*len(self.data.item)
 
     def isConverged(self,iter):
         from math import isnan
@@ -108,19 +108,19 @@ class IterativeRecommender(Recommender):
         if not converged:
             self.updateLearningRate(iter)
         self.lastLoss = self.loss
-        shuffle(self.dao.trainingData)
+        shuffle(self.data.trainingData)
         return converged
 
     def rating_performance(self):
 
         res = []
-        for ind, entry in enumerate(self.dao.testData):
+        for ind, entry in enumerate(self.data.testData):
             user, item, rating = entry
 
             # predict
             prediction = self.predict(user, item)
             # denormalize
-            prediction = denormalize(prediction, self.dao.rScale[-1], self.dao.rScale[0])
+            prediction = denormalize(prediction, self.data.rScale[-1], self.data.rScale[0])
             #####################################
             pred = self.checkRatingBoundary(prediction)
             # add prediction in order to measure
@@ -134,18 +134,18 @@ class IterativeRecommender(Recommender):
         N = 10
         recList = {}
         testSample = {}
-        for user in self.dao.testSet_u:
+        for user in self.data.testSet_u:
             if len(testSample) == 300:
                 break
-            testSample[user] = self.dao.testSet_u[user]
+            testSample[user] = self.data.testSet_u[user]
 
         for user in testSample:
             itemSet = {}
             predictedItems = self.predictForRanking(user)
             for id, rating in enumerate(predictedItems):
-                itemSet[self.dao.id2item[id]] = rating
+                itemSet[self.data.id2item[id]] = rating
 
-            ratedList, ratingList = self.dao.userRated(user)
+            ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
                 del itemSet[item]
 

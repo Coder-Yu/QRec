@@ -13,10 +13,10 @@ class SocialMF(SocialRecommender ):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+                u = self.data.user[user]
+                i = self.data.item[item]
                 error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u].copy()
@@ -24,17 +24,17 @@ class SocialMF(SocialRecommender ):
                 self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
 
-            for user in self.sao.user:
-                if self.dao.containsUser(user):
+            for user in self.social.user:
+                if self.data.containsUser(user):
                     fPred = 0
                     denom = 0
-                    u = self.dao.user[user]
+                    u = self.data.user[user]
                     relationLoss = np.zeros(self.k)
-                    followees = self.sao.getFollowees(user)
+                    followees = self.social.getFollowees(user)
                     for followee in followees:
                         weight= followees[followee]
-                        if self.dao.containsUser(followee):
-                            uf = self.dao.user[followee]
+                        if self.data.containsUser(followee):
+                            uf = self.data.user[followee]
                             fPred += weight * self.P[uf]
                             denom += weight
                     if denom <> 0:

@@ -21,12 +21,12 @@ class TBPR(SocialRecommender):
         self.weakTies = defaultdict(dict)
         self.strongTies = defaultdict(dict)
         self.weights = []
-        for u1 in self.sao.user:
-            N_u1 = self.sao.getFollowees(u1).keys()
-            for u2 in self.sao.getFollowees(u1):
+        for u1 in self.social.user:
+            N_u1 = self.social.getFollowees(u1).keys()
+            for u2 in self.social.getFollowees(u1):
                 if u1==u2:
                     continue
-                N_u2 = self.sao.getFollowees(u2).keys()
+                N_u2 = self.social.getFollowees(u2).keys()
                 s = len(set(N_u1).intersection(set(N_u2)))/(len(set(N_u1).union(set(N_u2)))+0.0)
                 self.strength[u1][u2]=s
                 self.weights.append(s)
@@ -77,9 +77,9 @@ class TBPR(SocialRecommender):
 
     def buildModel(self):
         self.positiveSet = defaultdict(dict)
-        for user in self.dao.user:
-            for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item] >= 1:
+        for user in self.data.user:
+            for item in self.data.trainSet_u[user]:
+                if self.data.trainSet_u[user][item] >= 1:
                     self.positiveSet[user][item] = 1
 
         print 'Training...'
@@ -109,20 +109,20 @@ class TBPR(SocialRecommender):
             self.strongSet = defaultdict(dict)
             self.weakSet = defaultdict(dict)
 
-            for u1 in self.sao.user:
-                if self.dao.user.has_key(u1):
+            for u1 in self.social.user:
+                if self.data.user.has_key(u1):
                     for u2 in self.strongTies[u1]:
-                        for item in self.dao.trainSet_u[u2]:
-                            if self.dao.trainSet_u[u2][item] >= 1 and not self.positiveSet[u1].has_key(item):
+                        for item in self.data.trainSet_u[u2]:
+                            if self.data.trainSet_u[u2][item] >= 1 and not self.positiveSet[u1].has_key(item):
                                 self.strongSet[u1][item]=1
 
                     for u2 in self.weakTies[u1]:
-                        for item in self.dao.trainSet_u[u2]:
-                            if self.dao.trainSet_u[u2][item] >= 1 and not self.positiveSet[u1].has_key(item):
+                        for item in self.data.trainSet_u[u2]:
+                            if self.data.trainSet_u[u2][item] >= 1 and not self.positiveSet[u1].has_key(item):
                                 self.weakSet[u1][item]=1
 
-            for u1 in self.sao.user:
-                if self.dao.user.has_key(u1):
+            for u1 in self.social.user:
+                if self.data.user.has_key(u1):
                     self.jointSet[u1] = dict.fromkeys(set(self.strongSet[u1].keys()).intersection(set(self.weakSet[u1].keys())),1)
 
             for u1 in self.jointSet:
@@ -136,65 +136,65 @@ class TBPR(SocialRecommender):
 
             print 'Computing...'
             self.loss = 0
-            itemList = self.dao.item.keys()
+            itemList = self.data.item.keys()
             for user in self.positiveSet:
                 #print user
-                u = self.dao.user[user]
+                u = self.data.user[user]
                 jItems = self.jointSet[user].keys()
                 wItems = self.weakSet[user].keys()
                 sItems = self.strongSet[user].keys()
                 for item in self.positiveSet[user]:
-                    i = self.dao.item[item]
+                    i = self.data.item[item]
                     for n in range(3): #negative sampling for 3 times
                         if len(jItems)>0 and len(wItems)>0 and len(sItems)>0:
 
                                 item_j = choice(jItems)
-                                j = self.dao.item[item_j]
+                                j = self.data.item[item_j]
                                 self.optimization(u,i,j)
 
                                 item_w = choice(wItems)
-                                w = self.dao.item[item_w]
+                                w = self.data.item[item_w]
                                 self.optimization(u,j,w)
 
                                 item_s = choice(sItems)
-                                s = self.dao.item[item_s]
+                                s = self.data.item[item_s]
                                 self.optimization_theta(u, w, s)
 
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
                                        or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u,s,k)
 
                         if len(jItems) == 0 and len(wItems) > 0 and len(sItems) > 0:
 
                                 item_w = choice(wItems)
-                                w = self.dao.item[item_w]
+                                w = self.data.item[item_w]
                                 self.optimization(u, i, w)
 
                                 item_s = choice(sItems)
-                                s = self.dao.item[item_s]
+                                s = self.data.item[item_s]
                                 self.optimization_theta(u, w, s)
 
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k)
                                        or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, s, k)
 
                         if len(jItems) == 0 and len(wItems) ==0 and len(sItems) > 0:
 
                                 item_s = choice(sItems)
-                                s = self.dao.item[item_s]
+                                s = self.data.item[item_s]
                                 self.optimization(u, i, s)
 
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k)
                                        or self.strongSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, s, k)
 
                         if len(jItems) == 0 and len(wItems) == 0 and len(sItems) ==0:
@@ -202,61 +202,61 @@ class TBPR(SocialRecommender):
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, i, k)
 
                         if len(jItems) == 0 and len(wItems) > 0 and len(sItems) == 0:
 
                                 item_w = choice(wItems)
-                                w = self.dao.item[item_w]
+                                w = self.data.item[item_w]
                                 self.optimization(u, i, w)
 
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k)
                                        or self.strongSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, w, k)
 
 
                         if len(jItems) > 0 and len(wItems) == 0 and len(sItems) > 0:
 
                                 item_j = choice(jItems)
-                                j = self.dao.item[item_j]
+                                j = self.data.item[item_j]
                                 self.optimization(u,i,j)
 
                                 item_s = choice(sItems)
-                                s = self.dao.item[item_s]
+                                s = self.data.item[item_s]
                                 self.optimization(u, j, s)
 
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k)
                                        or self.strongSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, s, k)
 
                         if len(jItems) > 0 and len(wItems) >0 and len(sItems) == 0:
 
                                 item_j = choice(jItems)
-                                j = self.dao.item[item_j]
+                                j = self.data.item[item_j]
                                 self.optimization(u, i, j)
 
                                 item_w = choice(wItems)
-                                w = self.dao.item[item_w]
+                                w = self.data.item[item_w]
                                 self.optimization(u, j, w)
 
                                 item_k = choice(itemList)
                                 while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
                                        or self.weakSet[user].has_key(item_k) ):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, w, k)
 
                         if len(jItems) > 0 and len(wItems) == 0 and len(sItems) == 0:
 
                                 item_j = choice(jItems)
-                                j = self.dao.item[item_j]
+                                j = self.data.item[item_j]
                                 self.optimization(u, i, j)
 
 
@@ -264,7 +264,7 @@ class TBPR(SocialRecommender):
                                 while (self.positiveSet[user].has_key(item_k)
                                        or self.jointSet[user].has_key(item_k)):
                                     item_k = choice(itemList)
-                                k = self.dao.item[item_k]
+                                k = self.data.item[item_k]
                                 self.optimization(u, j, k)
 
                                                 
@@ -288,10 +288,10 @@ class TBPR(SocialRecommender):
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

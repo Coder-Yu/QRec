@@ -14,8 +14,8 @@ class WRMF(IterativeRecommender):
         super(WRMF, self).initModel()
         self.X=self.P*10
         self.Y=self.Q*10
-        self.m = self.dao.trainingSize()[0]
-        self.n = self.dao.trainingSize()[1]
+        self.m = self.data.trainingSize()[0]
+        self.n = self.data.trainingSize()[1]
 
     def buildModel(self):
         print 'training...'
@@ -24,16 +24,16 @@ class WRMF(IterativeRecommender):
             self.loss = 0
             YtY = self.Y.T.dot(self.Y)
             I = np.ones(self.n)
-            for user in self.dao.user:
+            for user in self.data.user:
                 #C_u = np.ones(self.data.getSize(self.recType))
                 H = np.ones(self.n)
                 val = []
                 pos = []
                 P_u = np.zeros(self.n)
-                uid = self.dao.user[user]
-                for item in self.dao.trainSet_u[user]:
-                    iid = self.dao.item[item]
-                    r_ui = float(self.dao.trainSet_u[user][item])
+                uid = self.data.user[user]
+                for item in self.data.trainSet_u[user]:
+                    iid = self.data.item[item]
+                    r_ui = float(self.data.trainSet_u[user][item])
                     pos.append(iid)
                     val.append(10*r_ui)
                     H[iid]+=10*r_ui
@@ -48,15 +48,15 @@ class WRMF(IterativeRecommender):
 
             XtX = self.X.T.dot(self.X)
             I = np.ones(self.m)
-            for item in self.dao.item:
+            for item in self.data.item:
                 P_i = np.zeros(self.m)
-                iid = self.dao.item[item]
+                iid = self.data.item[item]
                 H = np.ones(self.m)
                 val = []
                 pos = []
-                for user in self.dao.trainSet_i[item]:
-                    uid = self.dao.user[user]
-                    r_ui = float(self.dao.trainSet_i[item][user])
+                for user in self.data.trainSet_i[item]:
+                    uid = self.data.user[user]
+                    r_ui = float(self.data.trainSet_i[item][user])
                     pos.append(uid)
                     val.append(10*r_ui)
                     H[uid] += 10*r_ui
@@ -74,8 +74,8 @@ class WRMF(IterativeRecommender):
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.Y.dot(self.X[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)

@@ -28,26 +28,26 @@ class BPR(IterativeRecommender):
         self.PositiveSet = defaultdict(dict)
         #self.NegativeSet = defaultdict(list)
 
-        for user in self.dao.user:
-            for item in self.dao.trainSet_u[user]:
-                if self.dao.trainSet_u[user][item] >= 1:
+        for user in self.data.user:
+            for item in self.data.trainSet_u[user]:
+                if self.data.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
                 # else:
                 #     self.NegativeSet[user].append(item)
         print 'training...'
         iteration = 0
-        itemList = self.dao.item.keys()
+        itemList = self.data.item.keys()
         while iteration < self.maxIter:
             self.loss = 0
             for user in self.PositiveSet:
-                u = self.dao.user[user]
+                u = self.data.user[user]
                 for item in self.PositiveSet[user]:
-                    i = self.dao.item[item]
+                    i = self.data.item[item]
                     for n in range(3): #negative sampling (3 times)
                         item_j = choice(itemList)
                         while (self.PositiveSet[user].has_key(item_j)):
                             item_j = choice(itemList)
-                        j = self.dao.item[item_j]
+                        j = self.data.item[item_j]
                         self.optimization(u,i,j)
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
@@ -68,20 +68,20 @@ class BPR(IterativeRecommender):
 
     def predict(self,user,item):
 
-        if self.dao.containsUser(user) and self.dao.containsItem(item):
-            u = self.dao.getUserId(user)
-            i = self.dao.getItemId(item)
+        if self.data.containsUser(user) and self.data.containsItem(item):
+            u = self.data.getUserId(user)
+            i = self.data.getItemId(item)
             predictRating = sigmoid(self.Q[i].dot(self.P[u]))
             return predictRating
         else:
-            return sigmoid(self.dao.globalMean)
+            return sigmoid(self.data.globalMean)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

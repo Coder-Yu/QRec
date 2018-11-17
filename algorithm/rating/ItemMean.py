@@ -5,7 +5,7 @@ class ItemMean(Recommender):
         super(ItemMean, self).__init__(conf,trainingSet,testSet,fold)
 
     def predict(self,u,i):
-        if self.dao.containsItem(i):
-            return self.dao.itemMeans[i]
+        if self.data.containsItem(i):
+            return self.data.itemMeans[i]
         else:
-            return self.dao.globalMean
+            return self.data.globalMean

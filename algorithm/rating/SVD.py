@@ -7,17 +7,17 @@ class SVD(IterativeRecommender):
 
     def initModel(self):
         super(SVD, self).initModel()
-        self.Bu = np.random.rand(self.dao.trainingSize()[0])/5  # bias value of user
-        self.Bi = np.random.rand(self.dao.trainingSize()[1])/5  # bias value of item
+        self.Bu = np.random.rand(self.data.trainingSize()[0])/5  # bias value of user
+        self.Bi = np.random.rand(self.data.trainingSize()[1])/5  # bias value of item
 
     def buildModel(self):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+                u = self.data.user[user]
+                i = self.data.item[item]
                 error = rating-self.predict(user,item)
                 self.loss+=error**2
                 p = self.P[u]
@@ -80,10 +80,10 @@ class SVD(IterativeRecommender):
 
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
 
-                user_idx = [self.dao.user[self.dao.trainingData[idx][0]] for idx in batch_idx]
-                item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
-                g_mean = [self.dao.globalMean]*batch_size
-                rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
+                user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
+                item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
+                g_mean = [self.data.globalMean]*batch_size
+                rating = [self.data.trainingData[idx][2] for idx in batch_idx]
 
                 sess.run(train_U, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
                 sess.run(train_V, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx, global_mean: g_mean})
@@ -98,18 +98,18 @@ class SVD(IterativeRecommender):
             self.Bi = sess.run(self.V_bias)
 
     def predict(self,u,i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.user[u]
-            i = self.dao.item[i]
-            return self.P[u].dot(self.Q[i])+self.dao.globalMean+self.Bi[i]+self.Bu[u]
+        if self.data.containsUser(u) and self.data.containsItem(i):
+            u = self.data.user[u]
+            i = self.data.item[i]
+            return self.P[u].dot(self.Q[i])+self.data.globalMean+self.Bi[i]+self.Bu[u]
         else:
-            return self.dao.globalMean
+            return self.data.globalMean
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
-            return self.Q.dot(self.P[u])+self.dao.globalMean + self.Bi + self.Bu[u]
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
+            return self.Q.dot(self.P[u])+self.data.globalMean + self.Bi + self.Bu[u]
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 

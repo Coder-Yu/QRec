@@ -27,31 +27,31 @@ class CoFactor(IterativeRecommender):
 
     def initModel(self):
         super(CoFactor, self).initModel()
-        self.w = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of item
-        self.c = np.random.rand(self.dao.trainingSize()[1])/10  # bias value of context
+        self.w = np.random.rand(self.data.trainingSize()[1])/10  # bias value of item
+        self.c = np.random.rand(self.data.trainingSize()[1])/10  # bias value of context
 
-        self.G = np.random.rand(self.dao.trainingSize()[1], self.k)/10 #context embedding
+        self.G = np.random.rand(self.data.trainingSize()[1], self.k)/10 #context embedding
 
         #constructing SPPMI matrix
         self.SPPMI = defaultdict(dict)
-        D = len(self.dao.item)
+        D = len(self.data.item)
         print 'Constructing SPPMI matrix...'
         #for larger data set has many items, the process will be time consuming
         occurrence = defaultdict(dict)
         i=0
-        for item1 in self.dao.item:
+        for item1 in self.data.item:
             i += 1
             if i % 100 == 0:
-                print str(i) + '/' + str(len(self.dao.item))
-            uList1, rList1 = self.dao.itemRated(item1)
+                print str(i) + '/' + str(len(self.data.item))
+            uList1, rList1 = self.data.itemRated(item1)
 
             if len(uList1) < self.filter:
                 continue
-            for item2 in self.dao.item:
+            for item2 in self.data.item:
                 if item1 == item2:
                     continue
                 if not occurrence[item1].has_key(item2):
-                    uList2, rList2 = self.dao.itemRated(item2)
+                    uList2, rList2 = self.data.itemRated(item2)
                     if len(uList2) < self.filter:
                         continue
                     count = len(set(uList1).intersection(set(uList2)))
@@ -91,11 +91,11 @@ class CoFactor(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
                 error = rating - self.predict(user,item)
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+                u = self.data.user[user]
+                i = self.data.item[item]
                 p = self.P[u]
                 q = self.Q[i]
                 self.loss += error ** 2
@@ -104,9 +104,9 @@ class CoFactor(IterativeRecommender):
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
 
             for item in self.SPPMI:
-                i = self.dao.item[item]
+                i = self.data.item[item]
                 for context in self.SPPMI[item]:
-                    j = self.dao.item[context]
+                    j = self.data.item[context]
                     m = self.SPPMI[item][context]
                     g = self.G[j]
                     diff = (m - q.dot(g) - self.w[i] - self.c[j])

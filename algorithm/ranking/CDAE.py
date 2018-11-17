@@ -26,26 +26,26 @@ class CDAE(DeepRecommender):
         return layer
 
     def next_batch(self):
-        X = np.zeros((self.batch_size,len(self.dao.item)))
+        X = np.zeros((self.batch_size,len(self.data.item)))
         uids = []
-        evaluated = np.zeros((self.batch_size,len(self.dao.item)))>0
-        userList = self.dao.user.keys()
-        itemList = self.dao.item.keys()
+        evaluated = np.zeros((self.batch_size,len(self.data.item)))>0
+        userList = self.data.user.keys()
+        itemList = self.data.item.keys()
         for n in range(self.batch_size):
             sample = []
             user = choice(userList)
-            uids.append(self.dao.user[user])
-            vec = self.dao.row(user)
+            uids.append(self.data.user[user])
+            vec = self.data.row(user)
 
-            ratedItems, values = self.dao.userRated(user)
+            ratedItems, values = self.data.userRated(user)
             for item in ratedItems:
-                iid = self.dao.item[item]
+                iid = self.data.item[item]
                 evaluated[n][iid]=True
             for i in range(self.negative_sp*len(ratedItems)):
                 ng = choice(itemList)
-                while self.dao.trainSet_u.has_key(ng):
+                while self.data.trainSet_u.has_key(ng):
                     ng = choice(itemList)
-                ng = self.dao.item[ng]
+                ng = self.data.item[ng]
                 evaluated[n][ng]=True
             X[n]=vec
         return X,uids,evaluated
@@ -58,15 +58,15 @@ class CDAE(DeepRecommender):
 
     def initModel(self):
         super(CDAE, self).initModel()
-        n_input = len(self.dao.item)
-        n_output = len(self.dao.item)
+        n_input = len(self.data.item)
+        n_output = len(self.data.item)
         self.negative_sp = 5
         initializer = tf.contrib.layers.xavier_initializer()
         self.X = tf.placeholder("float", [None, n_input])
         self.mask_corruption = tf.placeholder("float", [None, n_input])
         self.sample = tf.placeholder("bool", [None, n_input])
         self.zeros = np.zeros((self.batch_size,n_input))
-        self.V = tf.Variable(initializer([len(self.dao.user), self.n_hidden]))
+        self.V = tf.Variable(initializer([len(self.data.user), self.n_hidden]))
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
 
@@ -113,10 +113,10 @@ class CDAE(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
-        total_batch = int(len(self.dao.user)/ self.batch_size)
+        total_batch = int(len(self.data.user)/ self.batch_size)
         for epoch in range(self.maxIter):
             for i in range(total_batch):
-                mask = np.random.binomial(1, self.corruption_level,(self.batch_size, len(self.dao.item)))
+                mask = np.random.binomial(1, self.corruption_level,(self.batch_size, len(self.data.item)))
                 batch_xs,users,sample = self.next_batch()
 
                 _, loss = self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,self.v_idx:users,self.sample:sample})
@@ -129,11 +129,11 @@ class CDAE(DeepRecommender):
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            vec = self.dao.row(u).reshape((1,len(self.dao.item)))
-            uid = [self.dao.user[u]]
-            return self.sess.run(self.decoder_op,feed_dict={self.X:vec,self.mask_corruption:np.ones((1,len(self.dao.item))),self.v_idx:uid})[0]
+        if self.data.containsUser(u):
+            vec = self.data.row(u).reshape((1,len(self.data.item)))
+            uid = [self.data.user[u]]
+            return self.sess.run(self.decoder_op,feed_dict={self.X:vec,self.mask_corruption:np.ones((1,len(self.data.item))),self.v_idx:uid})[0]
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

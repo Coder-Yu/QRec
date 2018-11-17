@@ -12,10 +12,10 @@ class MostPopular(Recommender):
     #     super(BPR, self).readConfiguration()
 
     def initModel(self):
-        self.popularItemList = np.random.random(self.dao.trainingSize()[1])
-        for item in self.dao.trainSet_i:
-            ind = self.dao.item[item]
-            self.popularItemList[ind] = len(self.dao.trainSet_i[item])
+        self.popularItemList = np.random.random(self.data.trainingSize()[1])
+        for item in self.data.trainSet_i:
+            ind = self.data.item[item]
+            self.popularItemList[ind] = len(self.data.trainSet_i[item])
 
 
     def predict(self,user,item):
@@ -23,9 +23,9 @@ class MostPopular(Recommender):
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
+        if self.data.containsUser(u):
             return self.popularItemList
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)
 
 

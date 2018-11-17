@@ -159,9 +159,9 @@ class CUNE_BPR(IterativeRecommender):
         print 'Building collaborative user network...'
         #filter isolated nodes
         self.itemNet = {}
-        for item in self.dao.trainSet_i:
-            if len(self.dao.trainSet_i[item])>1:
-                self.itemNet[item] = self.dao.trainSet_i[item]
+        for item in self.data.trainSet_i:
+            if len(self.data.trainSet_i[item])>1:
+                self.itemNet[item] = self.data.trainSet_i[item]
 
         self.filteredRatings = defaultdict(list)
         for item in self.itemNet:
@@ -258,18 +258,18 @@ class CUNE_BPR(IterativeRecommender):
         print 'User embedding generated.'
 
         print 'Constructing similarity matrix...'
-        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
+        self.W = np.random.rand(self.data.trainingSize()[0], self.walkDim) / 10
         self.topKSim = {}
         i = 0
         for user1 in self.CUNet:
             # prefix1 = self.HTree.code[user1]
             # vec1 = self.HTree.vector[prefix1]
             sims = []
-            u1 = self.dao.user[user1]
+            u1 = self.data.user[user1]
             self.W[u1] = model.wv[user1]
             for user2 in self.CUNet:
                 if user1 <> user2:
-                    u2 = self.dao.user[user2]
+                    u2 = self.data.user[user2]
                     self.W[u2] = model.wv[user2]
                     sims.append((user2,cosine(self.W[u1],self.W[u2])))
             self.topKSim[user1] = sorted(sims, key=lambda d: d[1], reverse=True)[:self.topK]
@@ -286,13 +286,13 @@ class CUNE_BPR(IterativeRecommender):
         #self.NegativeSet = defaultdict(list)
 
         for user in self.topKSim:
-            for item in self.dao.trainSet_u[user]:
+            for item in self.data.trainSet_u[user]:
                  self.PositiveSet[user][item]=1
                 # else:
                 #     self.NegativeSet[user].append(item)
 
             for friend in self.topKSim[user]:
-                for item in self.dao.trainSet_u[friend[0]]:
+                for item in self.data.trainSet_u[friend[0]]:
                     if not self.PositiveSet[user].has_key(item):
                         self.IPositiveSet[user][item]=1
 
@@ -301,16 +301,16 @@ class CUNE_BPR(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            itemList = self.dao.item.keys()
+            itemList = self.data.item.keys()
             for user in self.PositiveSet:
-                u = self.dao.user[user]
+                u = self.data.user[user]
                 kItems = self.IPositiveSet[user].keys()
                 for item in self.PositiveSet[user]:
-                    i = self.dao.item[item]
+                    i = self.data.item[item]
                     for n in range(3): #negative sampling for 3 times
                         if len(self.IPositiveSet[user]) > 0:
                             item_k = choice(kItems)
-                            k = self.dao.item[item_k]
+                            k = self.data.item[item_k]
                             self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * (
                             self.Q[i] - self.Q[k])
                             self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
@@ -325,7 +325,7 @@ class CUNE_BPR(IterativeRecommender):
                             item_j = choice(itemList)
                             while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
                                 item_j = choice(itemList)
-                            j = self.dao.item[item_j]
+                            j = self.data.item[item_j]
                             self.P[u] += (1 / self.s) * self.lRate * (
                             1 - sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))) * (
                                          self.Q[k] - self.Q[j])
@@ -345,7 +345,7 @@ class CUNE_BPR(IterativeRecommender):
                             item_j = choice(itemList)
                             while (self.PositiveSet[user].has_key(item_j)):
                                 item_j = choice(itemList)
-                            j = self.dao.item[item_j]
+                            j = self.data.item[item_j]
                             self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
                                 self.Q[i] - self.Q[j])
                             self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
@@ -362,19 +362,19 @@ class CUNE_BPR(IterativeRecommender):
                 break
 
     def predict(self,u,i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            return sigmoid(self.P[self.dao.user[u]].dot(self.Q[self.dao.item[i]]))
-        elif self.dao.containsUser(u) and not self.dao.containsItem(i):
-            return self.dao.userMeans[u]
-        elif not self.dao.containsUser(u) and self.dao.containsItem(i):
-            return self.dao.itemMeans[i]
+        if self.data.containsUser(u) and self.data.containsItem(i):
+            return sigmoid(self.P[self.data.user[u]].dot(self.Q[self.data.item[i]]))
+        elif self.data.containsUser(u) and not self.data.containsItem(i):
+            return self.data.userMeans[u]
+        elif not self.data.containsUser(u) and self.data.containsItem(i):
+            return self.data.itemMeans[i]
         else:
-            return self.dao.globalMean
+            return self.data.globalMean
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            u = self.dao.getUserId(u)
+        if self.data.containsUser(u):
+            u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)

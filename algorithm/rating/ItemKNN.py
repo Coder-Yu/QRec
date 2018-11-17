@@ -5,7 +5,7 @@ from structure.symmetricMatrix import SymmetricMatrix
 class ItemKNN(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(ItemKNN, self).__init__(conf,trainingSet,testSet,fold)
-        self.itemSim = SymmetricMatrix(len(self.dao.user)) #used to store the similarity among items
+        self.itemSim = SymmetricMatrix(len(self.data.user)) #used to store the similarity among items
 
     def readConfiguration(self):
         super(ItemKNN, self).readConfiguration()
@@ -38,30 +38,30 @@ class ItemKNN(Recommender):
         for n in range(itemCount):
             similarItem = topItems[n][0]
             #if user n has rating on item i
-            if self.dao.contains(u,similarItem):
+            if self.data.contains(u,similarItem):
                 similarity = topItems[n][1]
-                rating = self.dao.rating(u,similarItem)
-                sum += similarity*(rating-self.dao.itemMeans[similarItem])
+                rating = self.data.rating(u,similarItem)
+                sum += similarity*(rating-self.data.itemMeans[similarItem])
                 denom += similarity
         if sum == 0:
             #no items have rating on item i,return the average rating of item i
-            if not self.dao.containsItem(i):
+            if not self.data.containsItem(i):
                 # item i has no ratings in the training set
-                return self.dao.globalMean
-            return self.dao.itemMeans[i]
-        pred = self.dao.itemMeans[i]+sum/float(denom)
+                return self.data.globalMean
+            return self.data.itemMeans[i]
+        pred = self.data.itemMeans[i]+sum/float(denom)
         return pred
 
     def computeCorr(self):
         'compute correlation among items'
         print 'Computing item correlation...'
-        for i1 in self.dao.testSet_i:
+        for i1 in self.data.testSet_i:
 
-            for i2 in self.dao.item:
+            for i2 in self.data.item:
                 if i1 <> i2:
                     if self.itemSim.contains(i1,i2):
                         continue
-                    sim = qmath.similarity(self.dao.sCol(i1),self.dao.sCol(i2),self.sim)
+                    sim = qmath.similarity(self.data.sCol(i1),self.data.sCol(i2),self.sim)
                     self.itemSim.set(i1,i2,sim)
             self.topItems[i1] = sorted(self.itemSim[i1].iteritems(),key = lambda d:d[1],reverse=True)
             print 'item '+i1+' finished.'

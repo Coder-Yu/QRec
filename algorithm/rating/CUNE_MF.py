@@ -159,9 +159,9 @@ class CUNE_MF(IterativeRecommender):
         print 'Building collaborative user network...'
         #filter isolated nodes
         self.itemNet = {}
-        for item in self.dao.trainSet_i:
-            if len(self.dao.trainSet_i[item])>1:
-                self.itemNet[item] = self.dao.trainSet_i[item]
+        for item in self.data.trainSet_i:
+            if len(self.data.trainSet_i[item])>1:
+                self.itemNet[item] = self.data.trainSet_i[item]
 
         self.filteredRatings = defaultdict(list)
         for item in self.itemNet:
@@ -258,18 +258,18 @@ class CUNE_MF(IterativeRecommender):
         print 'User embedding generated.'
 
         print 'Constructing similarity matrix...'
-        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) / 10
+        self.W = np.random.rand(self.data.trainingSize()[0], self.walkDim) / 10
         self.topKSim = {}
         i = 0
         for user1 in self.CUNet:
             # prefix1 = self.HTree.code[user1]
             # vec1 = self.HTree.vector[prefix1]
             sims = []
-            u1 = self.dao.user[user1]
+            u1 = self.data.user[user1]
             self.W[u1] = model.wv[user1]
             for user2 in self.CUNet:
                 if user1 <> user2:
-                    u2 = self.dao.user[user2]
+                    u2 = self.data.user[user2]
                     self.W[u2] = model.wv[user2]
                     sims.append((user2,cosine(self.W[u1],self.W[u2])))
             self.topKSim[user1] = sorted(sims, key=lambda d: d[1], reverse=True)[:self.topK]
@@ -286,10 +286,10 @@ class CUNE_MF(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
-                u = self.dao.user[user] #get user id
-                i = self.dao.item[item] #get item id
+                u = self.data.user[user] #get user id
+                i = self.data.item[item] #get item id
                 error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u]
@@ -301,10 +301,10 @@ class CUNE_MF(IterativeRecommender):
 
             for user in self.CUNet:
 
-                u = self.dao.user[user]
+                u = self.data.user[user]
                 friends = self.topKSim[user]
                 for friend in friends:
-                    uf = self.dao.user[friend[0]]
+                    uf = self.data.user[friend[0]]
                     self.P[u] -= self.lRate*(self.P[u]-self.P[uf])*self.alpha
                     self.loss += self.alpha * (self.P[u]-self.P[uf]).dot(self.P[u]-self.P[uf])
 

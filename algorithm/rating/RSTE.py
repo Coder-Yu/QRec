@@ -23,11 +23,11 @@ class RSTE(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
                 error = rating - self.predict(user,item)
-                i = self.dao.item[item]
-                u = self.dao.user[user]
+                i = self.data.item[item]
+                u = self.data.user[user]
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
@@ -41,21 +41,21 @@ class RSTE(SocialRecommender):
 
 
     def predict(self,u,i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):   
-            i = self.dao.getItemId(i)
+        if self.data.containsUser(u) and self.data.containsItem(i):   
+            i = self.data.getItemId(i)
             fPred = 0
             denom = 0
             relations = self.sao.getFollowees(u)
             weights = []
             indexes = []
             for followee in relations:
-                if  self.dao.containsUser(followee):  # followee is in rating set
-                    indexes.append(self.dao.user[followee])
+                if  self.data.containsUser(followee):  # followee is in rating set
+                    indexes.append(self.data.user[followee])
                     weights.append(relations[followee])
             weights = np.array(weights)
             indexes = np.array(indexes)
             denom = weights.sum()
-            u = self.dao.user[u]
+            u = self.data.user[u]
             if denom <> 0:
                 fPred += weights.dot((self.P[indexes].dot(self.Q[i])))
 
@@ -64,23 +64,23 @@ class RSTE(SocialRecommender):
                 return self.P[u].dot(self.Q[i])
 
         else:
-            return self.dao.globalMean
+            return self.data.globalMean
 
     def predictForRanking(self,u):
-        if self.dao.containsUser(u):
+        if self.data.containsUser(u):
             fPred = 0
             denom = 0
             relations = self.sao.getFollowees(u)
             for followee in relations:
                 weight = relations[followee]
-                if self.dao.containsUser(followee):  # followee is in rating set
-                    uf = self.dao.user[followee]
+                if self.data.containsUser(followee):  # followee is in rating set
+                    uf = self.data.user[followee]
                     fPred += weight * self.Q.dot(self.P[uf])
                     denom += weight
-            u = self.dao.user[u]
+            u = self.data.user[u]
             if denom <> 0:
                 return self.alpha * self.Q.dot(self.P[u]) + (1 - self.alpha) * fPred / denom
             else:
                 return self.Q.dot(self.P[u])
         else:
-            return [self.dao.globalMean] * len(self.dao.item)
+            return [self.data.globalMean] * len(self.data.item)

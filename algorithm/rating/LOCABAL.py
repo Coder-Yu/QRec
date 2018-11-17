@@ -24,7 +24,7 @@ class LOCABAL(SocialRecommender):
         super(LOCABAL, self).initModel()
         self.H = np.random.rand(self.k,self.k)
         G = nx.DiGraph()
-        for re in self.sao.relation:
+        for re in self.social.relation:
             G.add_edge(re[0], re[1])
         pr = nx.pagerank(G, alpha=0.85)
         pr = sorted(pr.iteritems(),key=lambda d:d[1],reverse=True)
@@ -33,11 +33,11 @@ class LOCABAL(SocialRecommender):
         for user in pr:
             self.W[user[0]] = 1/(1+math.log(user[1]))
         self.S = {}
-        for line in self.sao.relation:
+        for line in self.social.relation:
             u1,u2,weight = line
-            if self.dao.containsUser(u1) and self.dao.containsUser(u2):
-                uvec1=self.dao.trainSet_u[u1]
-                uvec2=self.dao.trainSet_u[u2]
+            if self.data.containsUser(u1) and self.data.containsUser(u2):
+                uvec1=self.data.trainSet_u[u1]
+                uvec2=self.data.trainSet_u[u2]
             #add relations to dict
                 if not self.S.has_key(u1):
                     self.S[u1] = {}
@@ -47,11 +47,11 @@ class LOCABAL(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, r = entry
                 error = r - self.predict(user,item)
-                i = self.dao.getItemId(item)
-                u = self.dao.getUserId(user)
+                i = self.data.getItemId(item)
+                u = self.data.getUserId(user)
                 if self.W.has_key(user):
                     self.loss += self.W[user]*error ** 2
                 else:
@@ -67,8 +67,8 @@ class LOCABAL(SocialRecommender):
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
             for user in self.S:
                 for friend in self.S[user]:
-                    k = self.dao.getUserId(friend)
-                    u = self.dao.getUserId(user)
+                    k = self.data.getUserId(friend)
+                    u = self.data.getUserId(user)
                     p = self.P[u].copy()
                     q = self.P[k].copy()
                     error = self.S[user][friend] - np.dot(np.dot(p,self.H),q)

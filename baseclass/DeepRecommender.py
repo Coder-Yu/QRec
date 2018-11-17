@@ -26,7 +26,7 @@ class DeepRecommender(IterativeRecommender):
 
         self.r = tf.placeholder(tf.float32, [None], name="rating")
 
-        self.m, self.n, self.train_size = self.dao.trainingSize()
+        self.m, self.n, self.train_size = self.data.trainingSize()
         self.U = tf.Variable(tf.truncated_normal(shape=[self.m, self.k], stddev=0.005), name='U')
         self.V = tf.Variable(tf.truncated_normal(shape=[self.n, self.k], stddev=0.005), name='V')
 
@@ -66,6 +66,6 @@ class DeepRecommender(IterativeRecommender):
         if not converged:
             self.updateLearningRate(iter)
         self.lastLoss = self.loss
-        shuffle(self.dao.trainingData)
+        shuffle(self.data.trainingData)
         return converged
 

@@ -10,10 +10,10 @@ class BasicMF(IterativeRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
-                u = self.dao.user[user]
-                i = self.dao.item[item]
+                u = self.data.user[user]
+                i = self.data.item[item]
                 error = rating - self.P[u].dot(self.Q[i])
                 self.loss += error**2
                 p = self.P[u]
@@ -52,9 +52,9 @@ class BasicMF(IterativeRecommender):
 
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
 
-                user_idx = [self.dao.user[self.dao.trainingData[idx][0]] for idx in batch_idx]
-                item_idx = [self.dao.item[self.dao.trainingData[idx][1]] for idx in batch_idx]
-                rating = [self.dao.trainingData[idx][2] for idx in batch_idx]
+                user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
+                item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
+                rating = [self.data.trainingData[idx][2] for idx in batch_idx]
                 sess.run(self.train, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx})
                 print 'iteration:', step, 'loss:', sess.run(self.total_loss,
                                                             feed_dict={self.r: rating, self.u_idx: user_idx,

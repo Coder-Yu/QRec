@@ -10,8 +10,8 @@ class SocialFD(SocialRecommender):
 
     def initModel(self):
         super(SocialFD, self).initModel()
-        self.Bu = np.random.rand(self.dao.trainingSize()[0])/5 # biased value of user
-        self.Bi = np.random.rand(self.dao.trainingSize()[1])/5  # biased value of item
+        self.Bu = np.random.rand(self.data.trainingSize()[0])/5 # biased value of user
+        self.Bi = np.random.rand(self.data.trainingSize()[1])/5  # biased value of item
         self.H = np.random.rand(self.k, self.k)/5
         self.P /= 10
         self.Q /= 10
@@ -29,11 +29,11 @@ class SocialFD(SocialRecommender):
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 u, i, r = entry
                 error = r - self.predict(u, i)
-                u = self.dao.getUserId(u)
-                i = self.dao.getItemId(i)
+                u = self.data.getUserId(u)
+                i = self.data.getItemId(i)
                 self.loss += error ** 2
 
                 bu = self.Bu[u]
@@ -81,13 +81,13 @@ class SocialFD(SocialRecommender):
                 self.P[u] += self.lRate*(error*x-self.regU*x)
                 self.Q[i] += self.lRate*(error*y-self.regI*y)
 
-            for user in self.dao.user:
-                relations = self.sao.getFollowees(user)
-                u = self.dao.user[user]
+            for user in self.data.user:
+                relations = self.social.getFollowees(user)
+                u = self.data.user[user]
                 x = self.P[u]
                 for followee in relations:
-                    uf = self.dao.getUserId(followee)
-                    if uf <> -1 and self.dao.containsUser(followee):  # followee is in rating set
+                    uf = self.data.getUserId(followee)
+                    if uf <> -1 and self.data.containsUser(followee):  # followee is in rating set
                         self.loss += (x - self.P[uf]).dot(self.H).dot(self.H.T).dot((x - self.P[uf]).T)
                         R = (self.H.dot(self.H.T) + self.H.T.dot(self.H))
                         derivative_s = self.H.dot((x - self.P[uf]).T.dot(x - self.P[uf]))
@@ -100,27 +100,27 @@ class SocialFD(SocialRecommender):
                 break
 
     def predict(self,u,i):
-        if self.dao.containsUser(u) and self.dao.containsItem(i):
-            u = self.dao.getUserId(u)
-            i = self.dao.getItemId(i)
+        if self.data.containsUser(u) and self.data.containsItem(i):
+            u = self.data.getUserId(u)
+            i = self.data.getItemId(i)
             x = self.P[u]
             y = self.Q[i]
             d = (x-y).dot(self.H).dot(self.H.T).dot((x-y).T)
-            return self.Bi[i] + self.Bu[u] +self.dao.globalMean - d
+            return self.Bi[i] + self.Bu[u] +self.data.globalMean - d
         else:
-            return self.dao.globalMean
+            return self.data.globalMean
 
 
     def predictForRanking(self, u):
-        if self.dao.containsUser(u):
-            u = self.dao.user[u]
+        if self.data.containsUser(u):
+            u = self.data.user[u]
             x = self.P[u]
-            res = np.array([0] * self.dao.trainingSize()[1], dtype=float)
+            res = np.array([0] * self.data.trainingSize()[1], dtype=float)
             A = self.H.dot(self.H.T)
             for i, y in enumerate(self.Q):
-                res[i] = self.Bi[i] + self.Bu[u] +self.dao.globalMean-((x - y).dot(A).dot((x - y).T))
+                res[i] = self.Bi[i] + self.Bu[u] +self.data.globalMean-((x - y).dot(A).dot((x - y).T))
             return res
         else:
-            return np.array([self.dao.globalMean] * len(self.dao.item))
+            return np.array([self.data.globalMean] * len(self.data.item))
 
 

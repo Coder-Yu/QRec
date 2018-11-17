@@ -23,37 +23,37 @@ class DMF(DeepRecommender):
         cols = np.zeros(((self.negative_sp+1)*self.batch_size,self.m))
         batch_idx = range(self.batch_size*i,self.batch_size*(i+1))
 
-        users = [self.dao.trainingData[idx][0] for idx in batch_idx]
-        items = [self.dao.trainingData[idx][1] for idx in batch_idx]
-        u_idx = [self.dao.user[u] for u in users]
-        v_idx = [self.dao.item[i] for i in items]
-        ratings = [float(self.dao.trainingData[idx][2]) for idx in batch_idx]
+        users = [self.data.trainingData[idx][0] for idx in batch_idx]
+        items = [self.data.trainingData[idx][1] for idx in batch_idx]
+        u_idx = [self.data.user[u] for u in users]
+        v_idx = [self.data.item[i] for i in items]
+        ratings = [float(self.data.trainingData[idx][2]) for idx in batch_idx]
 
         for i,user in enumerate(users):
-            rows[i] = self.dao.row(user)
+            rows[i] = self.data.row(user)
         for i,item in enumerate(items):
-            cols[i] = self.dao.col(item)
+            cols[i] = self.data.col(item)
 
-        userList = self.dao.user.keys()
-        itemList = self.dao.item.keys()
+        userList = self.data.user.keys()
+        itemList = self.data.item.keys()
         #negative sample
         for i in range(self.negative_sp*self.batch_size):
             u = choice(userList)
             v = choice(itemList)
-            while self.dao.contains(u,v):
+            while self.data.contains(u,v):
                 u = choice(userList)
                 v = choice(itemList)
-            rows[self.batch_size-1+i]=self.dao.row(u)
-            cols[self.batch_size-1+i]=self.dao.col(i)
-            u_idx.append(self.dao.user[u])
-            v_idx.append(self.dao.item[v])
+            rows[self.batch_size-1+i]=self.data.row(u)
+            cols[self.batch_size-1+i]=self.data.col(i)
+            u_idx.append(self.data.user[u])
+            v_idx.append(self.data.item[v])
             ratings.append(0)
         return rows,cols,np.array(ratings),np.array(u_idx),np.array(v_idx)
 
     def initModel(self):
         super(DMF, self).initModel()
-        n_input_u = len(self.dao.item)
-        n_input_i = len(self.dao.user)
+        n_input_u = len(self.data.item)
+        n_input_i = len(self.data.user)
         self.negative_sp = 5
         self.n_hidden_u=[256,512]
         self.n_hidden_i=[256,512]
@@ -110,9 +110,9 @@ class DMF(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
-        total_batch = int(len(self.dao.trainingData)/ self.batch_size)
+        total_batch = int(len(self.data.trainingData)/ self.batch_size)
         for epoch in range(self.maxIter):
-            shuffle(self.dao.trainingData)
+            shuffle(self.data.trainingData)
             for i in range(total_batch):
                 users,items,ratings,u_idx,v_idx = self.next_batch(i)
 
@@ -142,10 +142,10 @@ class DMF(DeepRecommender):
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
-        if self.dao.containsUser(u):
-            uid = self.dao.user[u]
+        if self.data.containsUser(u):
+            uid = self.data.user[u]
             return np.divide(self.V.dot(self.U[uid]),self.normalized_U[uid]*self.normalized_V)
         else:
-            return [self.dao.globalMean] * self.n
+            return [self.data.globalMean] * self.n
 
 

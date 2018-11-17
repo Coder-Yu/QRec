@@ -15,7 +15,7 @@ class SoRec(SocialRecommender ):
 
     def initModel(self):
         super(SoRec, self).initModel()
-        self.Z = np.random.rand(self.dao.trainingSize()[0], self.k)/10
+        self.Z = np.random.rand(self.data.trainingSize()[0], self.k)/10
 
     def printAlgorConfig(self):
         super(SoRec, self).printAlgorConfig()
@@ -29,11 +29,11 @@ class SoRec(SocialRecommender ):
         while iteration < self.maxIter:
             self.loss = 0
             #ratings
-            for entry in self.dao.trainingData:
+            for entry in self.data.trainingData:
                 user, item, rating = entry
                 error = rating - self.predict(user, item)
-                i = self.dao.item[item]
-                u = self.dao.user[user]
+                i = self.data.item[item]
+                u = self.data.user[user]
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
@@ -43,17 +43,17 @@ class SoRec(SocialRecommender ):
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
 
             #relations
-            for entry in self.sao.relation:
+            for entry in self.social.relation:
                 u, v, tuv = entry
-                if self.dao.containsUser(u) and self.dao.containsUser(v):
-                    vminus = len(self.sao.getFollowers(v))# ~ d - (k)
-                    uplus = len(self.sao.getFollowees(u))#~ d + (i)
+                if self.data.containsUser(u) and self.data.containsUser(v):
+                    vminus = len(self.social.getFollowers(v))# ~ d - (k)
+                    uplus = len(self.social.getFollowees(u))#~ d + (i)
                     try:
                         weight = math.sqrt(vminus / (uplus + vminus + 0.0))
                     except ZeroDivisionError:
                         weight = 1
-                    v = self.dao.user[v]
-                    u = self.dao.user[u]
+                    v = self.data.user[v]
+                    u = self.data.user[u]
                     euv = weight * tuv - self.P[u].dot(self.Z[v])  # weight * tuv~ cik *
                     self.loss += self.regS * (euv ** 2)
                     p = self.P[u]
