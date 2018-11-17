@@ -43,7 +43,7 @@ class IF_BPR(SocialRecommender):
                 items = line.strip().split()
                 self.negative[items[0]].append(items[1])
                 self.nItems[items[1]].append(items[0])
-                if not self.dao.user.has_key(items[0]):
+                if items[0] not in self.dao.user:
                     self.dao.user[items[0]]=len(self.dao.user)
 
 
@@ -57,45 +57,27 @@ class IF_BPR(SocialRecommender):
                 self.positive[user].append(item)
                 self.pItems[item].append(user)
         self.readNegativeFeedbacks()
-        self.P = np.ones((len(self.dao.user), self.k)) / 10  # latent user matrix
+        self.P = np.ones((len(self.dao.user), self.k))*0.1  # latent user matrix
         #self.Q = np.ones((len(self.dao.item), self.k)) / 10  # latent item matrix
         self.threshold = {}
         self.avg_sim = {}
         self.thres_d = dict.fromkeys(self.dao.user.keys(),0)
         self.thres_count = dict.fromkeys(self.dao.user.keys(),0)
 
+        print 'Preparing item sets...'
+        self.PositiveSet = defaultdict(dict)
+        self.NegSets = defaultdict(dict)
 
+        for user in self.dao.user:
+            for item in self.dao.trainSet_u[user]:
+                self.PositiveSet[user][item] = 1
 
-    def buildModel(self):
-        # self.P = np.ones((self.dao.trainingSize()[0], self.k))/10  # latent user matrix
-        # self.Q = np.ones((self.dao.trainingSize()[1], self.k))/10  # latent item matrix
+        for user in self.dao.user:
+            for item in self.negative[user]:
+                if self.dao.item.has_key(item):
+                    self.NegSets[user][item] = 1
 
-
-        # li = self.sao.followees.keys()
-        #
-        # import pickle
-        #
-        # self.trueTopKFriends = defaultdict(list)
-        # pkl_file = open(self.config['ratings'] + self.foldInfo + 'p.pkl', 'rb')
-        # self.pTopKSim = pickle.load(pkl_file)
-        # pkl_file = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'rb')
-        # self.nTopKSim = pickle.load(pkl_file)
-        # self.trueTopKFriends = defaultdict(list)
-        # for user in self.pTopKSim:
-        #     trueFriends = list(
-        #         set(self.pTopKSim[user][:self.topK]).intersection(set(self.nTopKSim[user][:self.topK])))
-        #     self.trueTopKFriends[user] = trueFriends
-        #
-        # ps = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'rb')
-        # self.pSimilarity=pickle.load(ps)
-        # ns = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'rb')
-        # self.nSimilarity=pickle.load(ns)
-        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'rb')
-        # self.avg_sim=pickle.load(av)
-        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'rb')
-        # self.threshold=pickle.load(th)
-
-
+    def randomWalks(self):
         print 'Kind Note: This method will probably take much time.'
         # build U-F-NET
         print 'Building weighted user-friend network...'
@@ -106,17 +88,17 @@ class IF_BPR(SocialRecommender):
         p3 = 'UTU'
         p4 = 'UFIU'
         p5 = 'UFUIU'
-        mPaths = [p1,p2,p3,p4,p5]
+        mPaths = [p1, p2, p3, p4, p5]
 
-        self.G = np.random.rand(self.dao.trainingSize()[0], self.walkDim)*0.1
-        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim)*0.1
+        self.G = np.random.rand(self.dao.trainingSize()[0], self.walkDim) * 0.1
+        self.W = np.random.rand(self.dao.trainingSize()[0], self.walkDim) * 0.1
 
         self.UFNet = defaultdict(list)
 
         for u in self.sao.followees:
             s1 = set(self.sao.followees[u])
             for v in self.sao.followees[u]:
-                if v in self.sao.followees: #make sure that v has out links
+                if v in self.sao.followees:  # make sure that v has out links
                     if u <> v:
                         s2 = set(self.sao.followees[v])
                         weight = len(s1.intersection(s2))
@@ -127,7 +109,7 @@ class IF_BPR(SocialRecommender):
         for u in self.sao.followers:
             s1 = set(self.sao.followers[u])
             for v in self.sao.followers[u]:
-                if self.sao.followers.has_key(v): #make sure that v has out links
+                if self.sao.followers.has_key(v):  # make sure that v has out links
                     if u <> v:
                         s2 = set(self.sao.followers[v])
                         weight = len(s1.intersection(s2))
@@ -135,7 +117,7 @@ class IF_BPR(SocialRecommender):
 
         print 'Generating random meta-path random walks... (Positive)'
         self.pWalks = []
-        #self.usercovered = {}
+        # self.usercovered = {}
 
         # positive
         for user in self.dao.user:
@@ -153,7 +135,7 @@ class IF_BPR(SocialRecommender):
                     self.walkCount = 5
                 for t in range(self.walkCount):
 
-                    path = ['U'+user]
+                    path = ['U' + user]
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
@@ -186,7 +168,7 @@ class IF_BPR(SocialRecommender):
                                     while not self.dao.user.has_key(nextNode):
                                         nextNode = choice(self.UFNet[lastNode])
 
-                                path.append(tp+nextNode)
+                                path.append(tp + nextNode)
                                 lastNode = nextNode
                                 lastType = tp
 
@@ -200,7 +182,7 @@ class IF_BPR(SocialRecommender):
         self.nWalks = []
         # self.usercovered = {}
 
-        #negative
+        # negative
         for user in self.dao.user:
 
             for mp in mPaths:
@@ -263,6 +245,8 @@ class IF_BPR(SocialRecommender):
         shuffle(self.pWalks)
         print 'pwalks:', len(self.pWalks)
         print 'nwalks:', len(self.nWalks)
+
+    def computeSimilarity(self):
         # Training get top-k friends
         print 'Generating user embedding...'
         self.pTopKSim = {}
@@ -275,14 +259,14 @@ class IF_BPR(SocialRecommender):
         for user in self.positive:
             uid = self.dao.user[user]
             try:
-                self.W[uid] = model.wv['U'+user]
+                self.W[uid] = model.wv['U' + user]
             except KeyError:
                 continue
 
         for user in self.negative:
             uid = self.dao.user[user]
             try:
-                self.G[uid] = model2.wv['U'+user]
+                self.G[uid] = model2.wv['U' + user]
             except KeyError:
                 continue
         print 'User embedding generated.'
@@ -291,38 +275,96 @@ class IF_BPR(SocialRecommender):
         i = 0
         for user1 in self.positive:
             uSim = []
-            i+=1
-            if i%200==0:
-                print i,'/',len(self.positive)
+            i += 1
+            if i % 200 == 0:
+                print i, '/', len(self.positive)
             vec1 = self.W[self.dao.user[user1]]
             for user2 in self.positive:
                 if user1 <> user2:
                     vec2 = self.W[self.dao.user[user2]]
                     sim = cosine(vec1, vec2)
-                    uSim.append((user2,sim))
+                    uSim.append((user2, sim))
             fList = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
-            self.threshold[user1] = fList[self.topK/2][1]
+            self.threshold[user1] = fList[self.topK / 2][1]
             for pair in fList:
-                self.pSimilarity[user1][pair[0]]=pair[1]
+                self.pSimilarity[user1][pair[0]] = pair[1]
             self.pTopKSim[user1] = [item[0] for item in fList]
-            self.avg_sim[user1]=sum([item[1] for item in fList][:self.topK/2])/(self.topK/2)
+            self.avg_sim[user1] = sum([item[1] for item in fList][:self.topK / 2]) / (self.topK / 2)
 
-        i=0
+        i = 0
         for user1 in self.negative:
             uSim = []
-            i+=1
-            if i%200==0:
-                print i,'/',len(self.negative)
+            i += 1
+            if i % 200 == 0:
+                print i, '/', len(self.negative)
             vec1 = self.G[self.dao.user[user1]]
             for user2 in self.negative:
                 if user1 <> user2:
                     vec2 = self.G[self.dao.user[user2]]
                     sim = cosine(vec1, vec2)
-                    uSim.append((user2,sim))
+                    uSim.append((user2, sim))
             fList = sorted(uSim, key=lambda d: d[1], reverse=True)[:self.topK]
             for pair in fList:
-                self.nSimilarity[user1][pair[0]]=pair[1]
+                self.nSimilarity[user1][pair[0]] = pair[1]
             self.nTopKSim[user1] = [item[0] for item in fList]
+
+    def updateSets(self):
+        self.JointSet = defaultdict(dict)
+        self.PS_Set = defaultdict(dict)
+        for user in self.dao.user:
+            if user in self.trueTopKFriends:
+                for friend in self.trueTopKFriends[user]:
+                    if friend in self.dao.user and self.pSimilarity[user][friend] >= self.threshold[user]:
+                        for item in self.positive[friend]:
+                            if item not in self.PositiveSet[user] and item not in self.NegSets[user]:
+                                self.JointSet[user][item] = friend
+
+            if self.pTopKSim.has_key(user):
+                for friend in self.pTopKSim[user][:self.topK]:
+                    if friend in self.dao.user and self.pSimilarity[user][friend] >= self.threshold[user]:
+                        for item in self.positive[friend]:
+                            if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
+                                    and item not in self.NegSets[user]:
+                                self.PS_Set[user][item] = friend
+
+            if self.nTopKSim.has_key(user):
+                for friend in self.nTopKSim[user][:self.topK]:
+                    if friend in self.dao.user:  # and self.nSimilarity[user][friend]>=self.threshold[user]:
+                        for item in self.negative[friend]:
+                            if item in self.dao.item:
+                                if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
+                                        and item not in self.PS_Set[user]:
+                                    self.NegSets[user][item] = 1
+
+    def buildModel(self):
+        # self.P = np.ones((self.dao.trainingSize()[0], self.k))/10  # latent user matrix
+        # self.Q = np.ones((self.dao.trainingSize()[1], self.k))/10  # latent item matrix
+
+
+        # li = self.sao.followees.keys()
+        #
+        # import pickle
+        #
+        # self.trueTopKFriends = defaultdict(list)
+        # pkl_file = open(self.config['ratings'] + self.foldInfo + 'p.pkl', 'rb')
+        # self.pTopKSim = pickle.load(pkl_file)
+        # pkl_file = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'rb')
+        # self.nTopKSim = pickle.load(pkl_file)
+        # self.trueTopKFriends = defaultdict(list)
+        # for user in self.pTopKSim:
+        #     trueFriends = list(
+        #         set(self.pTopKSim[user][:self.topK]).intersection(set(self.nTopKSim[user][:self.topK])))
+        #     self.trueTopKFriends[user] = trueFriends
+        #
+        # ps = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'rb')
+        # self.pSimilarity=pickle.load(ps)
+        # ns = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'rb')
+        # self.nSimilarity=pickle.load(ns)
+        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'rb')
+        # self.avg_sim=pickle.load(av)
+        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'rb')
+        # self.threshold=pickle.load(th)
+
 
         # import pickle
         # ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
@@ -334,16 +376,6 @@ class IF_BPR(SocialRecommender):
         #
         # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
         # pickle.dump(self.threshold, th)
-
-
-
-        self.trueTopKFriends=defaultdict(list)
-        for user in self.pTopKSim:
-            trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
-            self.trueTopKFriends[user] = trueFriends
-            self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
-
-
 
 
         # print 'Similarity matrix finished.'
@@ -379,56 +411,21 @@ class IF_BPR(SocialRecommender):
 
         #self.topKSim = pickle.load(pkl_file)
 
+        self.randomWalks()
+        self.computeSimilarity()
+
+        self.trueTopKFriends=defaultdict(list)
+        for user in self.pTopKSim:
+            trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
+            self.trueTopKFriends[user] = trueFriends
+            self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
+
         print 'Decomposing...'
-        self.F = np.random.rand(self.dao.trainingSize()[0], self.k) / 10
-        # prepare Pu set, IPu set, and Nu set
-        print 'Preparing item sets...'
-        self.PositiveSet = defaultdict(dict)
-
-        self.NegSets = defaultdict(dict)
-
-        for user in self.dao.user:
-            for item in self.dao.trainSet_u[user]:
-                self.PositiveSet[user][item] = 1
-
-        for user in self.dao.user:
-            for item in self.negative[user]:
-                if self.dao.item.has_key(item):
-                    self.NegSets[user][item] = 1
 
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-
-            self.JointSet = defaultdict(dict)
-            self.PS_Set = defaultdict(dict)
-            for user in self.dao.user:
-                if user in self.trueTopKFriends:
-                    for friend in self.trueTopKFriends[user]:
-                        if friend in self.dao.user and self.pSimilarity[user][friend]>=self.threshold[user]:
-                            for item in self.positive[friend]:
-                                if item not in self.PositiveSet[user] and item not in self.NegSets[user]:
-                                    self.JointSet[user][item]=friend
-
-
-                if self.pTopKSim.has_key(user):
-                    for friend in self.pTopKSim[user][:self.topK]:
-                        if friend in self.dao.user and self.pSimilarity[user][friend]>=self.threshold[user]:
-                            for item in self.positive[friend]:
-                                if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
-                                        and item not in self.NegSets[user]:
-                                        self.PS_Set[user][item] = friend
-
-
-                if self.nTopKSim.has_key(user):
-                    for friend in self.nTopKSim[user][:self.topK]:
-                        if friend in self.dao.user: #and self.nSimilarity[user][friend]>=self.threshold[user]:
-                            for item in self.negative[friend]:
-                                if item in self.dao.item:
-                                    if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
-                                        and item not in self.PS_Set[user]:
-                                        self.NegSets[user][item] = 1
-
+            self.updateSets()
             itemList = self.dao.item.keys()
             for user in self.PositiveSet:
                 #itemList = self.NegSets[user].keys()
