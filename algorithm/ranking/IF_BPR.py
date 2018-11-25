@@ -1,17 +1,18 @@
 from baseclass.SocialRecommender import SocialRecommender
+from baseclass.DeepRecommender import DeepRecommender
 from tool import config
-from random import randint
 from random import shuffle, choice
 from collections import defaultdict
 import numpy as np
-from tool.qmath import sigmoid, cosine, cosine_sp
+from tool.qmath import sigmoid, cosine
 from math import log
 import gensim.models.word2vec as w2v
-import json
 
-class IF_BPR(SocialRecommender):
+
+class IF_BPR(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
-        super(IF_BPR, self).__init__(conf, trainingSet, testSet, relation, fold)
+        DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
+        SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
 
     def readConfiguration(self):
         super(IF_BPR, self).readConfiguration()
@@ -48,6 +49,8 @@ class IF_BPR(SocialRecommender):
 
     def initModel(self):
         super(IF_BPR, self).initModel()
+        super(DeepRecommender,self).initModel()
+        super(SocialRecommender,self).initModel()
         self.positive = defaultdict(list)
         self.pItems = defaultdict(list)
         for user in self.data.trainSet_u:
@@ -58,7 +61,7 @@ class IF_BPR(SocialRecommender):
         self.P = np.ones((len(self.data.user), self.k))*0.1  # latent user matrix
         self.threshold = {}
         self.avg_sim = {}
-        self.thres_d = dict.fromkeys(self.data.user.keys(),0)
+        self.thres_d = dict.fromkeys(self.data.user.keys(),0) #derivatives for learning thresholds
         self.thres_count = dict.fromkeys(self.data.user.keys(),0)
 
         print 'Preparing item sets...'
@@ -416,71 +419,42 @@ class IF_BPR(SocialRecommender):
             for user in self.PositiveSet:
                 #itemList = self.NegSets[user].keys()
                 kItems = self.JointSet[user].keys()
-                okItems = self.PS_Set[user].keys()
+                pItems = self.PS_Set[user].keys()
                 nItems = self.NegSets[user].keys()
 
                 u = self.data.user[user]
 
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
-                    for ind in range(1):
-                        if len(kItems) > 0 and len(okItems) > 0:
-                            item_k = choice(kItems)
-                            uf = self.JointSet[user][item_k]
-                            k = self.data.item[item_k]
-                            self.optimization_thres(u,i,k,user,uf)
+                    selectedItems = [i]
+                    #select items from different sets
+                    if len(kItems) > 0:
+                        item_k = choice(kItems)                        
+                        uf = self.JointSet[user][item_k]
+                        k = self.data.item[item_k]
+                        selectedItems.append(k)
+                        self.optimization_thres(u,i,k,user,uf)
+                    if len(pItems)>0:
+                        item_p = choice(pItems)
+                        p = self.data.item[item_p]
+                        selectedItems.append(p)
 
-                            item_ok = choice(okItems)
-                            ok = self.data.item[item_ok]
+                    item_random = choice(itemList)
+                    while item_random in self.PositiveSet[user] or item_random in self.JointSet[user]\
+                        or item_random in self.PS_Set[user] or item_random in self.NegSets[user]:
+                        item_random = choice(itemList)
+                    r = self.data.item[item_random]
+                    selectedItems.append(r)
 
-                            self.optimization(u,k,ok)
+                    if len(nItems)>0:
+                        item_n = choice(nItems)
+                        n = self.data.item[item_n]
+                        selectedItems.append(n)
 
-                            item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j)
-                                   or self.PS_Set[user].has_key(item_j)):
-                                item_j = choice(itemList)
-                            j = self.data.item[item_j]
-                            self.optimization(u,ok,j)
+                    #optimization
+                    for ind,item in enumerate(selectedItems[:-1]):
+                        self.optimization(u,item,selectedItems[ind+1])
 
-                        elif len(kItems)==0 and len(okItems)>0:
-                            item_ok = choice(okItems)
-                            ok = self.data.item[item_ok]
-
-                            uf = self.PS_Set[user][item_ok]
-                            self.optimization_thres(u, i, ok, user, uf)
-
-                            item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j)
-                                   or self.PS_Set[user].has_key(item_j)):
-                                item_j = choice(itemList)
-                            j = self.data.item[item_j]
-                            self.optimization(u,ok,j)
-
-                        elif len(kItems)>0 and len(okItems)==0:
-                            item_k = choice(kItems)
-                            uf = self.JointSet[user][item_k]
-                            k = self.data.item[item_k]
-                            self.optimization_thres(u,i,k,user,uf)
-
-                            item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j)
-                                   or self.PS_Set[user].has_key(item_j)):
-                                item_j = choice(itemList)
-                            j = self.data.item[item_j]
-                            self.optimization(u,k,j)
-
-                        else:
-                            item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.JointSet[user].has_key(item_j) or
-                                   self.PS_Set[user].has_key(item_j)):
-                                item_j = choice(itemList)
-                            j = self.data.item[item_j]
-                            self.optimization(u, i, j)
-
-                        if len(nItems)>0:
-                            item_n = choice(nItems)
-                            n = self.data.item[item_n]
-                            self.optimization(u,j,n)
 
                 if self.thres_count[user]>0:
                     self.threshold[user] -= self.lRate * self.thres_d[user] / self.thres_count[user]
@@ -545,3 +519,40 @@ class IF_BPR(SocialRecommender):
             return self.Q.dot(self.P[u])
         else:
             return [self.data.globalMean] * len(self.data.item)
+
+
+    ###############################################################################################
+
+    #Implementation Based on TensorFlow
+
+    ###############################################################################################
+    
+    # def buildModel_tf(self):
+    #     import tensorflow as tf
+    #     self._create_loss()
+    #     self._create_optimizer()
+    #
+    #
+    # def _create_variables(self):
+    #     self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
+    #     self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
+    #
+    #
+    # def _create_inference(self):
+    #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), 1),
+    #                               tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
+    #     return result
+    #
+    # def _create_loss(self):
+    #     self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+    #     self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
+    #     self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
+    #                            tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
+    #     self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)), self.reg_loss)
+    #     self.total_loss = tf.add(self.loss, self.reg_loss)
+    #
+    #
+    # def _create_optimizer(self):
+    #     self.optimizer = tf.train.AdamOptimizer(self.lRate)
+    #     self.train = self.optimizer.minimize(self.total_loss)
+       
