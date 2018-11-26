@@ -29,7 +29,7 @@ class APR(DeepRecommender):
         self.eps = float(args['-eps'])
         self.regAdv = float(args['-regA'])
         self.advEpoch = int(args['-advEpoch'])
-        self.negativeCount = 3
+        self.negativeCount = 1
 
 
     def _create_variables(self):
@@ -74,7 +74,7 @@ class APR(DeepRecommender):
         self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
         self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
                                tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
-        self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)), self.reg_loss)
+
         self.total_loss = tf.add(self.loss, self.reg_loss)
         #loss of adversarial training
         self.loss_adv = tf.multiply(self.regAdv,tf.reduce_sum(tf.nn.softplus(-self._create_adv_inference())))
@@ -134,7 +134,7 @@ class APR(DeepRecommender):
 
                 self.P = sess.run(self.U)
                 self.Q = sess.run(self.V)
-                self.ranking_performance()
+                #self.ranking_performance()
 
             # start adversarial training
             for epoch in range(self.advEpoch):
@@ -148,7 +148,7 @@ class APR(DeepRecommender):
 
                 self.P = sess.run(self.U)
                 self.Q = sess.run(self.V)
-                self.ranking_performance()
+                #self.ranking_performance()
 
 
     def predictForRanking(self, u):

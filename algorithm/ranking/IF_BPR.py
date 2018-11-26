@@ -7,6 +7,11 @@ import numpy as np
 from tool.qmath import sigmoid, cosine
 from math import log
 import gensim.models.word2vec as w2v
+from random import random
+try:
+    import tensorflow as tf
+except ImportError:
+    print 'TensorFlow is undetected on your computer!'
 
 
 class IF_BPR(SocialRecommender,DeepRecommender):
@@ -46,6 +51,7 @@ class IF_BPR(SocialRecommender,DeepRecommender):
                 self.nItems[items[1]].append(items[0])
                 if items[0] not in self.data.user:
                     self.data.user[items[0]]=len(self.data.user)
+                    self.data.id2user[self.data.user[items[0]]] = items[0]
 
     def initModel(self):
         super(IF_BPR, self).initModel()
@@ -298,6 +304,12 @@ class IF_BPR(SocialRecommender,DeepRecommender):
                 self.nSimilarity[user1][pair[0]] = pair[1]
             self.nTopKSim[user1] = [item[0] for item in fList]
 
+        self.trueTopKFriends = defaultdict(list)
+        for user in self.pTopKSim:
+            trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
+            self.trueTopKFriends[user] = trueFriends
+            self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
+
     def updateSets(self):
         self.JointSet = defaultdict(dict)
         self.PS_Set = defaultdict(dict)
@@ -327,88 +339,9 @@ class IF_BPR(SocialRecommender,DeepRecommender):
                                     self.NegSets[user][item] = 1
 
     def buildModel(self):
-        # self.P = np.ones((self.data.trainingSize()[0], self.k))/10  # latent user matrix
-        # self.Q = np.ones((self.data.trainingSize()[1], self.k))/10  # latent item matrix
-
-
-        # li = self.social.followees.keys()
-        #
-        # import pickle
-        #
-        # self.trueTopKFriends = defaultdict(list)
-        # pkl_file = open(self.config['ratings'] + self.foldInfo + 'p.pkl', 'rb')
-        # self.pTopKSim = pickle.load(pkl_file)
-        # pkl_file = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'rb')
-        # self.nTopKSim = pickle.load(pkl_file)
-        # self.trueTopKFriends = defaultdict(list)
-        # for user in self.pTopKSim:
-        #     trueFriends = list(
-        #         set(self.pTopKSim[user][:self.topK]).intersection(set(self.nTopKSim[user][:self.topK])))
-        #     self.trueTopKFriends[user] = trueFriends
-        #
-        # ps = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'rb')
-        # self.pSimilarity=pickle.load(ps)
-        # ns = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'rb')
-        # self.nSimilarity=pickle.load(ns)
-        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'rb')
-        # self.avg_sim=pickle.load(av)
-        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'rb')
-        # self.threshold=pickle.load(th)
-
-
-        # import pickle
-        # ps = open(self.config['ratings'] + self.foldInfo + 'ps.pkl', 'wb')
-        #
-        # pickle.dump(self.pSimilarity, ps)
-        # av = open(self.config['ratings'] + self.foldInfo + 'av.pkl', 'wb')
-        #
-        # pickle.dump(self.avg_sim, av)
-        #
-        # th = open(self.config['ratings'] + self.foldInfo + 'th.pkl', 'wb')
-        # pickle.dump(self.threshold, th)
-
-
-        # print 'Similarity matrix finished.'
-        # # # #print self.topKSim
-
-        # # # #
-        # # # #recordTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        # psimilarity = open(self.config['ratings']+self.foldInfo+'p.pkl', 'wb')
-        # nsimilarity = open(self.config['ratings'] + self.foldInfo + 'n.pkl', 'wb')
-        # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
-        # #Pickle dictionary using protocol 0.
-        #
-        # pickle.dump(self.pTopKSim, psimilarity)
-        # pickle.dump(self.nTopKSim, nsimilarity)
-        #
-        # psimilarity = open(self.config['ratings'] + self.foldInfo + 'psim.pkl', 'wb')
-        # nsimilarity = open(self.config['ratings'] + self.foldInfo + 'nsim.pkl', 'wb')
-        # vectors = open('HERP-lastfm-vec'+self.foldInfo+'.pkl', 'wb')
-        # #Pickle dictionary using protocol 0.
-        #
-
-
-        # pickle.dump(self.pSimilarity, psimilarity)
-        # pickle.dump(self.nSimilarity, nsimilarity)
-
-
-        #pickle.dump((self.W,self.G),vectors)
-        # similarity.close()
-        # vectors.close()
-
-        # matrix decomposition
-        #pkl_file = open('IF_BPR-lastfm-sim' + self.foldInfo + '.pkl', 'rb')
-
-        #self.topKSim = pickle.load(pkl_file)
 
         self.randomWalks()
         self.computeSimilarity()
-
-        self.trueTopKFriends=defaultdict(list)
-        for user in self.pTopKSim:
-            trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
-            self.trueTopKFriends[user] = trueFriends
-            self.pTopKSim[user] = list(set(self.pTopKSim[user]).difference(set(trueFriends)))
 
         print 'Decomposing...'
         iteration = 0
@@ -439,11 +372,11 @@ class IF_BPR(SocialRecommender,DeepRecommender):
                         p = self.data.item[item_p]
                         selectedItems.append(p)
 
-                    item_random = choice(itemList)
-                    while item_random in self.PositiveSet[user] or item_random in self.JointSet[user]\
-                        or item_random in self.PS_Set[user] or item_random in self.NegSets[user]:
-                        item_random = choice(itemList)
-                    r = self.data.item[item_random]
+                    item_r = choice(itemList)
+                    while item_r in self.PositiveSet[user] or item_r in self.JointSet[user]\
+                        or item_r in self.PS_Set[user] or item_r in self.NegSets[user]:
+                        item_r = choice(itemList)
+                    r = self.data.item[item_r]
                     selectedItems.append(r)
 
                     if len(nItems)>0:
@@ -476,6 +409,8 @@ class IF_BPR(SocialRecommender,DeepRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
+
+        self.advTraining()
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
@@ -526,33 +461,315 @@ class IF_BPR(SocialRecommender,DeepRecommender):
     #Implementation Based on TensorFlow
 
     ###############################################################################################
-    
-    # def buildModel_tf(self):
-    #     import tensorflow as tf
-    #     self._create_loss()
-    #     self._create_optimizer()
-    #
-    #
     # def _create_variables(self):
     #     self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
-    #     self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
+    #     self.pSim =  tf.placeholder(tf.float32, [None], name="pSim")
+    #     self.avgSim = tf.placeholder(tf.float32, [None], name="avgSim")
     #
+    #     self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
+    #     simVec = np.random.rand(len(self.data.user))
+    #     for i,user in enumerate(self.data.user):
+    #         simVec[self.data.user[user]]=self.threshold[user]
+    #     self.sim_thres = tf.Variable(simVec,dtype=tf.float32,trainable=True)
+    #     self.U_sim = tf.nn.embedding_lookup(self.sim_thres, self.u_idx)
     #
     # def _create_inference(self):
     #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), 1),
     #                               tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
     #     return result
     #
+    # def _create_adaptive_inference(self):
+    #     g = tf.nn.sigmoid(tf.divide (tf.clip_by_value(tf.subtract(self.pSim,self.U_sim),1e-8, 1.0),
+    #                                  tf.clip_by_value(tf.subtract(self.avgSim,self.U_sim),1e-8, 1.0)))
+    #     self.adapEfficients = tf.clip_by_value(tf.add(tf.constant(1.0,dtype=tf.float32),g),1.0,2.0)
+    #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed),1),
+    #                         tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
+    #     result = tf.divide(result, self.adapEfficients)
+    #     return result
+    #
     # def _create_loss(self):
     #     self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+    #     self.reg_T = tf.constant(0.02, dtype=tf.float32)
     #     self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
     #     self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
     #                            tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
-    #     self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)), self.reg_loss)
     #     self.total_loss = tf.add(self.loss, self.reg_loss)
+    #     self.adapLoss = tf.add(tf.reduce_sum(tf.nn.softplus(-self._create_adaptive_inference())),self.reg_loss)
+    #     self.adapLoss = tf.add(self.adapLoss,tf.multiply(self.reg_T,tf.nn.l2_loss(self.U_sim)))
     #
     #
     # def _create_optimizer(self):
     #     self.optimizer = tf.train.AdamOptimizer(self.lRate)
     #     self.train = self.optimizer.minimize(self.total_loss)
+    #     self.adapOptimizer = tf.train.AdamOptimizer(self.lRate)
+    #     self.adapTrain = self.optimizer.minimize(self.adapLoss)
+    #
+    # def next_adap_batch(self):
+    #     batch_idx = np.random.randint(self.train_size, size=self.batch_size)
+    #     users = [self.data.trainingData[idx][0] for idx in batch_idx]
+    #     items = [self.data.trainingData[idx][1] for idx in batch_idx]
+    #     user_idx, item_idx, neg_item_idx,friend_idx = [], [], [],[]
+    #
+    #     for i, user in enumerate(users):
+    #         kItems = self.JointSet[user].keys()
+    #         uid = self.data.user[user]
+    #         pid = self.data.item[items[i]]
+    #
+    #         if len(kItems)>0:
+    #             item_k = choice(kItems)
+    #             user_idx.append(uid)
+    #             item_idx.append(pid)
+    #             neg_item_idx.append(self.data.item[item_k])
+    #             friend_idx.append(self.data.user[self.JointSet[user][item_k]])
+    #
+    #     return user_idx,item_idx,neg_item_idx,friend_idx
+    #
+    #
+    # def next_batch(self):
+    #     batch_idx = np.random.randint(self.train_size, size=self.batch_size)
+    #
+    #     users = [self.data.trainingData[idx][0] for idx in batch_idx]
+    #     items = [self.data.trainingData[idx][1] for idx in batch_idx]
+    #
+    #     user_idx,item_idx, neg_item_idx = [], [], []
+    #
+    #     itemList = self.data.item.keys()
+    #
+    #     for i,user in enumerate(users):
+    #         kItems = self.JointSet[user].keys()
+    #         pItems = self.PS_Set[user].keys()
+    #         nItems = self.NegSets[user].keys()
+    #         uid = self.data.user[user]
+    #         iid = self.data.item[items[i]]
+    #         group = []
+    #         #group.append(iid)
+    #         if len(kItems)>0:
+    #             item_k = choice(kItems)
+    #             group.append(self.data.item[item_k])
+    #         if len(pItems)>0:
+    #             item_p = choice(pItems)
+    #             group.append(self.data.item[item_p])
+    #         item_r = choice(itemList)
+    #         while item_r in self.PositiveSet[user] or item_r in self.JointSet[user] \
+    #                 or item_r in self.PS_Set[user] or item_r in self.NegSets[user]:
+    #             item_r = choice(itemList)
+    #         group.append(self.data.item[item_r])
+    #         if len(nItems)>0:
+    #             item_n = choice(nItems)
+    #             group.append(self.data.item[item_n])
+    #
+    #         for ind, item in enumerate(group[:-1]):
+    #             user_idx.append(uid)
+    #             item_idx.append(group[ind])
+    #             neg_item_idx.append(group[ind+1])
+    #         # for ind, item in enumerate(group[1:]):
+    #         #     user_idx.append(uid)
+    #         #     item_idx.append(iid)
+    #         #     neg_item_idx.append(group[ind])
+    #
+    #     return user_idx,item_idx,neg_item_idx
+
+
+    # def buildModel_tf(self):
+    #
+    #     super(IF_BPR, self).buildModel_tf()
+    #     self.randomWalks()
+    #     self.computeSimilarity()
+
+        # print 'Decomposing...'
+        # self._create_variables()
+        # self._create_loss()
+        # self._create_optimizer()
+        # # train the model until converged
+        # init = tf.global_variables_initializer()
+        # self.sess.run(init)
+        #
+        # for epoch in range(self.maxIter):
+        #     if epoch % 10 == 0:
+        #         simArray = self.sess.run(self.sim_thres)
+        #         for i,sim in enumerate(simArray):
+        #             self.threshold[self.data.id2user[i]]=sim
+        #
+        #         for user in self.data.user:
+        #             li = [sim for sim in self.pSimilarity[user].values() if sim >= self.threshold[user]]
+        #             if len(li) == 0:
+        #                 self.avg_sim[user] = self.threshold[user]
+        #             else:
+        #                 self.avg_sim[user] = sum(li) / (len(li) + 0.0)
+        #         self.updateSets()
+        #
+        #     #print self.foldInfo, self.threshold.values()[:10]
+        #     # if epoch% 30==0:
+        #     #     self.ranking_performance()
+        #     user_idx, item_idx, neg_item_idx,friend_idx = self.next_adap_batch()
+        #     Suv = []
+        #     avgSim = []
+        #     for u,f in zip(user_idx,friend_idx):
+        #         Suv.append(self.pSimilarity[self.data.id2user[u]][self.data.id2user[f]])
+        #         avgSim.append(self.avg_sim[self.data.id2user[u]])
+        #
+        #     _, loss,effi = self.sess.run([self.adapTrain, self.adapLoss,self.adapEfficients],
+        #                        feed_dict={self.u_idx: user_idx, self.v_idx: item_idx,
+        #                                   self.neg_idx: neg_item_idx,self.avgSim:avgSim, self.pSim:Suv})
+        #     print self.foldInfo,'iteration:', epoch, 'adaptive loss:', loss
+        #     print self.foldInfo,'iteration:',epoch, effi[:20]
+        #
+        #     user_idx, item_idx, neg_item_idx = self.next_batch()
+        #     _, loss = self.sess.run([self.train, self.total_loss],
+        #                        feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
+        #     print self.foldInfo,'iteration:', epoch, 'loss:', loss
+        #
+        #     self.P = self.sess.run(self.U)
+        #     self.Q = self.sess.run(self.V)
+
+###############################################################################################
+
+# Adversarial Training
+
+###############################################################################################
+    # def readParameters(self):
+    #     args = config.LineConfig(self.config['AT'])
+    #     self.eps = float(args['-eps'])
+    #     self.regAdv = float(args['-regA'])
+    #     self.advEpoch = int(args['-advEpoch'])
+    #
+    #
+    #
+    # def _create_variables(self):
+    #     #perturbation vectors
+    #     self.adv_U = tf.Variable(tf.zeros(shape=[self.m, self.k]),dtype=tf.float32, trainable=False)
+    #     self.adv_V = tf.Variable(tf.zeros(shape=[self.n, self.k]),dtype=tf.float32, trainable=False)
+    #
+    #     self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
+    #     self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
+    #     #parameters
+    #     self.eps = tf.constant(self.eps,dtype=tf.float32)
+    #     self.regAdv = tf.constant(self.regAdv,dtype=tf.float32)
+    #
+    # def _create_inference(self):
+    #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), 1),
+    #                               tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
+    #     return result
+    #
+    # def _create_adv_inference(self):
+    #     self.U_plus_delta = tf.add(self.U_embed, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
+    #     self.V_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.v_idx))
+    #     self.V_neg_plus_delta = tf.add(self.V_neg_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
+    #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_plus_delta), 1),
+    #                          tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_neg_plus_delta), 1))
+    #     return result
+    #
+    # def _create_adversarial(self):
+    #     #get gradients of Delta
+    #     self.grad_U, self.grad_V = tf.gradients(self.loss_adv, [self.adv_U,self.adv_V])
+    #
+    #     # convert the IndexedSlice Data to Dense Tensor
+    #     self.grad_U_dense = tf.stop_gradient(self.grad_U)
+    #     self.grad_V_dense = tf.stop_gradient(self.grad_V)
+    #
+    #     # normalization: new_grad = (grad / |grad|) * eps
+    #     self.update_U = self.adv_U.assign(tf.nn.l2_normalize(self.grad_U_dense, 1) * self.eps)
+    #     self.update_V = self.adv_V.assign(tf.nn.l2_normalize(self.grad_V_dense, 1) * self.eps)
+    #
+    #
+    # def _create_loss(self):
+    #     self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+    #     self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
+    #     self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
+    #                            tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
+    #
+    #     self.total_loss = tf.add(self.loss, self.reg_loss)
+    #     #loss of adversarial training
+    #     self.loss_adv = tf.multiply(self.regAdv,tf.reduce_sum(tf.nn.softplus(-self._create_adv_inference())))
+    #     self.loss_adv = tf.add(self.loss,self.loss_adv)
+    #
+    # def _create_optimizer(self):
+    #     self.optimizer = tf.train.AdamOptimizer(0.002)
+    #     self.train = self.optimizer.minimize(self.total_loss)
+    #
+    #     self.optimizer_adv = tf.train.AdamOptimizer(0.002)
+    #     self.train_adv = self.optimizer.minimize(self.loss_adv)
+    #
+    #
+    #
+    # def next_batch(self):
+    #     batch_idx = np.random.randint(self.train_size, size=self.batch_size)
+    #     itemList = self.data.item.keys()
+    #     users = [self.data.trainingData[idx][0] for idx in batch_idx]
+    #     items = [self.data.trainingData[idx][1] for idx in batch_idx]
+    #     user_idx,item_idx=[],[]
+    #     neg_item_idx = []
+    #     for i, user in enumerate(users):
+    #         kItems = self.JointSet[user].keys()
+    #         pItems = self.PS_Set[user].keys()
+    #         nItems = self.NegSets[user].keys()
+    #         uid = self.data.user[user]
+    #         iid = self.data.item[items[i]]
+    #         group = []
+    #         group.append(iid)
+    #         if len(kItems)>0:
+    #             item_k = choice(kItems)
+    #             group.append(self.data.item[item_k])
+    #         if len(pItems)>0:
+    #             item_p = choice(pItems)
+    #             group.append(self.data.item[item_p])
+    #         item_r = choice(itemList)
+    #         while item_r in self.PositiveSet[user] or item_r in self.JointSet[user] \
+    #                 or item_r in self.PS_Set[user] or item_r in self.NegSets[user]:
+    #             item_r = choice(itemList)
+    #         group.append(self.data.item[item_r])
+    #         if len(nItems)>0:
+    #             item_n = choice(nItems)
+    #             group.append(self.data.item[item_n])
+    #
+    #         for ind, item in enumerate(group[:-1]):
+    #             user_idx.append(uid)
+    #             item_idx.append(group[ind])
+    #             neg_item_idx.append(group[ind+1])
+    #         # for ind, item in enumerate(group[1:]):
+    #         #     user_idx.append(uid)
+    #         #     item_idx.append(iid)
+    #         #     neg_item_idx.append(group[ind])
+    #
+    #     return user_idx,item_idx,neg_item_idx
+    #
+    #
+    # def advTraining(self):
+    #     self.readParameters()
+    #     self._create_variables()
+    #     self._create_loss()
+    #     self._create_adversarial()
+    #     self._create_optimizer()
+    #     print 'adversarial training...'
+    #     self.U = tf.Variable(self.P)
+    #     self.V = tf.Variable(self.Q)
+    #     with tf.Session() as sess:
+    #         init = tf.global_variables_initializer()
+    #         sess.run(init)
+    #
+    #         # # train the model until converged
+    #         # for epoch in range(self.maxIter):
+    #         #
+    #         #     user_idx,item_idx,neg_item_idx = self.next_batch()
+    #         #     _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
+    #         #     print 'iteration:', epoch, 'loss:',loss
+    #         #
+    #         #
+    #         #     self.P = sess.run(self.U)
+    #         #     self.Q = sess.run(self.V)
+    #         #     #self.ranking_performance()
+    #
+    #         # start adversarial training
+    #         for epoch in range(self.advEpoch):
+    #
+    #             user_idx,item_idx,neg_item_idx = self.next_batch()
+    #             sess.run([self.update_U, self.update_V],
+    #                      feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
+    #             _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
+    #
+    #             print 'iteration:', epoch, 'loss:',loss
+    #
+    #             self.P = sess.run(self.U)
+    #             self.Q = sess.run(self.V)
+    #             #self.ranking_performance()
        
