@@ -29,7 +29,6 @@ class APR(DeepRecommender):
         self.eps = float(args['-eps'])
         self.regAdv = float(args['-regA'])
         self.advEpoch = int(args['-advEpoch'])
-        self.negativeCount = 1
 
 
     def _create_variables(self):
@@ -78,7 +77,7 @@ class APR(DeepRecommender):
         self.total_loss = tf.add(self.loss, self.reg_loss)
         #loss of adversarial training
         self.loss_adv = tf.multiply(self.regAdv,tf.reduce_sum(tf.nn.softplus(-self._create_adv_inference())))
-        self.loss_adv = tf.add(self.loss,self.loss_adv)
+        self.loss_adv = tf.add(self.total_loss,self.loss_adv)
 
     def _create_optimizer(self):
         self.optimizer = tf.train.AdamOptimizer(self.lRate)
@@ -104,15 +103,15 @@ class APR(DeepRecommender):
         user_idx,item_idx=[],[]
         neg_item_idx = []
         for i,user in enumerate(users):
-            for j in range(self.negativeCount): #negative sampling
-                item_j = random.randint(0,self.n-1)
 
-                while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
-                    item_j = random.randint(0, self.n - 1)
+            item_j = random.randint(0,self.n-1)
 
-                user_idx.append(self.data.user[user])
-                item_idx.append(self.data.item[items[i]])
-                neg_item_idx.append(item_j)
+            while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
+                item_j = random.randint(0, self.n - 1)
+
+            user_idx.append(self.data.user[user])
+            item_idx.append(self.data.item[items[i]])
+            neg_item_idx.append(item_j)
 
         return user_idx,item_idx,neg_item_idx
 

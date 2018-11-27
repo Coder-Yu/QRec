@@ -43,12 +43,12 @@ class BPR(IterativeRecommender):
                 u = self.data.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
-                    for n in range(3): #negative sampling (3 times)
+
+                    item_j = choice(itemList)
+                    while (self.PositiveSet[user].has_key(item_j)):
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
-                            item_j = choice(itemList)
-                        j = self.data.item[item_j]
-                        self.optimization(u,i,j)
+                    j = self.data.item[item_j]
+                    self.optimization(u,i,j)
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
