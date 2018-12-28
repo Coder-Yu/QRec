@@ -410,7 +410,7 @@ class IF_BPR(SocialRecommender,DeepRecommender):
             if self.isConverged(iteration):
                 break
 
-        self.advTraining()
+        #self.advTraining()
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
