@@ -145,129 +145,34 @@ class TBPR(SocialRecommender):
                 sItems = self.strongSet[user].keys()
                 for item in self.positiveSet[user]:
                     i = self.data.item[item]
+                    selectedItems = [i]
                     for n in range(3): #negative sampling for 3 times
-                        if len(jItems)>0 and len(wItems)>0 and len(sItems)>0:
+                        if len(jItems)>0:
+                            item_j = choice(jItems)
+                            j = self.data.item[item_j]
+                            selectedItems.append(j)
 
-                                item_j = choice(jItems)
-                                j = self.data.item[item_j]
-                                self.optimization(u,i,j)
-
-                                item_w = choice(wItems)
-                                w = self.data.item[item_w]
-                                self.optimization(u,j,w)
-
-                                item_s = choice(sItems)
-                                s = self.data.item[item_s]
-                                self.optimization_theta(u, w, s)
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                       or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u,s,k)
-
-                        if len(jItems) == 0 and len(wItems) > 0 and len(sItems) > 0:
-
-                                item_w = choice(wItems)
-                                w = self.data.item[item_w]
-                                self.optimization(u, i, w)
-
-                                item_s = choice(sItems)
-                                s = self.data.item[item_s]
-                                self.optimization_theta(u, w, s)
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k)
-                                       or self.weakSet[user].has_key(item_k) or self.strongSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, s, k)
-
-                        if len(jItems) == 0 and len(wItems) ==0 and len(sItems) > 0:
-
-                                item_s = choice(sItems)
-                                s = self.data.item[item_s]
-                                self.optimization(u, i, s)
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k)
-                                       or self.strongSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, s, k)
-
-                        if len(jItems) == 0 and len(wItems) == 0 and len(sItems) ==0:
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, i, k)
-
-                        if len(jItems) == 0 and len(wItems) > 0 and len(sItems) == 0:
-
-                                item_w = choice(wItems)
-                                w = self.data.item[item_w]
-                                self.optimization(u, i, w)
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k)
-                                       or self.strongSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, w, k)
+                        if len(wItems) > 0:
+                            item_w = choice(wItems)
+                            w = self.data.item[item_w]
+                            selectedItems.append(w)
 
 
-                        if len(jItems) > 0 and len(wItems) == 0 and len(sItems) > 0:
+                        if len(sItems) > 0:
+                            item_s = choice(sItems)
+                            s = self.data.item[item_s]
+                            selectedItems.append(s)
 
-                                item_j = choice(jItems)
-                                j = self.data.item[item_j]
-                                self.optimization(u,i,j)
+                        item_k = choice(itemList)
+                        while (self.positiveSet[user].has_key(item_k)):
+                            item_k = choice(itemList)
+                        k = self.data.item[item_k]
+                        selectedItems.append(k)
 
-                                item_s = choice(sItems)
-                                s = self.data.item[item_s]
-                                self.optimization(u, j, s)
+                        # optimization
+                        for ind, item in enumerate(selectedItems[:-1]):
+                            self.optimization(u, item, selectedItems[ind + 1])
 
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k)
-                                       or self.strongSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, s, k)
-
-                        if len(jItems) > 0 and len(wItems) >0 and len(sItems) == 0:
-
-                                item_j = choice(jItems)
-                                j = self.data.item[item_j]
-                                self.optimization(u, i, j)
-
-                                item_w = choice(wItems)
-                                w = self.data.item[item_w]
-                                self.optimization(u, j, w)
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k) or self.jointSet[user].has_key(item_k)
-                                       or self.weakSet[user].has_key(item_k) ):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, w, k)
-
-                        if len(jItems) > 0 and len(wItems) == 0 and len(sItems) == 0:
-
-                                item_j = choice(jItems)
-                                j = self.data.item[item_j]
-                                self.optimization(u, i, j)
-
-
-                                item_k = choice(itemList)
-                                while (self.positiveSet[user].has_key(item_k)
-                                       or self.jointSet[user].has_key(item_k)):
-                                    item_k = choice(itemList)
-                                k = self.data.item[item_k]
-                                self.optimization(u, j, k)
-
-                                                
                 self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             if self.theta_count>0:
                 self.theta -= self.lRate*self.theta_derivative/self.theta_count
