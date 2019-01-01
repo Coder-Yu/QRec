@@ -146,32 +146,31 @@ class TBPR(SocialRecommender):
                 for item in self.positiveSet[user]:
                     i = self.data.item[item]
                     selectedItems = [i]
-                    for n in range(3): #negative sampling for 3 times
-                        if len(jItems)>0:
-                            item_j = choice(jItems)
-                            j = self.data.item[item_j]
-                            selectedItems.append(j)
+                    if len(jItems)>0:
+                        item_j = choice(jItems)
+                        j = self.data.item[item_j]
+                        selectedItems.append(j)
 
-                        if len(wItems) > 0:
-                            item_w = choice(wItems)
-                            w = self.data.item[item_w]
-                            selectedItems.append(w)
+                    if len(wItems) > 0:
+                        item_w = choice(wItems)
+                        w = self.data.item[item_w]
+                        selectedItems.append(w)
 
 
-                        if len(sItems) > 0:
-                            item_s = choice(sItems)
-                            s = self.data.item[item_s]
-                            selectedItems.append(s)
+                    if len(sItems) > 0:
+                        item_s = choice(sItems)
+                        s = self.data.item[item_s]
+                        selectedItems.append(s)
 
+                    item_k = choice(itemList)
+                    while (self.positiveSet[user].has_key(item_k)):
                         item_k = choice(itemList)
-                        while (self.positiveSet[user].has_key(item_k)):
-                            item_k = choice(itemList)
-                        k = self.data.item[item_k]
-                        selectedItems.append(k)
+                    k = self.data.item[item_k]
+                    selectedItems.append(k)
 
-                        # optimization
-                        for ind, item in enumerate(selectedItems[:-1]):
-                            self.optimization(u, item, selectedItems[ind + 1])
+                    # optimization
+                    for ind, item in enumerate(selectedItems[:-1]):
+                        self.optimization(u, item, selectedItems[ind + 1])
 
                 self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             if self.theta_count>0:
