@@ -45,7 +45,7 @@ class RSTE(SocialRecommender):
             i = self.data.getItemId(i)
             fPred = 0
             denom = 0
-            relations = self.sao.getFollowees(u)
+            relations = self.social.getFollowees(u)
             weights = []
             indexes = []
             for followee in relations:
@@ -70,7 +70,7 @@ class RSTE(SocialRecommender):
         if self.data.containsUser(u):
             fPred = 0
             denom = 0
-            relations = self.sao.getFollowees(u)
+            relations = self.social.getFollowees(u)
             for followee in relations:
                 weight = relations[followee]
                 if self.data.containsUser(followee):  # followee is in rating set
