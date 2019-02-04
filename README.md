@@ -257,44 +257,38 @@ Released by School of Software Engineering, Chongqing University</br>
 		<th>Paper</th>
 
    </tr>
-    <tr>
+  <tr>
 	<td scope="row">APR</td>
     <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
     </td>
   </tr>
 
-  </tr>
   <tr>
 	<td scope="row">ExpoMF</td>
     <td>Liang et al., Modeling User Exposure in Recommendation, WWW 2016.<br>
     </td>
   </tr>
-      </tr>
   <tr>
 	<td scope="row">SERec</td>
     <td>Wang et al., Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation, AAAI 2018.<br>
     </td>
   </tr>
-  </tr>
-    <tr>
+  <tr>
 	<td scope="row">CDAE</td>
     <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
     </td>
   </tr>
-
-   <tr>
+  <tr>
 	<td scope="row">DMF</td>
     <td>Xue et al., Deep Matrix Factorization Models for Recommender Systems, IJCAI 2017.<br>
     </td>
   </tr>
-
-  </tr>
-    <tr>
+  <tr>
 	<td scope="row">BPR</td>
     <td>Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback, UAI 2009.<br>
     </td>
   </tr>
-    <tr>
+  <tr>
 	<td scope="row">SBPR</td>
     <td>Zhao et al., Leveraing Social Connections to Improve Personalized Ranking for Collaborative Filtering, CIKM 2014<br>
     </td>
@@ -304,24 +298,22 @@ Released by School of Software Engineering, Chongqing University</br>
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
      </td>
   </tr>
-    <tr>
+  <tr>
     <td scope="row">WRMF</td>
     <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
      </td>
   </tr>
-      <tr>
+  <tr>
     <td scope="row">TBPR</td>
     <td>Wang et al. Social Recommendation with Strong and Weak Ties, CIKM 2016.
      </td>
   </tr>
-    </tr>
-      <tr>
+  <tr>
     <td scope="row">IF-BPR</td>
     <td>Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
      </td>
   </tr>
-      </tr>
-      <tr>
+  <tr>
     <td scope="row">NeuMF</td>
     <td>He et al. Neural Collaborative Filtering, WWW 2017.
      </td>
