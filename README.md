@@ -2,6 +2,7 @@
 <h2>Latest News</h2>
 <p>
 <b>We are now transfering RecQ to TensorFlow. A GPU based version would be provided in the coming weeks. </b></br>
+02/04/2019 - NeuMF proposed in www'17 has been added (searching for good parameters...)
 10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
 10/02/2018 - Two deep models: DMF CDAE have been implemented.</br>
 07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
