@@ -326,30 +326,48 @@ papers and the code in terms of fomula presentation. If you have problems in und
 
 <h3>Category</h3>
 <b>Generic Recommenders</b></br>
-<p>
-UserKNN    ItemKNN    BasicMF   SlopeOne   SVD</br>
-PMF        SVD++      EE        BPR        WRMF</br>
-ExpoMF</br>
-</p>
+<table>
+<tr>
+<td>UserKNN</td>    <td>ItemKNN</td>    <td>BasicMF   <td>SlopeOne   <td>SVD
+</tr>
+<tr>
+<td>PMF</td>        <td>SVD++</td>      <td>EE</td>       <td>BPR</td>        <td>WRMF</td>
+</tr>
+<tr>
+<td>ExpoMF
+</tr>
+</table>
 
 <b>Social Recommenders</b></br>
-<p>
-RSTE    SoRec      SoReg     SocialMF   SBPR</br>
-SREE    LOCABAL    SocialFD  TBPR       SERec</br>
-</p>
+<table>
+<tr>
+<td>RSTE</td>    <td>SoRec</td>      <td>SoReg</td>     <td>SocialMF</td>   <td>SBPR</td>
+</tr>
+<tr>
+<td>SREE</td>    <td>LOCABAL</td>    <td>SocialFD</td>  <td>TBPR</td>       <td>SERec</td>
+</tr>
+</table>
 
 <b>Network Embedding based Recommenders</b></br>
-<p>CoFactor     CUNE-MF      CUNE-BPR     IF-BPR</br></P>
+<table>
+<tr>
+<td>CoFactor</td>     <td>CUNE-MF</td>      <td>CUNE-BPR</td>     <td>IF-BPR</td>
+</tr>
+</table>
 
 <b>Deep Recommenders</b></br>
-<p>
-APR     CDAE       DMF       NeuMF      CFGAN</br>
-</p>
+<table>
+<tr>
+<td>APR</td>     <td>CDAE</td>      <td>DMF</td>       <td>NeuMF</td>      <td>CFGAN</td>
+</tr>
+</table>
 
 <b>Baselines</b></br>
-<p>
-UserMean      ItemMean     MostPopular     Rand</br>
-</p>
+<table>
+<tr>
+<td>UserMean</td>      <td>ItemMean</td>     <td>MostPopular</td>     <td>Rand</td>
+</tr>
+</table>
 
 <h2>Related Datasets</h2>
 <div>
