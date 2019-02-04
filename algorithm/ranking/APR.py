@@ -133,7 +133,8 @@ class APR(DeepRecommender):
 
                 self.P = sess.run(self.U)
                 self.Q = sess.run(self.V)
-                #self.ranking_performance()
+                if epoch%100==0 and epoch>0:
+                    self.ranking_performance()
 
             # start adversarial training
             for epoch in range(self.advEpoch):
@@ -147,7 +148,8 @@ class APR(DeepRecommender):
 
                 self.P = sess.run(self.U)
                 self.Q = sess.run(self.V)
-                #self.ranking_performance()
+                if epoch % 100 == 0 and epoch > 0:
+                    self.ranking_performance()
 
 
     def predictForRanking(self, u):

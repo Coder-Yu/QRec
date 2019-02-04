@@ -82,7 +82,7 @@ class CDAE(DeepRecommender):
 
     #def pretrain(self,var,data):
 
-    def buildModel_tf(self):
+    def buildModel(self):
         self.corrupted_input = tf.multiply(self.X,self.mask_corruption)
         self.encoder_op = self.encoder(self.corrupted_input,self.V_embed)
         self.decoder_op = self.decoder(self.encoder_op)

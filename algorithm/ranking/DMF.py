@@ -57,11 +57,11 @@ class DMF(DeepRecommender):
         self.negative_sp = 5
         self.n_hidden_u=[256,512]
         self.n_hidden_i=[256,512]
-        self.input_u = tf.placeholder("float", [None, n_input_u])
-        self.input_i = tf.placeholder("float", [None, n_input_i])
+        self.input_u = tf.placeholder(tf.float, [None, n_input_u])
+        self.input_i = tf.placeholder(tf.float, [None, n_input_i])
 
 
-    def buildModel_tf(self):
+    def buildModel(self):
         super(DMF, self).buildModel_tf()
 
         initializer = tf.truncated_normal#tf.contrib.layers.xavier_initializer()

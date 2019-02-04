@@ -13,7 +13,7 @@ if __name__ == '__main__':
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '-' * 80
-    print 'Rating-based Recommenders:'
+    print 'General Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
     print '6. PMF            7. SVD++          8. EE             9. BPR             10. WRMF'
     print '11. ExpoMF'
@@ -22,15 +22,15 @@ if __name__ == '__main__':
     print 's1. RSTE          s2. SoRec         s3. SoReg         s4. SocialMF       s5. SBPR'
     print 's6. SREE          s7. LOCABAL       s8. SocialFD      s9. TBPR           s10. SERec'
 
+    print 'Network Embedding based Recommenders:'
+    print 'a1. CoFactor      a2. CUNE-MF       a3. CUNE-BPR      a4. IF-BPR'
 
-    print 'Advanced Recommenders:'
-    print 'a1. CoFactor      a2. CUNE-MF       a3. CUNE-BPR      a4. IF-BPR         a5. APR'
+    print 'Deep Recommenders:'
+    print 'd1. APR           d2. CDAE          d3. DMF           d4. NeuMF           d5. CFGAN'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
 
-    print 'Deep Recommenders:'
-    print 'd1. CDAE          d2. DMF'
 
     print '='*80
     algor = -1
@@ -138,10 +138,19 @@ if __name__ == '__main__':
         conf = Config('../config/rand.conf')
 
     elif order == 'd1':
-        conf = Config('../config/CDAE.conf')
+        conf = Config('../config/APR.conf')
 
     elif order == 'd2':
+        conf = Config('../config/CDAE.conf')
+
+    elif order == 'd3':
         conf = Config('../config/DMF.conf')
+
+    elif order == 'd4':
+        conf = Config('../config/NeuMF.conf')
+
+    elif order == 'd5':
+        conf = Config('../config/CFGAN.conf')
 
     else:
         print 'Error num!'

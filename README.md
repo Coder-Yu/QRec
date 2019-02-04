@@ -320,6 +320,12 @@ Released by School of Software Engineering, Chongqing University</br>
     <td>Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
      </td>
   </tr>
+      </tr>
+      <tr>
+    <td scope="row">NeuMF</td>
+    <td>He et al. Neural Collaborative Filtering, WWW 2017.
+     </td>
+  </tr>
   </table>
 </div>
 

@@ -331,12 +331,12 @@ class IF_BPR(SocialRecommender,DeepRecommender):
 
             if self.nTopKSim.has_key(user):
                 for friend in self.nTopKSim[user][:self.topK]:
-                    if friend in self.data.user:  # and self.nSimilarity[user][friend]>=self.threshold[user]:
+                    if friend in self.data.user and self.nSimilarity[user][friend]>=self.threshold[user]:
                         for item in self.negative[friend]:
                             if item in self.data.item:
                                 if item not in self.PositiveSet[user] and item not in self.JointSet[user] \
                                         and item not in self.PS_Set[user]:
-                                    self.NegSets[user][item] = 1
+                                    self.NegSets[user][item] = friend
 
     def buildModel(self):
 
@@ -407,10 +407,11 @@ class IF_BPR(SocialRecommender,DeepRecommender):
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
-            if self.isConverged(iteration):
-                break
-
-        #self.advTraining()
+            # if self.isConverged(iteration):
+            #      break
+            print self.foldInfo,'iteration:',iteration
+        self.ranking_performance()
+        self.advTraining()
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
@@ -442,7 +443,8 @@ class IF_BPR(SocialRecommender,DeepRecommender):
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
         t_derivative = -g_theta*(1-g_theta)*(1-s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))\
-                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-self.threshold[user])**2/(1+g_theta)**2 + 0.01*self.threshold[user]
+                       *(self.pSimilarity[user][friend]-self.avg_sim[user])/(self.avg_sim[user]-
+                       self.threshold[user])**2/(1+g_theta)**2 + 0.005*self.threshold[user]
         #print 'derivative', t_derivative
         self.thres_d[user] += t_derivative
         self.thres_count[user] += 1
@@ -568,208 +570,230 @@ class IF_BPR(SocialRecommender,DeepRecommender):
     #         #     neg_item_idx.append(group[ind])
     #
     #     return user_idx,item_idx,neg_item_idx
-
-
+    #
+    #
     # def buildModel_tf(self):
     #
     #     super(IF_BPR, self).buildModel_tf()
     #     self.randomWalks()
     #     self.computeSimilarity()
-
-        # print 'Decomposing...'
-        # self._create_variables()
-        # self._create_loss()
-        # self._create_optimizer()
-        # # train the model until converged
-        # init = tf.global_variables_initializer()
-        # self.sess.run(init)
-        #
-        # for epoch in range(self.maxIter):
-        #     if epoch % 10 == 0:
-        #         simArray = self.sess.run(self.sim_thres)
-        #         for i,sim in enumerate(simArray):
-        #             self.threshold[self.data.id2user[i]]=sim
-        #
-        #         for user in self.data.user:
-        #             li = [sim for sim in self.pSimilarity[user].values() if sim >= self.threshold[user]]
-        #             if len(li) == 0:
-        #                 self.avg_sim[user] = self.threshold[user]
-        #             else:
-        #                 self.avg_sim[user] = sum(li) / (len(li) + 0.0)
-        #         self.updateSets()
-        #
-        #     #print self.foldInfo, self.threshold.values()[:10]
-        #     # if epoch% 30==0:
-        #     #     self.ranking_performance()
-        #     user_idx, item_idx, neg_item_idx,friend_idx = self.next_adap_batch()
-        #     Suv = []
-        #     avgSim = []
-        #     for u,f in zip(user_idx,friend_idx):
-        #         Suv.append(self.pSimilarity[self.data.id2user[u]][self.data.id2user[f]])
-        #         avgSim.append(self.avg_sim[self.data.id2user[u]])
-        #
-        #     _, loss,effi = self.sess.run([self.adapTrain, self.adapLoss,self.adapEfficients],
-        #                        feed_dict={self.u_idx: user_idx, self.v_idx: item_idx,
-        #                                   self.neg_idx: neg_item_idx,self.avgSim:avgSim, self.pSim:Suv})
-        #     print self.foldInfo,'iteration:', epoch, 'adaptive loss:', loss
-        #     print self.foldInfo,'iteration:',epoch, effi[:20]
-        #
-        #     user_idx, item_idx, neg_item_idx = self.next_batch()
-        #     _, loss = self.sess.run([self.train, self.total_loss],
-        #                        feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
-        #     print self.foldInfo,'iteration:', epoch, 'loss:', loss
-        #
-        #     self.P = self.sess.run(self.U)
-        #     self.Q = self.sess.run(self.V)
+    #
+    #     self.U = tf.Variable(tf.truncated_normal(shape=[len(self.data.user), self.k], stddev=0.005), name='U')
+    #     self.V = tf.Variable(tf.truncated_normal(shape=[len(self.data.item), self.k], stddev=0.005), name='V')
+    #
+    #     print 'Decomposing...'
+    #     self._create_variables()
+    #     self._create_loss()
+    #     self._create_optimizer()
+    #     # train the model until converged
+    #     init = tf.global_variables_initializer()
+    #     self.sess.run(init)
+    #
+    #     for epoch in range(self.maxIter):
+    #         if epoch % (self.maxIter/30) == 0:
+    #             simArray = self.sess.run(self.sim_thres)
+    #             for i,sim in enumerate(simArray):
+    #                 self.threshold[self.data.id2user[i]]=sim
+    #
+    #             for user in self.data.user:
+    #                 li = [sim for sim in self.pSimilarity[user].values() if sim >= self.threshold[user]]
+    #                 if len(li) == 0:
+    #                     self.avg_sim[user] = self.threshold[user]
+    #                 else:
+    #                     self.avg_sim[user] = sum(li) / (len(li) + 0.0)
+    #             self.updateSets()
+    #
+    #         #print self.foldInfo, self.threshold.values()[:10]
+    #         # if epoch% 30==0:
+    #         #     self.ranking_performance()
+    #         user_idx, item_idx, neg_item_idx,friend_idx = self.next_adap_batch()
+    #         Suv = []
+    #         avgSim = []
+    #         for u,f in zip(user_idx,friend_idx):
+    #             Suv.append(self.pSimilarity[self.data.id2user[u]][self.data.id2user[f]])
+    #             avgSim.append(self.avg_sim[self.data.id2user[u]])
+    #
+    #         _, loss,effi = self.sess.run([self.adapTrain, self.adapLoss,self.adapEfficients],
+    #                            feed_dict={self.u_idx: user_idx, self.v_idx: item_idx,
+    #                                       self.neg_idx: neg_item_idx,self.avgSim:avgSim, self.pSim:Suv})
+    #         print self.foldInfo,'iteration:', epoch, 'adaptive loss:', loss
+    #         #print self.foldInfo,'iteration:',epoch, effi[:20]
+    #
+    #         user_idx, item_idx, neg_item_idx = self.next_batch()
+    #         _, loss = self.sess.run([self.train, self.total_loss],
+    #                            feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
+    #         print self.foldInfo,'iteration:', epoch, 'loss:', loss
+    #
+    #         self.P = self.sess.run(self.U)
+    #         self.Q = self.sess.run(self.V)
 
 ###############################################################################################
 
 # Adversarial Training
 
 ###############################################################################################
-    # def readParameters(self):
-    #     args = config.LineConfig(self.config['AT'])
-    #     self.eps = float(args['-eps'])
-    #     self.regAdv = float(args['-regA'])
-    #     self.advEpoch = int(args['-advEpoch'])
-    #
-    #
-    #
-    # def _create_variables(self):
-    #     #perturbation vectors
-    #     self.adv_U = tf.Variable(tf.zeros(shape=[self.m, self.k]),dtype=tf.float32, trainable=False)
-    #     self.adv_V = tf.Variable(tf.zeros(shape=[self.n, self.k]),dtype=tf.float32, trainable=False)
-    #
-    #     self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
-    #     self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
-    #     #parameters
-    #     self.eps = tf.constant(self.eps,dtype=tf.float32)
-    #     self.regAdv = tf.constant(self.regAdv,dtype=tf.float32)
-    #
-    # def _create_inference(self):
-    #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), 1),
-    #                               tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
-    #     return result
-    #
-    # def _create_adv_inference(self):
-    #     self.U_plus_delta = tf.add(self.U_embed, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
-    #     self.V_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.v_idx))
-    #     self.V_neg_plus_delta = tf.add(self.V_neg_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
-    #     result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_plus_delta), 1),
-    #                          tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_neg_plus_delta), 1))
-    #     return result
-    #
-    # def _create_adversarial(self):
-    #     #get gradients of Delta
-    #     self.grad_U, self.grad_V = tf.gradients(self.loss_adv, [self.adv_U,self.adv_V])
-    #
-    #     # convert the IndexedSlice Data to Dense Tensor
-    #     self.grad_U_dense = tf.stop_gradient(self.grad_U)
-    #     self.grad_V_dense = tf.stop_gradient(self.grad_V)
-    #
-    #     # normalization: new_grad = (grad / |grad|) * eps
-    #     self.update_U = self.adv_U.assign(tf.nn.l2_normalize(self.grad_U_dense, 1) * self.eps)
-    #     self.update_V = self.adv_V.assign(tf.nn.l2_normalize(self.grad_V_dense, 1) * self.eps)
-    #
-    #
-    # def _create_loss(self):
-    #     self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
-    #     self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
-    #     self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
-    #                            tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
-    #
-    #     self.total_loss = tf.add(self.loss, self.reg_loss)
-    #     #loss of adversarial training
-    #     self.loss_adv = tf.multiply(self.regAdv,tf.reduce_sum(tf.nn.softplus(-self._create_adv_inference())))
-    #     self.loss_adv = tf.add(self.loss,self.loss_adv)
-    #
-    # def _create_optimizer(self):
-    #     self.optimizer = tf.train.AdamOptimizer(0.002)
-    #     self.train = self.optimizer.minimize(self.total_loss)
-    #
-    #     self.optimizer_adv = tf.train.AdamOptimizer(0.002)
-    #     self.train_adv = self.optimizer.minimize(self.loss_adv)
-    #
-    #
-    #
-    # def next_batch(self):
-    #     batch_idx = np.random.randint(self.train_size, size=self.batch_size)
-    #     itemList = self.data.item.keys()
-    #     users = [self.data.trainingData[idx][0] for idx in batch_idx]
-    #     items = [self.data.trainingData[idx][1] for idx in batch_idx]
-    #     user_idx,item_idx=[],[]
-    #     neg_item_idx = []
-    #     for i, user in enumerate(users):
-    #         kItems = self.JointSet[user].keys()
-    #         pItems = self.PS_Set[user].keys()
-    #         nItems = self.NegSets[user].keys()
-    #         uid = self.data.user[user]
-    #         iid = self.data.item[items[i]]
-    #         group = []
-    #         group.append(iid)
-    #         if len(kItems)>0:
-    #             item_k = choice(kItems)
-    #             group.append(self.data.item[item_k])
-    #         if len(pItems)>0:
-    #             item_p = choice(pItems)
-    #             group.append(self.data.item[item_p])
-    #         item_r = choice(itemList)
-    #         while item_r in self.PositiveSet[user] or item_r in self.JointSet[user] \
-    #                 or item_r in self.PS_Set[user] or item_r in self.NegSets[user]:
-    #             item_r = choice(itemList)
-    #         group.append(self.data.item[item_r])
-    #         if len(nItems)>0:
-    #             item_n = choice(nItems)
-    #             group.append(self.data.item[item_n])
-    #
-    #         for ind, item in enumerate(group[:-1]):
-    #             user_idx.append(uid)
-    #             item_idx.append(group[ind])
-    #             neg_item_idx.append(group[ind+1])
-    #         # for ind, item in enumerate(group[1:]):
-    #         #     user_idx.append(uid)
-    #         #     item_idx.append(iid)
-    #         #     neg_item_idx.append(group[ind])
-    #
-    #     return user_idx,item_idx,neg_item_idx
-    #
-    #
-    # def advTraining(self):
-    #     self.readParameters()
-    #     self._create_variables()
-    #     self._create_loss()
-    #     self._create_adversarial()
-    #     self._create_optimizer()
-    #     print 'adversarial training...'
-    #     self.U = tf.Variable(self.P)
-    #     self.V = tf.Variable(self.Q)
-    #     with tf.Session() as sess:
-    #         init = tf.global_variables_initializer()
-    #         sess.run(init)
-    #
-    #         # # train the model until converged
-    #         # for epoch in range(self.maxIter):
-    #         #
-    #         #     user_idx,item_idx,neg_item_idx = self.next_batch()
-    #         #     _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
-    #         #     print 'iteration:', epoch, 'loss:',loss
-    #         #
-    #         #
-    #         #     self.P = sess.run(self.U)
-    #         #     self.Q = sess.run(self.V)
-    #         #     #self.ranking_performance()
-    #
-    #         # start adversarial training
-    #         for epoch in range(self.advEpoch):
-    #
-    #             user_idx,item_idx,neg_item_idx = self.next_batch()
-    #             sess.run([self.update_U, self.update_V],
-    #                      feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
-    #             _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
-    #
-    #             print 'iteration:', epoch, 'loss:',loss
-    #
-    #             self.P = sess.run(self.U)
-    #             self.Q = sess.run(self.V)
-    #             #self.ranking_performance()
+    def readParameters(self):
+        args = config.LineConfig(self.config['AT'])
+        self.eps = float(args['-eps'])
+        self.regAdv = float(args['-regA'])
+        self.advEpoch = int(args['-advEpoch'])
+
+    def _create_variables(self):
+        #perturbation vectors
+
+        self.U = tf.convert_to_tensor(self.P,dtype=tf.float32)
+        self.V = tf.convert_to_tensor(self.Q,dtype=tf.float32)
+
+        self.adv_U = tf.Variable(tf.zeros(shape=[self.m, self.k]),dtype=tf.float32, trainable=False)
+        self.adv_V = tf.Variable(tf.zeros(shape=[self.n, self.k]),dtype=tf.float32, trainable=False)
+
+        self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
+        self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
+        #parameters
+        self.eps = tf.constant(self.eps,dtype=tf.float32)
+        self.regAdv = tf.constant(self.regAdv,dtype=tf.float32)
+        #self.sim1 = tf.placeholder(tf.float32, [None], name="sim1")
+        #self.sim2 = tf.placeholder(tf.float32, [None], name="sim2")
+
+    def _create_inference(self):
+        result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), 1),
+                                  tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
+        return result
+
+    def _create_adv_inference(self):
+        #self.simMatrix1 = tf.diag(self.sim1)
+        #self.simMatrix2 = tf.diag(self.sim2)
+        self.U_plus_delta = tf.add(self.U_embed, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
+        self.V_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.v_idx))
+        self.V_neg_plus_delta = tf.add(self.V_neg_embed,tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
+
+        #self.V_plus_delta = tf.add(self.V_embed, tf.matmul(self.simMatrix1,tf.nn.embedding_lookup(self.adv_V, self.v_idx)))
+        #self.V_neg_plus_delta = tf.add(self.V_neg_embed, tf.matmul(self.simMatrix2,tf.nn.embedding_lookup(self.adv_V, self.neg_idx)))
+        result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_plus_delta), 1),
+                             tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_neg_plus_delta), 1))
+        return result
+
+    def _create_adversarial(self):
+        #get gradients of Delta
+        self.grad_U, self.grad_V = tf.gradients(self.loss_adv, [self.adv_U,self.adv_V])
+
+        # convert the IndexedSlice Data to Dense Tensor
+        self.grad_U_dense = tf.stop_gradient(self.grad_U)
+        self.grad_V_dense = tf.stop_gradient(self.grad_V)
+
+        # normalization: new_grad = (grad / |grad|) * eps
+        self.update_U = self.adv_U.assign(tf.nn.l2_normalize(self.grad_U_dense, 1) * self.eps)
+        self.update_V = self.adv_V.assign(tf.nn.l2_normalize(self.grad_V_dense, 1) * self.eps)
+
+    def _create_loss(self):
+        self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+        self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
+        self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
+                               tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
+        self.total_loss = tf.add(self.loss, self.reg_loss)
+        #loss of adversarial training
+        self.loss_adv = tf.multiply(self.regAdv,tf.reduce_sum(tf.nn.softplus(-self._create_adv_inference())))
+        self.loss_adv = tf.add(self.total_loss,self.loss_adv)
+
+    def _create_optimizer(self):
+        self.optimizer = tf.train.AdamOptimizer(0.002)
+        self.train = self.optimizer.minimize(self.total_loss)
+
+        self.optimizer_adv = tf.train.AdamOptimizer(0.002)
+        self.train_adv = self.optimizer.minimize(self.loss_adv)
+
+    def next_batch(self):
+        batch_idx = np.random.randint(self.train_size, size=self.batch_size)
+        itemList = self.data.item.keys()
+        users = [self.data.trainingData[idx][0] for idx in batch_idx]
+        items = [self.data.trainingData[idx][1] for idx in batch_idx]
+        user_idx,item_idx=[],[]
+        neg_item_idx = []
+        sim1, sim2 = [], []
+        for i, user in enumerate(users):
+            kItems = self.JointSet[user].keys()
+            pItems = self.PS_Set[user].keys()
+            nItems = self.NegSets[user].keys()
+            uid = self.data.user[user]
+            iid = self.data.item[items[i]]
+            group = []
+            similarity = []
+            #group.append(iid)
+            #similarity.append(0.5)
+            if len(kItems)>0:
+                item_k = choice(kItems)
+                group.append(self.data.item[item_k])
+                #similarity.append(self.pSimilarity[user][self.JointSet[user][item_k]])
+            if len(pItems)>0:
+                item_p = choice(pItems)
+                group.append(self.data.item[item_p])
+                #similarity.append(self.pSimilarity[user][self.PS_Set[user][item_p]])
+            item_r = choice(itemList)
+            while item_r in self.PositiveSet[user] or item_r in self.JointSet[user] \
+                    or item_r in self.PS_Set[user] or item_r in self.NegSets[user]:
+                item_r = choice(itemList)
+            group.append(self.data.item[item_r])
+            #similarity.append(0.5)
+            if len(nItems)>0:
+                item_n = choice(nItems)
+                group.append(self.data.item[item_n])
+                # try:
+                #     similarity.append(self.nSimilarity[user][self.NegSets[user][item_n]])
+                # except KeyError:
+                #     similarity.append(0.5)
+
+
+            for ind, item in enumerate(group[:-1]):
+                user_idx.append(uid)
+                item_idx.append(group[ind])
+                neg_item_idx.append(group[ind+1])
+                #sim1.append(1-similarity[ind])
+                #sim2.append(1-similarity[ind+1])
+            # for ind, item in enumerate(group[1:]):
+            #     user_idx.append(uid)
+            #     item_idx.append(iid)
+            #     neg_item_idx.append(group[ind])
+
+        return user_idx,item_idx,neg_item_idx#,sim1,sim2
+
+
+    def advTraining(self):
+        self.readParameters()
+        self._create_variables()
+        self._create_loss()
+        self._create_adversarial()
+        self._create_optimizer()
+        print 'adversarial training...'
+
+        with tf.Session() as sess:
+            init = tf.global_variables_initializer()
+            sess.run(init)
+
+            # # train the model until converged
+            # for epoch in range(self.maxIter):
+            #
+            #     user_idx,item_idx,neg_item_idx = self.next_batch()
+            #     _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
+            #     print 'iteration:', epoch, 'loss:',loss
+            #
+            #
+            #     self.P = sess.run(self.U)
+            #     self.Q = sess.run(self.V)
+            #     #self.ranking_performance()
+
+            # start adversarial training
+            for epoch in range(self.advEpoch):
+
+                user_idx,item_idx,neg_item_idx = self.next_batch()
+                sess.run([self.update_U, self.update_V],
+                         feed_dict={self.u_idx: user_idx, self.v_idx: item_idx,
+                                    self.neg_idx: neg_item_idx}) #self.sim1: sim1, self.sim2: sim2})
+
+                _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx,
+                                                                            self.neg_idx:neg_item_idx})#,self.sim1:sim1,self.sim2:sim2})
+
+                print self.foldInfo,'iteration:', epoch, 'loss:',loss
+                self.P = sess.run(self.U)
+                self.Q = sess.run(self.V)
+                #self.ranking_performance()
        
