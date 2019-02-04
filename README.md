@@ -324,6 +324,33 @@ papers and the code in terms of fomula presentation. If you have problems in und
   </table>
 </div>
 
+<h3>Category</h3>
+<b>Generic Recommenders</b></br>
+<p>
+UserKNN    ItemKNN    BasicMF   SlopeOne   SVD</br>
+PMF        SVD++      EE        BPR        WRMF</br>
+ExpoMF</br>
+</p>
+
+<b>Social Recommenders</b></br>
+<p>
+RSTE    SoRec      SoReg     SocialMF   SBPR</br>
+SREE    LOCABAL    SocialFD  TBPR       SERec</br>
+</p>
+
+<b>Network Embedding based Recommenders</b></br>
+<p>CoFactor     CUNE-MF      CUNE-BPR     IF-BPR</br></P>
+
+<b>Deep Recommenders</b></br>
+<p>
+APR     CDAE       DMF       NeuMF      CFGAN</br>
+</p>
+
+<b>Baselines</b></br>
+<p>
+UserMean      ItemMean     MostPopular     Rand</br>
+</p>
+
 <h2>Related Datasets</h2>
 <div>
  <table class="table table-hover table-bordered">

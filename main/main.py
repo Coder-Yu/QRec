@@ -13,7 +13,7 @@ if __name__ == '__main__':
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '-' * 80
-    print 'General Recommenders:'
+    print 'Generic Recommenders:'
     print '1. UserKNN        2. ItemKNN        3. BasicMF        4. SlopeOne        5. SVD'
     print '6. PMF            7. SVD++          8. EE             9. BPR             10. WRMF'
     print '11. ExpoMF'
