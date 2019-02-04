@@ -328,43 +328,43 @@ papers and the code in terms of fomula presentation. If you have problems in und
 
 <table>
 <tr>
-<th colspan="5">Generic Recommenders</th>
+<th colspan="10">Generic Recommenders</th>
 </tr>
 <tr>
-<td>UserKNN</td>    <td>ItemKNN</td>    <td>BasicMF   <td>SlopeOne   <td>SVD
-</tr>
-<tr>
+<td>UserKNN</td>    <td>ItemKNN</td>    <td>BasicMF   <td>SlopeOne   <td>SVD</td>
 <td>PMF</td>        <td>SVD++</td>      <td>EE</td>       <td>BPR</td>        <td>WRMF</td>
 </tr>
 <tr>
 <td>ExpoMF</td>     <td></td>     <td></td>   <td></td>     <td></td>
+<td></td>     <td></td>   <td></td>     <td></td> <td></td>
 </tr>
 <tr>
-<th colspan="5">Social Recommenders</th>
+<th colspan="10">Social Recommenders</th>
 </tr>
 <tr>
 <td>RSTE</td>    <td>SoRec</td>      <td>SoReg</td>     <td>SocialMF</td>   <td>SBPR</td>
-</tr>
-<tr>
 <td>SREE</td>    <td>LOCABAL</td>    <td>SocialFD</td>  <td>TBPR</td>       <td>SERec</td>
 </tr>
 <tr>
-<th colspan="5">Network Embedding based Recommenders</th>
+<th colspan="10">Network Embedding based Recommenders</th>
 </tr>
 <tr>
 <td>CoFactor</td>     <td>CUNE-MF</td>      <td>CUNE-BPR</td>     <td>IF-BPR</td>  <td>  </td>
+<td></td>     <td></td>   <td></td>     <td></td>  <td></td>
 </tr>
 <tr>
-<th colspan="5">Deep Recommenders</th>
+<th colspan="10">Deep Recommenders</th>
 </tr>
 <tr>
 <td>APR</td>     <td>CDAE</td>      <td>DMF</td>       <td>NeuMF</td>      <td>CFGAN</td>
+<td></td>     <td></td>   <td></td>     <td></td>  <td></td>
 </tr>
 <tr>
-<th colspan="5">Baselines</th>
+<th colspan="10">Baselines</th>
 </tr>
 <tr>
 <td>UserMean</td>      <td>ItemMean</td>     <td>MostPopular</td>     <td>Rand</td> <td>  </td>
+<td></td>     <td></td>   <td></td>     <td></td>  <td></td>
 </tr>
 </table>
 
