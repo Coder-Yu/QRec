@@ -325,8 +325,11 @@ papers and the code in terms of fomula presentation. If you have problems in und
 </div>
 
 <h3>Category</h3>
-<b>Generic Recommenders</b></br>
+
 <table>
+<tr>
+<th>Generic Recommenders</th>
+</tr>
 <tr>
 <td>UserKNN</td>    <td>ItemKNN</td>    <td>BasicMF   <td>SlopeOne   <td>SVD
 </tr>
