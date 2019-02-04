@@ -170,7 +170,9 @@ Released by School of Software Engineering, Chongqing University</br>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- predict()<br>
 
 <h2>Algorithms Implemented</h2>
-<p><b>Note: </b>We use SGD to obtain the local minimum. So, there have some differences between the original papers and the code in terms of fomula presentation. If you have problems in understanding the code, please open an issue to ask for help. We can guarantee that all the implementations are carefully reviewed and tested. </p> 
+<p><b>Note: </b>We use SGD to obtain the local minimum. So, there have some differences between the original
+papers and the code in terms of fomula presentation. If you have problems in understanding the code, please open an issue to ask for help. We can guarantee that all the implementations are carefully reviewed and tested. </p>
+<p>Any suggestions and criticism are welcomed. We will make efforts to improve RecQ.</p>
 <div>
 
  <table class="table table-hover table-bordered">
