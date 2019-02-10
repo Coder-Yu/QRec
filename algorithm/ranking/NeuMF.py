@@ -30,8 +30,7 @@ class NeuMF(DeepRecommender):
             #According to the paper, we sampled four negative instances per positive instance
             for instance in range(4):
                 item_j = randint(0, self.n - 1)
-                while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]) or \
-                        (self.data.testSet_u.has_key(user) and self.data.testSet_u[user].has_key(self.data.id2item[item_j])):
+                while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
                     item_j = randint(0, self.n - 1)
                 user_idx.append(self.data.user[user])
                 item_idx.append(item_j)
