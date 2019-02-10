@@ -68,16 +68,16 @@ class NeuMF(DeepRecommender):
 
         # MLP
         with tf.variable_scope("mlp_params"):
-            MLP_W1 = tf.get_variable(initializer=initializer([self.k*2, self.k*2]), name='W1',regularizer=mlp_regularizer)
-            MLP_b1 = tf.get_variable(initializer=tf.zeros(shape=[self.k*2]), name='b1',regularizer=mlp_regularizer)
+            MLP_W1 = tf.get_variable(name='W1',initializer=initializer([self.k*2, self.k*2]), regularizer=mlp_regularizer)
+            MLP_b1 = tf.get_variable(name='b1',initializer=tf.zeros(shape=[self.k*2]), regularizer=mlp_regularizer)
             self.h_out = tf.nn.relu(tf.add(tf.matmul(tf.concat([self.UM_embedding,self.IM_embedding], 1), MLP_W1), MLP_b1))
 
-            MLP_W2 = tf.get_variable(initializer=initializer([self.k*2, self.k]), name='W2',regularizer=mlp_regularizer)
-            MLP_b2 = tf.get_variable(initializer=tf.zeros(shape=[self.k]), name='b2',regularizer=mlp_regularizer)
+            MLP_W2 = tf.get_variable(name='W2',initializer=initializer([self.k*2, self.k]), regularizer=mlp_regularizer)
+            MLP_b2 = tf.get_variable(name='b2',initializer=tf.zeros(shape=[self.k]), regularizer=mlp_regularizer)
             self.h_out = tf.nn.relu(tf.add(tf.matmul(self.h_out,MLP_W2), MLP_b2))
 
-            MLP_W3 = tf.get_variable(initializer=initializer([self.k, self.k]), name='W3',regularizer=mlp_regularizer)
-            MLP_b3 = tf.get_variable(initializer=tf.zeros(shape=[self.k]), name='b3',regularizer=mlp_regularizer)
+            MLP_W3 = tf.get_variable(name='W3',initializer=initializer([self.k, self.k]),regularizer=mlp_regularizer)
+            MLP_b3 = tf.get_variable(name='b3',initializer=tf.zeros(shape=[self.k]), regularizer=mlp_regularizer)
             self.MLP_Layer = tf.nn.relu(tf.add(tf.matmul(self.h_out,MLP_W3), MLP_b3))
             self.h_mlp = tf.get_variable(name='mlp_out', initializer=initializer([self.k]), regularizer=mlp_regularizer)
 
