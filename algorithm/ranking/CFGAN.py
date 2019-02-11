@@ -134,7 +134,7 @@ class CFGAN(DeepRecommender):
             C_u, mask, N_u = self.next_batch()
             _, D_loss = self.sess.run([self.D_solver, self.D_loss], feed_dict={self.C: C_u,self.mask:mask,self.N_u:N_u})
 
-            for i in range(4):
+            for i in range(3):
                 _, G_loss = self.sess.run([self.G_solver, self.G_loss], feed_dict={self.C: C_u,self.mask:mask,self.N_u:N_u})
 
             #C_u, mask, N_u = self.next_batch()
