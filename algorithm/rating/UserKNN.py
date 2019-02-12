@@ -55,8 +55,8 @@ class UserKNN(Recommender):
 
     def computeCorr(self):
         'compute correlation among users'
-        print 'Computing user correlation...'
-        for u1 in self.data.testSet_u:
+        print 'Computing user similarities...'
+        for idx,u1 in enumerate(self.data.testSet_u):
 
             for u2 in self.data.user:
                 if u1 <> u2:
@@ -65,8 +65,10 @@ class UserKNN(Recommender):
                     sim = qmath.similarity(self.data.sRow(u1),self.data.sRow(u2),self.sim)
                     self.userSim.set(u1,u2,sim)
             self.topUsers[u1]=sorted(self.userSim[u1].iteritems(), key=lambda d: d[1], reverse=True)
-            print 'user '+u1+' finished.'
-        print 'The user correlation has been figured out.'
+            if idx%100==0:
+                print 'progress:',idx,'/',len(self.data.testSet_u)
+
+        print 'The user similarities have been calculated.'
 
 
 

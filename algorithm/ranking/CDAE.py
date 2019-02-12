@@ -17,7 +17,7 @@ class CDAE(DeepRecommender):
         super(CDAE, self).__init__(conf,trainingSet,testSet,fold)
 
     def encoder(self,x,v):
-        layer = tf.nn.relu(tf.matmul(tf.concat([x,v],1), self.weights['encoder'])+self.biases['encoder'])
+        layer = tf.nn.sigmoid(tf.matmul(tf.concat([x,v],1), self.weights['encoder'])+self.biases['encoder'])
         #layer = tf.nn.sigmoid(tf.add(tf.matmul(x, self.weights['encoder']), self.biases['encoder']))
         return layer
 

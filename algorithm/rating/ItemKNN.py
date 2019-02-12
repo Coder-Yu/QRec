@@ -54,8 +54,8 @@ class ItemKNN(Recommender):
 
     def computeCorr(self):
         'compute correlation among items'
-        print 'Computing item correlation...'
-        for i1 in self.data.testSet_i:
+        print 'Computing item similarities...'
+        for idx,i1 in enumerate(self.data.testSet_i):
 
             for i2 in self.data.item:
                 if i1 <> i2:
@@ -64,8 +64,9 @@ class ItemKNN(Recommender):
                     sim = qmath.similarity(self.data.sCol(i1),self.data.sCol(i2),self.sim)
                     self.itemSim.set(i1,i2,sim)
             self.topItems[i1] = sorted(self.itemSim[i1].iteritems(),key = lambda d:d[1],reverse=True)
-            print 'item '+i1+' finished.'
-        print 'The item correlation has been figured out.'
+            if idx%100==0:
+                print 'progress:',idx,'/',len(self.data.testSet_i)
+        print 'The item similarities have been calculated.'
 
 
 
