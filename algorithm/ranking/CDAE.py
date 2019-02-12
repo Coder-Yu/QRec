@@ -17,12 +17,12 @@ class CDAE(DeepRecommender):
         super(CDAE, self).__init__(conf,trainingSet,testSet,fold)
 
     def encoder(self,x,v):
-        layer = tf.nn.sigmoid(tf.add(tf.add(tf.matmul(x, self.weights['encoder']), self.biases['encoder']),v))
+        layer = tf.nn.relu(tf.matmul(tf.concat([x,v],1), self.weights['encoder'])+self.biases['encoder'])
         #layer = tf.nn.sigmoid(tf.add(tf.matmul(x, self.weights['encoder']), self.biases['encoder']))
         return layer
 
     def decoder(self,x):
-        layer = tf.nn.sigmoid(tf.add(tf.matmul(x, self.weights['decoder']),self.biases['decoder']))
+        layer = tf.nn.sigmoid(tf.matmul(x, self.weights['decoder'])+self.biases['decoder'])
         return layer
 
     def next_batch(self):
@@ -32,7 +32,6 @@ class CDAE(DeepRecommender):
         userList = self.data.user.keys()
         itemList = self.data.item.keys()
         for n in range(self.batch_size):
-            sample = []
             user = choice(userList)
             uids.append(self.data.user[user])
             vec = self.data.row(user)
@@ -40,13 +39,13 @@ class CDAE(DeepRecommender):
             ratedItems, values = self.data.userRated(user)
             for item in ratedItems:
                 iid = self.data.item[item]
-                evaluated[n][iid]=True
+                evaluated[n][iid]=1
             for i in range(self.negative_sp*len(ratedItems)):
                 ng = choice(itemList)
                 while self.data.trainSet_u.has_key(ng):
                     ng = choice(itemList)
                 ng = self.data.item[ng]
-                evaluated[n][ng]=True
+                evaluated[n][ng]=1
             X[n]=vec
         return X,uids,evaluated
 
@@ -58,54 +57,52 @@ class CDAE(DeepRecommender):
 
     def initModel(self):
         super(CDAE, self).initModel()
-        n_input = len(self.data.item)
-        n_output = len(self.data.item)
+
         self.negative_sp = 5
         initializer = tf.contrib.layers.xavier_initializer()
-        self.X = tf.placeholder("float", [None, n_input])
-        self.mask_corruption = tf.placeholder("float", [None, n_input])
-        self.sample = tf.placeholder("bool", [None, n_input])
-        self.zeros = np.zeros((self.batch_size,n_input))
-        self.V = tf.Variable(initializer([len(self.data.user), self.n_hidden]))
-        self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
-        self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
+        self.X = tf.placeholder(tf.float32, [None, self.n])
+        self.mask_corruption = tf.placeholder(tf.float32, [None, self.n])
+        self.sample = tf.placeholder(tf.float32, [None, self.n])
+        #self.zeros = np.zeros((self.batch_size,self.n))
+        self.U = tf.Variable(initializer([self.m, self.k]))
+        self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
+
 
 
         self.weights = {
-            'encoder': tf.Variable(initializer([n_input, self.n_hidden])),
-            'decoder': tf.Variable(initializer([self.n_hidden, n_output])),
+            'encoder': tf.Variable(initializer([self.n+self.k, self.n_hidden])),
+            'decoder': tf.Variable(initializer([self.n_hidden, self.n])),
         }
         self.biases = {
             'encoder': tf.Variable(initializer([self.n_hidden])),
-            'decoder': tf.Variable(initializer([n_output])),
+            'decoder': tf.Variable(initializer([self.n])),
         }
 
     #def pretrain(self,var,data):
 
     def buildModel(self):
         self.corrupted_input = tf.multiply(self.X,self.mask_corruption)
-        self.encoder_op = self.encoder(self.corrupted_input,self.V_embed)
+        self.encoder_op = self.encoder(self.corrupted_input,self.U_embed)
         self.decoder_op = self.decoder(self.encoder_op)
 
 
-        y_pred = tf.where(self.sample,self.decoder_op,self.zeros)
-        y_true = tf.where(self.sample,self.corrupted_input,self.zeros)
-
+        self.y_pred = tf.multiply(self.sample,self.decoder_op)
+        y_true = tf.multiply(self.sample,self.corrupted_input)
+        self.y_pred = tf.maximum(1e-6, self.y_pred)
         # self.cost1 = tf.multiply(self.X, tf.log(self.decoder_op))
         # self.cost2 = tf.multiply((1 - self.X), tf.log(1 - self.decoder_op))
         # self.loss = -1 * tf.multiply(self.X, tf.log(self.decoder_op)) - tf.multiply((1 - self.X), tf.log(1 - self.decoder_op))
 
-        self.loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=y_pred,labels=y_true)
+        #self.loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=y_pred,labels=y_true)
+        self.loss = -tf.multiply(y_true,tf.log(self.y_pred))-tf.multiply((1-y_true),tf.log(1-self.y_pred))
+
+
+        self.reg_loss = self.regU*(tf.nn.l2_loss(self.weights['encoder'])+tf.nn.l2_loss(self.weights['decoder'])+
+                                   tf.nn.l2_loss(self.biases['encoder'])+tf.nn.l2_loss(self.biases['decoder']))
+
+        self.reg_loss = self.reg_loss + self.regU*tf.nn.l2_loss(self.U_embed)
+        self.loss = self.loss + self.reg_loss
         self.loss = tf.reduce_mean(self.loss)
-        reg_lambda = tf.constant(self.regU, dtype=tf.float32)
-
-        self.reg_loss = tf.add(tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.weights['encoder'])),
-                               tf.multiply(reg_lambda, tf.nn.l2_loss(self.weights['decoder']))),
-                               tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.biases['encoder'])),
-                               tf.multiply(reg_lambda, tf.nn.l2_loss(self.biases['decoder']))))
-
-        self.reg_loss = tf.add(self.reg_loss,tf.multiply(reg_lambda,tf.nn.l2_loss(self.V_embed)))
-        self.loss = tf.add(self.loss,self.reg_loss)
 
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
 
@@ -113,16 +110,17 @@ class CDAE(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
-        total_batch = int(len(self.data.user)/ self.batch_size)
+
         for epoch in range(self.maxIter):
-            for i in range(total_batch):
-                mask = np.random.binomial(1, self.corruption_level,(self.batch_size, len(self.data.item)))
-                batch_xs,users,sample = self.next_batch()
 
-                _, loss = self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,self.v_idx:users,self.sample:sample})
+            mask = np.random.binomial(1, self.corruption_level,(self.batch_size, self.n))
+            batch_xs,users,sample = self.next_batch()
 
-                print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"Batch:", '%03d' %(i+1),"loss=", "{:.9f}".format(loss)
-            self.ranking_performance()
+            _, loss,y = self.sess.run([optimizer, self.loss,self.y_pred], feed_dict={self.X: batch_xs,self.mask_corruption:mask,self.u_idx:users,self.sample:sample})
+
+            print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"loss=", "{:.9f}".format(loss)
+            #print y
+            #self.ranking_performance()
         print("Optimization Finished!")
 
 
@@ -132,7 +130,7 @@ class CDAE(DeepRecommender):
         if self.data.containsUser(u):
             vec = self.data.row(u).reshape((1,len(self.data.item)))
             uid = [self.data.user[u]]
-            return self.sess.run(self.decoder_op,feed_dict={self.X:vec,self.mask_corruption:np.ones((1,len(self.data.item))),self.v_idx:uid})[0]
+            return self.sess.run(self.decoder_op,feed_dict={self.X:vec,self.mask_corruption:np.ones((1,len(self.data.item))),self.u_idx:uid})[0]
         else:
             return [self.data.globalMean] * len(self.data.item)
 
