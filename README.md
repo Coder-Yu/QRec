@@ -1,13 +1,4 @@
 <h1>RecQ</h1>
-<h2>Latest News</h2>
-<p>
-02/12/2019 - CFGAN proposed in CIKM'18 has been added (tuning...) </br>
-02/04/2019 - NeuMF proposed in WWW'17 has been added (tuning...) </br>
-10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
-10/02/2018 - Two deep models: DMF CDAE have been implemented.</br>
-07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
-</p>
-
 <h2>Introduction</h2>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
@@ -17,6 +8,16 @@ Released by School of Software Engineering, Chongqing University</br>
 </br>
 
 **RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
+
+<h2>Latest News</h2>
+<b>We are now transfering RecQ to the platform of TensorFlow. A GPU based version would be provided for deep learning based methods and some generic shallow methods such as PMF and BPR. </b></br></br>
+<p>
+02/12/2019 - CFGAN proposed in CIKM'18 has been added (tuning...) </br>
+02/04/2019 - NeuMF proposed in WWW'17 has been added (tuning...) </br>
+10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
+10/02/2018 - Two deep models: DMF CDAE have been implemented.</br>
+07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
+</p>
 
 <h2>Architecture of RecQ</h2>
 
