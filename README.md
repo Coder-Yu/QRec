@@ -194,41 +194,40 @@ papers and the code in terms of fomula presentation. If you have problems in und
     <td scope="row">SoRec</td>
     <td>Ma et al., SoRec: Social Recommendation Using Probabilistic Matrix Factorization, SIGIR 2008.
      </td>
-  </tr> 
+  </tr>
+     <tr>
+    <td scope="row">SVD++</td>
+    <td>Koren, Factorization meets the neighborhood: a multifaceted collaborative filtering model, SIGKDD 2008.
+     </td>
+  </tr>
+    <tr>
+    <td scope="row">RSTE</td>
+    <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
+     </td>
+  </tr>
+  <tr>
+    <td scope="row">SVD</td>
+    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, SIGKDD 2009.
+     </td>
+  </tr>
   <tr>
     <td scope="row">SocialMF</td>
     <td>Jamali and Ester, A Matrix Factorization Technique with Trust Propagation for Recommendation in Social Networks, RecSys 2010.
      </td>
   </tr>
     <tr>
-    <td scope="row">LOCABAL</td>
-    <td>Tang, Jiliang, et al. Exploiting local and global social context for recommendation, AAAI 2013.
+    <td scope="row">EE</td>
+    <td>Khoshneshin et al., Collaborative Filtering via Euclidean Embedding, RecSys2010.
      </td>
   </tr>
-  
-  <tr>
-    <td scope="row">RSTE</td>
-    <td>Ma et al., Learning to Recommend with Social Trust Ensemble, SIGIR 2009.
-     </td>
-  </tr> 
-  <tr>
-    <td scope="row">SVD</td>
-    <td>Y. Koren, Collaborative Filtering with Temporal Dynamics, SIGKDD 2009.
-     </td>
-  </tr>
-   <tr>
-    <td scope="row">SVD++</td>
-    <td>Koren, Factorization meets the neighborhood: a multifaceted collaborative filtering model, SIGKDD 2008.
-     </td>
-  </tr>
-  <tr>
+    <tr>
     <td scope="row">SoReg</td>
     <td>Ma et al., Recommender systems with social regularization, WSDM 2011.
      </td>
-  </tr> 
-  <tr>
-    <td scope="row">EE</td>
-    <td>Khoshneshin et al., Collaborative Filtering via Euclidean Embedding, RecSys2010.
+  </tr>
+    <tr>
+    <td scope="row">LOCABAL</td>
+    <td>Tang, Jiliang, et al. Exploiting local and global social context for recommendation, AAAI 2013.
      </td>
   </tr>
   <tr>
@@ -248,7 +247,7 @@ papers and the code in terms of fomula presentation. If you have problems in und
   </tr>
     <tr>
     <td scope="row">SocialFD</td>
-    <td>Yu et al., A Social Recommender Based on Factorization and Distance Metric Learning, IEEE Access.
+    <td>Yu et al., A Social Recommender Based on Factorization and Distance Metric Learning, IEEE Access 2017.
      </td>
   </tr>
   </table>
@@ -261,35 +260,14 @@ papers and the code in terms of fomula presentation. If you have problems in und
 
    </tr>
   <tr>
-	<td scope="row">APR</td>
-    <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
-    </td>
-  </tr>
-
-  <tr>
-	<td scope="row">ExpoMF</td>
-    <td>Liang et al., Modeling User Exposure in Recommendation, WWW 2016.<br>
-    </td>
-  </tr>
-  <tr>
-	<td scope="row">SERec</td>
-    <td>Wang et al., Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation, AAAI 2018.<br>
-    </td>
-  </tr>
-  <tr>
-	<td scope="row">CDAE</td>
-    <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
-    </td>
-  </tr>
-  <tr>
-	<td scope="row">DMF</td>
-    <td>Xue et al., Deep Matrix Factorization Models for Recommender Systems, IJCAI 2017.<br>
-    </td>
-  </tr>
-  <tr>
 	<td scope="row">BPR</td>
     <td>Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback, UAI 2009.<br>
     </td>
+  </tr>
+    <tr>
+    <td scope="row">WRMF</td>
+    <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
+     </td>
   </tr>
   <tr>
 	<td scope="row">SBPR</td>
@@ -297,28 +275,48 @@ papers and the code in terms of fomula presentation. If you have problems in und
     </td>
   </tr>
   <tr>
-    <td scope="row">CUNE-BPR</td>
-    <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
-     </td>
-  </tr>
-  <tr>
-    <td scope="row">WRMF</td>
-    <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
-     </td>
+	<td scope="row">ExpoMF</td>
+    <td>Liang et al., Modeling User Exposure in Recommendation, WWW 2016.<br>
+    </td>
   </tr>
   <tr>
     <td scope="row">TBPR</td>
     <td>Wang et al. Social Recommendation with Strong and Weak Ties, CIKM 2016.
      </td>
   </tr>
-  <tr>
-    <td scope="row">IF-BPR</td>
-    <td>Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
+    <tr>
+	<td scope="row">CDAE</td>
+    <td>Wu et al., Collaborative Denoising Auto-Encoders for Top-N Recommender Systems, WSDM 2016.<br>
+    </td>
+  </tr>
+    <tr>
+	<td scope="row">DMF</td>
+    <td>Xue et al., Deep Matrix Factorization Models for Recommender Systems, IJCAI 2017.<br>
+    </td>
+  </tr>
+    <tr>
+    <td scope="row">NeuMF</td>
+    <td>He et al. Neural Collaborative Filtering, WWW 2017.
      </td>
   </tr>
   <tr>
-    <td scope="row">NeuMF</td>
-    <td>He et al. Neural Collaborative Filtering, WWW 2017.
+    <td scope="row">CUNE-BPR</td>
+    <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
+     </td>
+  </tr>
+    <tr>
+	<td scope="row">SERec</td>
+    <td>Wang et al., Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation, AAAI 2018.<br>
+    </td>
+  </tr>
+    <tr>
+	<td scope="row">APR</td>
+    <td>He et al., Adversarial Personalized Ranking for Recommendation, SIGIR 2018.<br>
+    </td>
+  </tr>
+  <tr>
+    <td scope="row">IF-BPR</td>
+    <td>Yu et al. Adaptive Implicit Friends Identification over Heterogeneous Network for Social Recommendation, CIKM 2018.
      </td>
   </tr>
   <tr>
