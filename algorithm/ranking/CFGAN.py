@@ -113,8 +113,8 @@ class CFGAN(DeepRecommender):
         D_fake = discriminator(G_sample)
 
 
-        self.D_loss = -tf.reduce_mean(tf.log(D_real) + tf.log(1. - D_fake))
-        self.G_loss = tf.reduce_mean(tf.log(1.-D_fake)+self.alpha*tf.nn.l2_loss(tf.multiply(self.N_u,G_sample)))
+        self.D_loss = -tf.reduce_mean(tf.log(D_real) + tf.log(1. - D_fake))+tf.reduce_mean(D_reg)
+        self.G_loss = tf.reduce_mean(tf.log(1.-D_fake)+self.alpha*tf.nn.l2_loss(tf.multiply(self.N_u,G_sample)))+tf.reduce_mean(D_reg)
 
         # Only update D(X)'s parameters, so var_list = theta_D
         self.D_solver = tf.train.AdamOptimizer(self.lRate).minimize(self.D_loss, var_list=theta_D)
@@ -126,6 +126,9 @@ class CFGAN(DeepRecommender):
 
         init = tf.global_variables_initializer()
         self.sess.run(init)
+
+        print 'pretraining...'
+
 
         print 'training...'
         for epoch in range(self.maxIter):

@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     print 'Deep Recommenders:'
     print 'd1. APR           d2. CDAE          d3. DMF           d4. NeuMF           d5. CFGAN'
+    print 'd6. IRGAN'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
@@ -47,112 +48,18 @@ if __name__ == '__main__':
         conf = Config('../config/visual/visual.conf')
         Display(conf).render()
         exit(0)
-    elif order == '1':
-        conf = Config('../config/UserKNN.conf')
 
-    elif order == '2':
-        conf = Config('../config/ItemKNN.conf')
+    algorthms = {'1':'UserKNN','2':'ItemKNN','3':'BasicMF','4':'SlopeOne','5':'SVD','6':'PMF',
+                 '7':'SVD++','8':'EE','9':'BPR','10':'WRMF','11':'ExpoMF',
+                 's1':'RSTE','s2':'SoRec','s3':'SoReg','s4':'SocialMF','s5':'SBPR','s6':'SREE',
+                 's7':'LOCABAL','s8':'SocialFD','s9':'TBPR','s10':'SEREC','a1':'CoFactor',
+                 'a2':'CUNE_MF','a3':'CUNE_BPR','a4':'IF_BPR',
+                 'd1':'APR','d2':'CDAE','d3':'DMF','d4':'NeuMF','d5':'CFGAN','d6':'IRGAN',
+                 'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
 
-    elif order == '3':
-        conf = Config('../config/BasicMF.conf')
-
-    elif order == '4':
-        conf = Config('../config/SlopeOne.conf')
-
-    elif order == '5':
-        conf = Config('../config/SVD.conf')
-
-    elif order == '6':
-        conf = Config('../config/PMF.conf')
-
-    elif order == '7':
-        conf = Config('../config/SVD++.conf')
-
-    elif order == '8':
-        conf = Config('../config/EE.conf')
-
-    elif order == '9':
-        conf = Config('../config/BPR.conf')
-
-    elif order == '10':
-        conf = Config('../config/WRMF.conf')
-
-    elif order == '11':
-        conf = Config('../config/ExpoMF.conf')
-
-    elif order == 's1':
-        conf = Config('../config/RSTE.conf')
-
-    elif order == 's2':
-        conf = Config('../config/SoRec.conf')
-
-    elif order == 's3':
-        conf = Config('../config/SoReg.conf')
-
-    elif order == 's4':
-        conf = Config('../config/SocialMF.conf')
-
-    elif order == 's5':
-        conf = Config('../config/SBPR.conf')
-
-    elif order == 's6':
-        conf = Config('../config/SREE.conf')
-
-    elif order == 's7':
-        conf = Config('../config/LOCABAL.conf')
-
-    elif order == 's8':
-        conf = Config('../config/SocialFD.conf')
-
-    elif order == 's9':
-        conf = Config('../config/TBPR.conf')
-
-    elif order == 's10':
-        conf = Config('../config/SERec.conf')
-
-    elif order == 'a1':
-        conf = Config('../config/CoFactor.conf')
-
-    elif order == 'a2':
-        conf = Config('../config/CUNE_MF.conf')
-
-    elif order == 'a3':
-        conf = Config('../config/CUNE_BPR.conf')
-
-    elif order == 'a4':
-        conf = Config('../config/IF_BPR.conf')
-
-    elif order == 'a5':
-        conf = Config('../config/APR.conf')
-
-    elif order == 'b1':
-        conf = Config('../config/UserMean.conf')
-
-    elif order == 'b2':
-        conf = Config('../config/ItemMean.conf')
-
-    elif order == 'b3':
-        conf = Config('../config/MostPopular.conf')
-
-    elif order == 'b4':
-        conf = Config('../config/rand.conf')
-
-    elif order == 'd1':
-        conf = Config('../config/APR.conf')
-
-    elif order == 'd2':
-        conf = Config('../config/CDAE.conf')
-
-    elif order == 'd3':
-        conf = Config('../config/DMF.conf')
-
-    elif order == 'd4':
-        conf = Config('../config/NeuMF.conf')
-
-    elif order == 'd5':
-        conf = Config('../config/CFGAN.conf')
-
-    else:
+    try:
+        conf = Config('../config/'+algorthms[order]+'.conf')
+    except KeyError:
         print 'Error num!'
         exit(-1)
     recSys = RecQ(conf)
