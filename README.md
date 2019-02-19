@@ -305,6 +305,11 @@ papers and the code in terms of fomula presentation. If you have problems in und
     <td>Zhang et al., Collaborative User Network Embedding for Social Recommender Systems, SDM 2017.
      </td>
   </tr>
+   <tr>
+	<td scope="row">IRGAN</td>
+    <td>Wang et al., IRGAN: A Minimax Game for Unifying Generative and Discriminative Information Retrieval Models, SIGIR 2017.<br>
+    </td>
+  </tr>
     <tr>
 	<td scope="row">SERec</td>
     <td>Wang et al., Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation, AAAI 2018.<br>

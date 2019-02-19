@@ -59,7 +59,7 @@ class GEN():
         self.gan_loss = -tf.reduce_mean(tf.log(self.i_prob) * self.reward) + self.lamda * (
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias))
 
-        g_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+        g_opt = tf.train.AdamOptimizer(self.learning_rate)
         self.gan_updates = g_opt.minimize(self.gan_loss, var_list=self.g_params)
 
         # for test stage, self.u: [self.batch_size]
@@ -113,7 +113,7 @@ class DIS():
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias)
         )
 
-        d_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+        d_opt = tf.train.AdamOptimizer(self.learning_rate)
         self.d_updates = d_opt.minimize(self.pre_loss, var_list=self.d_params)
 
         self.reward_logits = tf.reduce_sum(tf.multiply(self.u_embedding, self.i_embedding),
@@ -160,17 +160,20 @@ class IRGAN(DeepRecommender):
                 user_list.append(u)
                 pos_item.append(self.data.item[pos[i]])
                 neg_item.append(neg[i])
-        return (user_list,pos_item,neg_item)
+
+        return (user_list,pos_item,neg_item),len(user_list)
 
     def get_batch(self,data,index,size):
-        return data[index:size]
+        user,item,neg_item = data
+        return (user[index:index+size],item[index:index+size],neg_item[index:index+size])
 
 
     def initModel(self):
-        self.generator = GEN(self.n, self.m, self.k, lamda=0.1 / self.batch_size, param=None,
-                             initdelta=self.regU,learning_rate=self.lRate)
-        self.discriminator = DIS(self.n, self.m, self.k, lamda=0.1 / self.batch_size, param=None,
-                                 initdelta=self.regU,learning_rate=self.lRate)
+        super(IRGAN, self).initModel()
+        self.generator = GEN(self.n, self.m, self.k, lamda=self.regU, param=None,
+                             initdelta=0.05,learning_rate=self.lRate)
+        self.discriminator = DIS(self.n, self.m, self.k, lamda=self.regU, param=None,
+                                 initdelta=0.05,learning_rate=self.lRate)
 
 
 
@@ -178,53 +181,60 @@ class IRGAN(DeepRecommender):
         # minimax training
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        for epoch in range(15):
-            if epoch >= 0:
-                for d_epoch in range(100):
-                    if d_epoch % 5 == 0:
-                        data = self.get_data(self.generator)
-                        train_size = len(data)
-                    index = 1
-                    while True:
-                        if index > train_size:
-                            break
-                        if index + self.batch_size <= train_size + 1:
-                            input_user, input_item, input_label = self.get_batch(data,index, self.batch_size)
-                        else:
-                            input_user, input_item, input_label = self.get_batch(data, index, train_size - index + 1)
-                        index += self.batch_size
+        for epoch in range(self.maxIter):
+            print 'Update discriminator...'
+            for d_epoch in range(20):
+                if d_epoch % 5 == 0:
+                    data,train_size = self.get_data(self.generator)
+                index = 0
+                while True:
+                    if index > train_size:
 
-                        _ = self.sess.run(self.discriminator.d_updates,
-                                     feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
-                                                self.discriminator.label: input_label})
+                        break
+                    if index + self.batch_size <= train_size:
+                        input_user, input_item, input_label = self.get_batch(data, index, self.batch_size)
+                    else:
+                        input_user, input_item, input_label = self.get_batch(data, index, train_size - index)
 
-                # Train G
-                for g_epoch in range(50):  # 50
-                    for user in self.data.trainSet_u:
-                        sample_lambda = 0.2
-                        pos,values = self.data.userRated(user)
-                        pos = [self.data.item[item] for item in pos]
-                        u = self.data.user[user]
-                        rating = self.sess.run(self.generator.all_logits, {self.generator.u: u})
-                        exp_rating = np.exp(rating)
-                        prob = exp_rating / np.sum(exp_rating)  # prob is generator distribution p_\theta
+                    index += self.batch_size
 
-                        pn = (1 - sample_lambda) * prob
-                        pn[pos] += sample_lambda * 1.0 / len(pos)
-                        # Now, pn is the Pn in importance sampling, prob is generator distribution p_\theta
+                    _ = self.sess.run(self.discriminator.d_updates,
+                                 feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
+                                            self.discriminator.label: input_label})
 
-                        sample = np.random.choice(np.arange(self.n), 2 * len(pos), p=pn)
-                        ###########################################################################
-                        # Get reward and adapt it with importance sampling
-                        ###########################################################################
-                        reward = self.sess.run(self.discriminator.reward, {self.discriminator.u: u, self.discriminator.i: sample})
-                        reward = reward * prob[sample] / pn[sample]
-                        ###########################################################################
-                        # Update G
-                        ###########################################################################
-                        _ = self.sess.run(self.generator.gan_updates,
-                                     {self.generator.u: u, self.generator.i: sample, self.generator.reward: reward})
+                print 'epoch:', d_epoch
 
+
+            # Train G
+            print 'Update generator...'
+            for g_epoch in range(10):
+                for user in self.data.trainSet_u:
+                    sample_lambda = 0.2
+                    pos,values = self.data.userRated(user)
+                    pos = [self.data.item[item] for item in pos]
+                    u = self.data.user[user]
+                    rating = self.sess.run(self.generator.all_logits, {self.generator.u: u})
+
+                    exp_rating = np.exp(rating)
+                    prob = exp_rating / np.sum(exp_rating)  # prob is generator distribution p_\theta
+
+                    pn = (1 - sample_lambda) * prob
+                    pn[pos] += sample_lambda * 1.0 / len(pos)
+                    # Now, pn is the Pn in importance sampling, prob is generator distribution p_\theta
+
+                    sample = np.random.choice(np.arange(self.n), 2 * len(pos), p=pn)
+                    ###########################################################################
+                    # Get reward and adapt it with importance sampling
+                    ###########################################################################
+                    reward = self.sess.run(self.discriminator.reward, {self.discriminator.u: u, self.discriminator.i: sample})
+                    reward = reward * prob[sample] / pn[sample]
+                    ###########################################################################
+                    # Update G
+                    ###########################################################################
+                    _ = self.sess.run(self.generator.gan_updates,
+                                 {self.generator.u: u, self.generator.i: sample, self.generator.reward: reward})
+
+                print 'epoch:', g_epoch
 
 
 
