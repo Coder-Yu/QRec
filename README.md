@@ -12,6 +12,7 @@ Released by School of Software Engineering, Chongqing University</br>
 <h2>Latest News</h2>
 <b>We are now transfering RecQ to the platform of TensorFlow. A GPU based version would be provided for deep learning based methods and some generic shallow methods such as PMF and BPR. </b></br></br>
 <p>
+02/20/2019 - IRGAN proposed in SIGIR'18 has been added (tuning...) </br>
 02/12/2019 - CFGAN proposed in CIKM'18 has been added (tuning...) </br>
 02/04/2019 - NeuMF proposed in WWW'17 has been added (tuning...) </br>
 10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
