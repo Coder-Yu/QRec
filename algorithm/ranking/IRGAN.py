@@ -146,7 +146,7 @@ class IRGAN(DeepRecommender):
 
     def get_data(self,model):
 
-        user_list,pos_item,neg_item = [],[],[]
+        user_list,item,label = [],[],[]
         for user in self.data.trainSet_u:
             pos,values = self.data.userRated(user)
             u = self.data.user[user]
@@ -158,10 +158,14 @@ class IRGAN(DeepRecommender):
             neg = np.random.choice(np.arange(self.n), size=len(pos), p=prob)
             for i in range(len(pos)):
                 user_list.append(u)
-                pos_item.append(self.data.item[pos[i]])
-                neg_item.append(neg[i])
+                item.append(self.data.item[pos[i]])
+                label.append(1)
+            for i in range(len(neg)):
+                user_list.append(u)
+                item.append(neg[i])
+                label.append(0)
 
-        return (user_list,pos_item,neg_item),len(user_list)
+        return (user_list,item,label),len(user_list)
 
     def get_batch(self,data,index,size):
         user,item,neg_item = data
@@ -189,7 +193,6 @@ class IRGAN(DeepRecommender):
                 index = 0
                 while True:
                     if index > train_size:
-
                         break
                     if index + self.batch_size <= train_size:
                         input_user, input_item, input_label = self.get_batch(data, index, self.batch_size)
@@ -202,7 +205,7 @@ class IRGAN(DeepRecommender):
                                  feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
                                             self.discriminator.label: input_label})
 
-                print 'epoch:', d_epoch
+                print 'epoch:',epoch,'d_epoch:', d_epoch
 
 
             # Train G
@@ -234,7 +237,7 @@ class IRGAN(DeepRecommender):
                     _ = self.sess.run(self.generator.gan_updates,
                                  {self.generator.u: u, self.generator.i: sample, self.generator.reward: reward})
 
-                print 'epoch:', g_epoch
+                print 'epoch:',epoch,'g_epoch:',g_epoch
 
 
 
