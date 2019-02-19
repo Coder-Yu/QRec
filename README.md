@@ -367,7 +367,7 @@ on Generative Adversarial Networks, CIKM 2018.
 </tr>
 <tr>
 <td>APR</td>     <td>CDAE</td>      <td>DMF</td>       <td>NeuMF</td>      <td>CFGAN</td>
-<td></td>     <td></td>   <td></td>     <td></td>  <td></td>
+<td>IRGAN</td>     <td></td>   <td></td>     <td></td>  <td></td>
 </tr>
 <tr>
 <th colspan="10" align="left">Baselines</th>
