@@ -59,7 +59,7 @@ class GEN():
         self.gan_loss = -tf.reduce_mean(tf.log(self.i_prob) * self.reward) + self.lamda * (
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias))
 
-        g_opt = tf.train.AdamOptimizer(self.learning_rate)
+        g_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
         self.gan_updates = g_opt.minimize(self.gan_loss, var_list=self.g_params)
 
         # for test stage, self.u: [self.batch_size]
@@ -113,7 +113,7 @@ class DIS():
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias)
         )
 
-        d_opt = tf.train.AdamOptimizer(self.learning_rate)
+        d_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
         self.d_updates = d_opt.minimize(self.pre_loss, var_list=self.d_params)
 
         self.reward_logits = tf.reduce_sum(tf.multiply(self.u_embedding, self.i_embedding),
@@ -178,7 +178,7 @@ class IRGAN(DeepRecommender):
             prob = exp_rating / np.sum(exp_rating)
 
 
-            neg = np.random.choice(np.arange(self.n), size=len(pos), p=prob)
+            neg = np.random.choice(np.arange(self.n), size=4*len(pos), p=prob)
             for i in range(len(pos)):
                 user_list.append(u)
                 items.append(pos[i])
@@ -221,7 +221,7 @@ class IRGAN(DeepRecommender):
         for epoch in range(self.maxIter):
 
             print 'Update discriminator...'
-            for d_epoch in range(50):
+            for d_epoch in range(100):
                 if d_epoch % 5 == 0:
                     data,train_size = self.get_data(self.generator)
                 index = 0
@@ -243,7 +243,7 @@ class IRGAN(DeepRecommender):
 
             # Train G
             print 'Update generator...'
-            for g_epoch in range(30):
+            for g_epoch in range(50):
                 for user in self.data.trainSet_u:
                     sample_lambda = 0.2
                     pos, values = self.data.userRated(user)
@@ -254,8 +254,8 @@ class IRGAN(DeepRecommender):
                     exp_rating = np.exp(rating)
                     prob = exp_rating / np.sum(exp_rating)  # prob is generator distribution p_\theta
 
-                    # importance sampling. Actually I have some problems in understandings these two lines and
-                    # the paper doesn't give details about importance sampling.
+                    # Here is the importance sampling. Actually I have some problems in understandings these two
+                    # lines and the paper doesn't give details about the importance sampling.
                     pn = (1 - sample_lambda) * prob
                     pn[pos] += sample_lambda * 1.0 / len(pos)
                     # Now, pn is the Pn in importance sampling, prob is generator distribution p_\theta
