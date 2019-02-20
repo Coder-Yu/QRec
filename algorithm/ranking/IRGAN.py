@@ -246,7 +246,9 @@ class IRGAN(DeepRecommender):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             u = self.data.user[u]
-            res = self.sess.run(self.generator.all_rating, {self.generator.u: [u]})
+
+            #In our experiments, discriminator performs better than gnerator
+            res = self.sess.run(self.discriminator.all_rating, {self.discriminator.u: [u]})
             return res[0]
 
         else:
