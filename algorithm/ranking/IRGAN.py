@@ -120,7 +120,7 @@ class DIS():
                                            1) + self.i_bias
         self.reward = 2 * (tf.sigmoid(self.reward_logits) - 0.5)
 
-        # for test stage, self.u: [self.batch_size]
+
         self.all_rating = tf.matmul(self.u_embedding, self.item_embeddings, transpose_a=False,
                                     transpose_b=True) + self.item_bias
 
@@ -128,8 +128,7 @@ class DIS():
         self.NLL = -tf.reduce_mean(tf.log(
             tf.gather(tf.reshape(tf.nn.softmax(tf.reshape(self.all_logits, [1, -1])), [-1]), self.i))
         )
-        # for dns sample
-        self.dns_rating = tf.reduce_sum(tf.multiply(self.u_embedding, self.item_embeddings), 1) + self.item_bias
+
 
     # def save_model(self, sess, filename):
     #     param = sess.run(self.d_params)
@@ -221,6 +220,8 @@ class IRGAN(DeepRecommender):
                     exp_rating = np.exp(rating)
                     prob = exp_rating / np.sum(exp_rating)  # prob is generator distribution p_\theta
 
+                    #importance sampling. Actually I have some problems in understandings these two lines and
+                    #the paper doesn't give details about importance sampling.
                     pn = (1 - sample_lambda) * prob
                     pn[pos] += sample_lambda * 1.0 / len(pos)
                     # Now, pn is the Pn in importance sampling, prob is generator distribution p_\theta
@@ -247,7 +248,7 @@ class IRGAN(DeepRecommender):
         if self.data.containsUser(u):
             u = self.data.user[u]
 
-            #In our experiments, discriminator performs better than gnerator
+            #In our experiments, discriminator performs better than generator
             res = self.sess.run(self.discriminator.all_rating, {self.discriminator.u: [u]})
             return res[0]
 
