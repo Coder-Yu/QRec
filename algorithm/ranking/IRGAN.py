@@ -142,33 +142,58 @@ class IRGAN(DeepRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(IRGAN, self).__init__(conf,trainingSet,testSet,fold)
 
+    def next_batch(self):
+        #only for pre-training
+        batch_idx = np.random.randint(self.train_size, size=self.batch_size)
+        users = [self.data.trainingData[idx][0] for idx in batch_idx]
+        items = [self.data.trainingData[idx][1] for idx in batch_idx]
+        user_idx, item_idx = [], []
+        y = []
+        for i, user in enumerate(users):
+            user_idx.append(self.data.user[user])
+            item_idx.append(self.data.item[items[i]])
+            y.append(1)
+            # According to the paper, we sampled four negative instances per positive instance
+            for instance in range(4):
+                item_j = randint(0, self.n - 1)
+                while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
+                    item_j = randint(0, self.n - 1)
+                user_idx.append(self.data.user[user])
+                item_idx.append(item_j)
+                y.append(0)
+        return user_idx, item_idx, y
 
     def get_data(self,model):
 
-        user_list,item,label = [],[],[]
+        user_list,items,label = [],[],[]
         for user in self.data.trainSet_u:
             pos,values = self.data.userRated(user)
+            pos = [self.data.item[item] for item in pos]
             u = self.data.user[user]
+
             rating = self.sess.run(model.all_rating, {model.u: [u]})
             rating = np.array(rating[0]) / 0.2  # Temperature
             exp_rating = np.exp(rating)
+            exp_rating[np.array(pos)] = 0
             prob = exp_rating / np.sum(exp_rating)
+
 
             neg = np.random.choice(np.arange(self.n), size=len(pos), p=prob)
             for i in range(len(pos)):
                 user_list.append(u)
-                item.append(self.data.item[pos[i]])
-                label.append(1)
+                items.append(pos[i])
+                label.append(1.)
             for i in range(len(neg)):
                 user_list.append(u)
-                item.append(neg[i])
-                label.append(0)
+                items.append(neg[i])
+                label.append(0.)
 
-        return (user_list,item,label),len(user_list)
+
+        return (user_list,items,label),len(user_list)
 
     def get_batch(self,data,index,size):
-        user,item,neg_item = data
-        return (user[index:index+size],item[index:index+size],neg_item[index:index+size])
+        user,item,label = data
+        return (user[index:index+size],item[index:index+size],label[index:index+size])
 
 
     def initModel(self):
@@ -184,9 +209,19 @@ class IRGAN(DeepRecommender):
         # minimax training
         init = tf.global_variables_initializer()
         self.sess.run(init)
+        #pretrain the discriminator
+
+        # for i in range(100):
+        #     input_user, input_item, input_label = self.next_batch()
+        #     _ = self.sess.run(self.discriminator.d_updates,
+        #                       feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
+        #                                  self.discriminator.label: input_label})
+
+
         for epoch in range(self.maxIter):
+
             print 'Update discriminator...'
-            for d_epoch in range(20):
+            for d_epoch in range(50):
                 if d_epoch % 5 == 0:
                     data,train_size = self.get_data(self.generator)
                 index = 0
@@ -204,15 +239,14 @@ class IRGAN(DeepRecommender):
                                  feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
                                             self.discriminator.label: input_label})
 
-                print 'epoch:',epoch,'d_epoch:', d_epoch
-
+                print 'epoch:',epoch+1,'d_epoch:', d_epoch+1
 
             # Train G
             print 'Update generator...'
-            for g_epoch in range(10):
+            for g_epoch in range(30):
                 for user in self.data.trainSet_u:
                     sample_lambda = 0.2
-                    pos,values = self.data.userRated(user)
+                    pos, values = self.data.userRated(user)
                     pos = [self.data.item[item] for item in pos]
                     u = self.data.user[user]
                     rating = self.sess.run(self.generator.all_logits, {self.generator.u: u})
@@ -220,8 +254,8 @@ class IRGAN(DeepRecommender):
                     exp_rating = np.exp(rating)
                     prob = exp_rating / np.sum(exp_rating)  # prob is generator distribution p_\theta
 
-                    #importance sampling. Actually I have some problems in understandings these two lines and
-                    #the paper doesn't give details about importance sampling.
+                    # importance sampling. Actually I have some problems in understandings these two lines and
+                    # the paper doesn't give details about importance sampling.
                     pn = (1 - sample_lambda) * prob
                     pn[pos] += sample_lambda * 1.0 / len(pos)
                     # Now, pn is the Pn in importance sampling, prob is generator distribution p_\theta
@@ -230,15 +264,17 @@ class IRGAN(DeepRecommender):
                     ###########################################################################
                     # Get reward and adapt it with importance sampling
                     ###########################################################################
-                    reward = self.sess.run(self.discriminator.reward, {self.discriminator.u: u, self.discriminator.i: sample})
+                    reward = self.sess.run(self.discriminator.reward,
+                                           {self.discriminator.u: u, self.discriminator.i: sample})
                     reward = reward * prob[sample] / pn[sample]
                     ###########################################################################
                     # Update G
                     ###########################################################################
                     _ = self.sess.run(self.generator.gan_updates,
-                                 {self.generator.u: u, self.generator.i: sample, self.generator.reward: reward})
+                                      {self.generator.u: u, self.generator.i: sample,
+                                       self.generator.reward: reward})
 
-                print 'epoch:',epoch,'g_epoch:',g_epoch
+                print 'epoch:', epoch+1, 'g_epoch:', g_epoch+1
 
 
 
