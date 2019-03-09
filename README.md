@@ -7,10 +7,11 @@ Released by School of Software Engineering, Chongqing University</br>
 <b>More algorithms (ranking based and context-aware) can be found in another project of mine <a href="https://github.com/Coder-Yu/Yue/">Yue</a></b>
 </br>
 
-**RecQ** is a Python library for recommender systems (Python 2.7.x). It implements a suit of state-of-the-art recommendations. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager, all of them make it a perfect tool for data science researcher.
+**RecQ** is a Python library for recommender systems (Python 2.7.x) in which a number of the state-of-the-art recommendation models are implemented. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading
+ open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager,
+ all of them make it a perfect tool for data science researcher. Besides, GPU based deep models are also available (TensorFlow is required).
 
 <h2>Latest News</h2>
-<b>We are now transfering RecQ to the platform of TensorFlow. A GPU based version would be provided for deep learning based methods and some generic shallow methods such as PMF and BPR. </b></br></br>
 <p>
 02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
 02/12/2019 - CFGAN proposed in CIKM'18 has been added (tuning...) </br>
