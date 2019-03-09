@@ -71,4 +71,6 @@ class UserKNN(Recommender):
         print 'The user similarities have been calculated.'
 
 
-
+    def predictForRanking(self,u):
+        print 'Using Memory based algorithms to rank items is extremely time-consuming. So ranking for all items in UserKNN is not available.'
+        exit(0)

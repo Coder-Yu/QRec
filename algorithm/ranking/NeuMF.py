@@ -41,15 +41,14 @@ class NeuMF(DeepRecommender):
     def initModel(self):
         super(NeuMF, self).initModel()
         # parameters used are consistent with default settings in the original paper
-        mlp_regularizer = tf.contrib.layers.l2_regularizer(scale=0.005)
-        mf_regularizer = tf.contrib.layers.l2_regularizer(scale=0.005)
+        mlp_regularizer = tf.contrib.layers.l2_regularizer(scale=0.001)
         initializer = tf.contrib.layers.xavier_initializer()
         with tf.variable_scope("latent_factors"):
             self.PG = tf.get_variable(name='PG',initializer=initializer([self.m, self.k]),regularizer=mlp_regularizer)
             self.QG = tf.get_variable(name='QG',initializer=initializer([self.n, self.k]),regularizer=mlp_regularizer)
 
-            self.PM = tf.get_variable(name='PM', initializer=initializer([self.m, self.k]), regularizer=mf_regularizer)
-            self.QM = tf.get_variable(name='QM', initializer=initializer([self.n, self.k]), regularizer=mf_regularizer)
+            self.PM = tf.get_variable(name='PM', initializer=initializer([self.m, self.k]))
+            self.QM = tf.get_variable(name='QM', initializer=initializer([self.n, self.k]))
 
         with tf.name_scope("input"):
             self.r = tf.placeholder(tf.float32, [None], name="rating")
@@ -64,7 +63,7 @@ class NeuMF(DeepRecommender):
         # Generic Matrix Factorization
         with tf.variable_scope("mf_output"):
             self.GMF_Layer = tf.multiply(self.UG_embedding,self.IG_embedding)
-            self.h_mf = tf.get_variable(name='mf_out', initializer=initializer([self.k]), regularizer=mf_regularizer)
+            self.h_mf = tf.get_variable(name='mf_out', initializer=initializer([self.k]))
 
         # MLP
         with tf.variable_scope("mlp_params"):
@@ -81,23 +80,21 @@ class NeuMF(DeepRecommender):
             self.MLP_Layer = tf.nn.relu(tf.add(tf.matmul(self.h_out,MLP_W3), MLP_b3))
             self.h_mlp = tf.get_variable(name='mlp_out', initializer=initializer([self.k]), regularizer=mlp_regularizer)
 
-        reg_variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-        mlp_reg = tf.contrib.layers.apply_regularization(mlp_regularizer, reg_variables)
-        mf_reg = tf.contrib.layers.apply_regularization(mf_regularizer, reg_variables)
 
         #single inference
         #GMF
         self.y_mf = tf.reduce_sum(tf.multiply(self.GMF_Layer,self.h_mf),1)
         self.y_mf = tf.sigmoid(self.y_mf)
-        self.mf_loss = self.r * tf.log(self.y_mf) + (1 - self.r) * tf.log(1 - self.y_mf)
-        self.mf_loss = tf.subtract(self.mf_loss,mf_reg)
-        self.mf_loss = -tf.reduce_sum(self.mf_loss)
+        self.mf_loss = self.r * tf.log(self.y_mf+10e-5) + (1 - self.r) * tf.log(1 - self.y_mf+10e-5)
+        mf_reg = self.regU*(tf.nn.l2_loss(self.UG_embedding)+tf.nn.l2_loss(self.IG_embedding) + tf.nn.l2_loss(self.h_mf))
+
+        self.mf_loss = -tf.reduce_sum(self.mf_loss) + mf_reg
+
         self.mf_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.mf_loss)
         #MLP
         self.y_mlp = tf.reduce_sum(tf.multiply(self.MLP_Layer,self.h_mlp),1)
         self.y_mlp = tf.sigmoid(self.y_mlp)
-        self.mlp_loss = self.r * tf.log(self.y_mlp) + (1 - self.r) * tf.log(1 - self.y_mlp)
-        self.mlp_loss = tf.subtract(self.mlp_loss, mlp_reg)
+        self.mlp_loss = self.r * tf.log(self.y_mlp+10e-5) + (1 - self.r) * tf.log(1 - self.y_mlp+10e-5)
         self.mlp_loss = -tf.reduce_sum(self.mlp_loss)
         self.mlp_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.mlp_loss)
 
@@ -106,10 +103,9 @@ class NeuMF(DeepRecommender):
         self.h_NeuMF = tf.concat([0.5*self.h_mf,0.5*self.h_mlp], 0)
         self.y_neu = tf.reduce_sum(tf.multiply(self.NeuMF_Layer, self.h_NeuMF), 1)
         self.y_neu = tf.sigmoid(self.y_neu)
-        self.neu_loss = self.r * tf.log(self.y_neu) + (1 - self.r) * tf.log(1 - self.y_neu)
-        self.neu_loss = tf.subtract(self.neu_loss, mlp_reg)
-        self.neu_loss = tf.subtract(self.neu_loss, mf_reg)
-        self.neu_loss = -tf.reduce_sum(self.neu_loss)
+        self.neu_loss = self.r * tf.log(self.y_neu+10e-5) + (1 - self.r) * tf.log(1 - self.y_neu+10e-5)
+
+        self.neu_loss = -tf.reduce_sum(self.neu_loss)+ mf_reg + self.regU*tf.nn.l2_loss(self.h_NeuMF)
         ###it seems Adam is better than SGD here...
         self.neu_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.neu_loss)
 
@@ -127,14 +123,14 @@ class NeuMF(DeepRecommender):
             print 'iteration:', epoch, 'loss:', loss
 
         print 'pretraining... (MLP)'
-        for epoch in range(self.maxIter):
+        for epoch in range(self.maxIter/2):
             user_idx, item_idx, r = self.next_batch()
             _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
             print 'iteration:', epoch, 'loss:', loss
 
         print 'training... (NeuMF)'
-        for epoch in range(self.maxIter):
+        for epoch in range(self.maxIter/10):
             user_idx, item_idx, r = self.next_batch()
             _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})

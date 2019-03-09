@@ -69,4 +69,6 @@ class ItemKNN(Recommender):
         print 'The item similarities have been calculated.'
 
 
-
+    def predictForRanking(self,u):
+        print 'Using Memory based algorithms to rank items is extremely time-consuming. So ranking for all items in ItemKNN is not available.'
+        exit(0)
