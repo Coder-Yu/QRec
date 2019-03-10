@@ -26,9 +26,8 @@ class DeepRecommender(IterativeRecommender):
 
         self.r = tf.placeholder(tf.float32, [None], name="rating")
 
-        self.m, self.n, self.train_size = self.data.trainingSize()
-        self.U = tf.Variable(tf.truncated_normal(shape=[self.m, self.k], stddev=0.005), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[self.n, self.k], stddev=0.005), name='V')
+        self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005), name='V')
 
         self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
         self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)

@@ -2,14 +2,8 @@
 from baseclass.DeepRecommender import DeepRecommender
 import numpy as np
 from random import randint
+import tensorflow as tf
 
-try:
-    import tensorflow as tf
-except ImportError:
-    print 'This method can only run on tensorflow!'
-    exit(-1)
-from tensorflow import set_random_seed
-set_random_seed(2)
 
 class NeuMF(DeepRecommender):
 
@@ -29,9 +23,9 @@ class NeuMF(DeepRecommender):
             y.append(1)
             #According to the paper, we sampled four negative instances per positive instance
             for instance in range(4):
-                item_j = randint(0, self.n - 1)
+                item_j = randint(0, self.num_items - 1)
                 while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
-                    item_j = randint(0, self.n - 1)
+                    item_j = randint(0, self.num_items - 1)
                 user_idx.append(self.data.user[user])
                 item_idx.append(item_j)
                 y.append(0)
@@ -44,11 +38,11 @@ class NeuMF(DeepRecommender):
         mlp_regularizer = tf.contrib.layers.l2_regularizer(scale=0.001)
         initializer = tf.contrib.layers.xavier_initializer()
         with tf.variable_scope("latent_factors"):
-            self.PG = tf.get_variable(name='PG',initializer=initializer([self.m, self.k]),regularizer=mlp_regularizer)
-            self.QG = tf.get_variable(name='QG',initializer=initializer([self.n, self.k]),regularizer=mlp_regularizer)
+            self.PG = tf.get_variable(name='PG',initializer=initializer([self.num_users, self.k]),regularizer=mlp_regularizer)
+            self.QG = tf.get_variable(name='QG',initializer=initializer([self.num_items, self.k]),regularizer=mlp_regularizer)
 
-            self.PM = tf.get_variable(name='PM', initializer=initializer([self.m, self.k]))
-            self.QM = tf.get_variable(name='QM', initializer=initializer([self.n, self.k]))
+            self.PM = tf.get_variable(name='PM', initializer=initializer([self.num_users, self.k]))
+            self.QM = tf.get_variable(name='QM', initializer=initializer([self.num_items, self.k]))
 
         with tf.name_scope("input"):
             self.r = tf.placeholder(tf.float32, [None], name="rating")
@@ -138,18 +132,18 @@ class NeuMF(DeepRecommender):
 
 
     def predict_mlp(self,uid):
-        user_idx = [uid]*self.n
-        y_mlp = self.sess.run([self.y_mlp],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.n)})
+        user_idx = [uid]*self.num_items
+        y_mlp = self.sess.run([self.y_mlp],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.num_items)})
         return y_mlp[0]
 
     def predict_mf(self,uid):
-        user_idx = [uid]*self.n
-        y_mf = self.sess.run([self.y_mf],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.n)})
+        user_idx = [uid]*self.num_items
+        y_mf = self.sess.run([self.y_mf],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.num_items)})
         return y_mf[0]
 
     def predict_neu(self,uid):
-        user_idx = [uid]*self.n
-        y_neu = self.sess.run([self.y_neu],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.n)})
+        user_idx = [uid]*self.num_items
+        y_neu = self.sess.run([self.y_neu],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.num_items)})
         return y_neu[0]
 
     def predictForRanking(self, u):
@@ -158,6 +152,6 @@ class NeuMF(DeepRecommender):
             u = self.data.user[u]
             return self.predict_neu(u)
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 

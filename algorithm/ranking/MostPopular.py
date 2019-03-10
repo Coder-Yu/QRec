@@ -26,6 +26,6 @@ class MostPopular(Recommender):
         if self.data.containsUser(u):
             return self.popularItemList
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 

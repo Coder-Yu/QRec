@@ -78,4 +78,4 @@ class WRMF(IterativeRecommender):
             u = self.data.getUserId(u)
             return self.Y.dot(self.X[u])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items

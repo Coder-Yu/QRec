@@ -26,10 +26,10 @@ class SERec(SocialRecommender):
         self.s= 2.2
         self.init_std = 0.5
         self.theta = self.init_std * \
-            np.random.randn(self.m, self.k).astype(np.float32)
+            np.random.randn(self.num_users, self.k).astype(np.float32)
         self.beta = self.init_std * \
-            np.random.randn(self.n, self.k).astype(np.float32)
-        self.mu = self.init_mu * np.ones((self.m,self.n), dtype=np.float32)
+            np.random.randn(self.num_items, self.k).astype(np.float32)
+        self.mu = self.init_mu * np.ones((self.num_users,self.num_items), dtype=np.float32)
         self.n_jobs=4
         self.batch_size=1000
         row,col,val = [],[],[]
@@ -41,7 +41,7 @@ class SERec(SocialRecommender):
                 col.append(i)
                 val.append(1)
 
-        self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.m,self.n))
+        self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.num_users,self.num_items))
         row,col,val = [],[],[]
         for user in self.social.followees:
             for f in self.social.followees[user]:
@@ -50,7 +50,7 @@ class SERec(SocialRecommender):
                 row.append(u)
                 col.append(i)
                 val.append(1)
-        self.T = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.m, self.m))
+        self.T = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.num_users, self.num_users))
 
 
     def buildModel(self):
@@ -97,12 +97,12 @@ class SERec(SocialRecommender):
         start_idx = range(0, n_users, self.batch_size)
         end_idx = start_idx[1:] + [n_users]
 
-        A_sum = np.zeros(self.n)
+        A_sum = np.zeros(self.num_items)
         for lo, hi in zip(start_idx, end_idx):
             A_sum += a_row_batch(X[lo:hi], self.theta[lo:hi], self.beta,
                                  self.lam_y, self.mu[lo:hi]).sum(axis=0)
 
-        A_sum=np.tile(A_sum,[self.m,1])
+        A_sum=np.tile(A_sum,[self.num_users,1])
         S_sum = self.T.dot(A_sum)
         self.mu = (self.a + A_sum +(self.s-1)*S_sum- 1) / (self.a + self.b + (self.s-1)*S_sum+n_users - 2)
 
@@ -113,7 +113,7 @@ class SERec(SocialRecommender):
             u = self.data.getUserId(u)
             return self.beta.dot(self.theta[u])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 # Utility functions #
 

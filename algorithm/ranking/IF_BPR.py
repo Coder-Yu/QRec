@@ -411,7 +411,7 @@ class IF_BPR(SocialRecommender,DeepRecommender):
             #      break
             print self.foldInfo,'iteration:',iteration
         self.ranking_performance()
-        self.advTraining()
+        #self.advTraining()
 
     def optimization(self, u, i, j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
@@ -455,7 +455,7 @@ class IF_BPR(SocialRecommender,DeepRecommender):
             u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 
     ###############################################################################################

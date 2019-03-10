@@ -27,10 +27,10 @@ class ExpoMF(IterativeRecommender):
         self.b = 99.0
         self.init_std = 0.01
         self.theta = self.init_std * \
-            np.random.randn(self.m, self.k).astype(np.float32)
+            np.random.randn(self.num_users, self.k).astype(np.float32)
         self.beta = self.init_std * \
-            np.random.randn(self.n, self.k).astype(np.float32)
-        self.mu = self.init_mu * np.ones(self.n, dtype=np.float32)
+            np.random.randn(self.num_items, self.k).astype(np.float32)
+        self.mu = self.init_mu * np.ones(self.num_items, dtype=np.float32)
         self.n_jobs=4
         self.batch_size=300
         row,col,val = [],[],[]
@@ -42,7 +42,7 @@ class ExpoMF(IterativeRecommender):
                 col.append(i)
                 val.append(1)
 
-        self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.m,self.n))
+        self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.num_users,self.num_items))
 
     def buildModel(self):
         print 'training...'
@@ -92,7 +92,7 @@ class ExpoMF(IterativeRecommender):
             u = self.data.getUserId(u)
             return self.beta.dot(self.theta[u])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 # Utility functions #
 

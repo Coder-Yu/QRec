@@ -18,6 +18,6 @@ class Rand(Recommender):
         if self.data.containsUser(u):
             return np.random.random(self.data.trainingSize()[1])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 

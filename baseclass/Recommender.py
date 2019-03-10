@@ -44,6 +44,8 @@ class Recommender(object):
                     testData.append(item)
             self.data.testData = testData
 
+        self.num_users, self.num_items, self.train_size = self.data.trainingSize()
+
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']

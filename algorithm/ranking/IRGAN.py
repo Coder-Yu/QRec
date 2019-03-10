@@ -59,7 +59,7 @@ class GEN():
         self.gan_loss = -tf.reduce_mean(tf.log(self.i_prob) * self.reward) + self.lamda * (
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias))
 
-        g_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+        g_opt = tf.train.AdamOptimizer(self.learning_rate)
         self.gan_updates = g_opt.minimize(self.gan_loss, var_list=self.g_params)
 
         # for test stage, self.u: [self.batch_size]
@@ -113,7 +113,7 @@ class DIS():
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias)
         )
 
-        d_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+        d_opt = tf.train.AdamOptimizer(self.learning_rate)
         self.d_updates = d_opt.minimize(self.pre_loss, var_list=self.d_params)
 
         self.reward_logits = tf.reduce_sum(tf.multiply(self.u_embedding, self.i_embedding),
@@ -155,9 +155,9 @@ class IRGAN(DeepRecommender):
             y.append(1)
             # According to the paper, we sampled four negative instances per positive instance
             for instance in range(4):
-                item_j = randint(0, self.n - 1)
+                item_j = randint(0, self.num_items - 1)
                 while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
-                    item_j = randint(0, self.n - 1)
+                    item_j = randint(0, self.num_items - 1)
                 user_idx.append(self.data.user[user])
                 item_idx.append(item_j)
                 y.append(0)
@@ -177,8 +177,7 @@ class IRGAN(DeepRecommender):
             exp_rating[np.array(pos)] = 0
             prob = exp_rating / np.sum(exp_rating)
 
-
-            neg = np.random.choice(np.arange(self.n), size=4*len(pos), p=prob)
+            neg = np.random.choice(np.arange(self.num_items), size=2*len(pos), p=prob)
             for i in range(len(pos)):
                 user_list.append(u)
                 items.append(pos[i])
@@ -198,9 +197,9 @@ class IRGAN(DeepRecommender):
 
     def initModel(self):
         super(IRGAN, self).initModel()
-        self.generator = GEN(self.n, self.m, self.k, lamda=self.regU, param=None,
+        self.generator = GEN(self.num_items, self.num_users, self.k, lamda=self.regU, param=None,
                              initdelta=0.05,learning_rate=self.lRate)
-        self.discriminator = DIS(self.n, self.m, self.k, lamda=self.regU, param=None,
+        self.discriminator = DIS(self.num_items, self.num_users, self.k, lamda=self.regU, param=None,
                                  initdelta=0.05,learning_rate=self.lRate)
 
 
@@ -221,7 +220,7 @@ class IRGAN(DeepRecommender):
         for epoch in range(self.maxIter):
 
             print 'Update discriminator...'
-            for d_epoch in range(100):
+            for d_epoch in range(20):
                 if d_epoch % 5 == 0:
                     data,train_size = self.get_data(self.generator)
                 index = 0
@@ -260,7 +259,7 @@ class IRGAN(DeepRecommender):
                     pn[pos] += sample_lambda * 1.0 / len(pos)
                     # Now, pn is the Pn in importance sampling, prob is generator distribution p_\theta
 
-                    sample = np.random.choice(np.arange(self.n), 2 * len(pos), p=pn)
+                    sample = np.random.choice(np.arange(self.num_items), 3 * len(pos), p=pn)
                     ###########################################################################
                     # Get reward and adapt it with importance sampling
                     ###########################################################################
@@ -276,7 +275,7 @@ class IRGAN(DeepRecommender):
 
                 print 'epoch:', epoch+1, 'g_epoch:', g_epoch+1
 
-
+            self.ranking_performance()
 
 
     def predictForRanking(self, u):
@@ -289,7 +288,7 @@ class IRGAN(DeepRecommender):
             return res[0]
 
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 
 

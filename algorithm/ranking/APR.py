@@ -33,8 +33,8 @@ class APR(DeepRecommender):
 
     def _create_variables(self):
         #perturbation vectors
-        self.adv_U = tf.Variable(tf.zeros(shape=[self.m, self.k]),dtype=tf.float32, trainable=False)
-        self.adv_V = tf.Variable(tf.zeros(shape=[self.n, self.k]),dtype=tf.float32, trainable=False)
+        self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.k]),dtype=tf.float32, trainable=False)
+        self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.k]),dtype=tf.float32, trainable=False)
 
         self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
         self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
@@ -104,10 +104,10 @@ class APR(DeepRecommender):
         neg_item_idx = []
         for i,user in enumerate(users):
 
-            item_j = random.randint(0,self.n-1)
+            item_j = random.randint(0,self.num_items-1)
 
             while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
-                item_j = random.randint(0, self.n - 1)
+                item_j = random.randint(0, self.num_items - 1)
 
             user_idx.append(self.data.user[user])
             item_idx.append(self.data.item[items[i]])
@@ -158,6 +158,6 @@ class APR(DeepRecommender):
             u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 

@@ -3,13 +3,8 @@ from baseclass.DeepRecommender import DeepRecommender
 import numpy as np
 from random import choice,random,randint,shuffle
 from tool import config
-try:
-    import tensorflow as tf
-except ImportError:
-    print 'This method can only run on tensorflow!'
-    exit(-1)
-from tensorflow import set_random_seed
-set_random_seed(2)
+import tensorflow as tf
+
 
 #According to the paper, we only
 class DMF(DeepRecommender):
@@ -19,8 +14,8 @@ class DMF(DeepRecommender):
 
 
     def next_batch(self,i):
-        rows = np.zeros(((self.negative_sp+1)*self.batch_size,self.n))
-        cols = np.zeros(((self.negative_sp+1)*self.batch_size,self.m))
+        rows = np.zeros(((self.negative_sp+1)*self.batch_size,self.num_items))
+        cols = np.zeros(((self.negative_sp+1)*self.batch_size,self.num_users))
         batch_idx = range(self.batch_size*i,self.batch_size*(i+1))
 
         users = [self.data.trainingData[idx][0] for idx in batch_idx]
@@ -64,9 +59,9 @@ class DMF(DeepRecommender):
     def buildModel(self):
         super(DMF, self).buildModel_tf()
 
-        initializer = tf.truncated_normal#tf.contrib.layers.xavier_initializer()
+        initializer = tf.contrib.layers.xavier_initializer()
         #user net
-        user_W1 = tf.Variable(initializer([self.n, self.n_hidden_u[0]],stddev=0.01))
+        user_W1 = tf.Variable(initializer([self.num_items, self.n_hidden_u[0]],stddev=0.01))
         self.user_out = tf.nn.relu(tf.matmul(self.input_u, user_W1))
         self.regLoss = tf.nn.l2_loss(user_W1)
         for i in range(1, len(self.n_hidden_u)):
@@ -77,7 +72,7 @@ class DMF(DeepRecommender):
             self.user_out = tf.nn.relu(tf.add(tf.matmul(self.user_out, W), b))
 
         #item net
-        item_W1 = tf.Variable(initializer([self.m, self.n_hidden_i[0]],stddev=0.01))
+        item_W1 = tf.Variable(initializer([self.num_users, self.n_hidden_i[0]],stddev=0.01))
         self.item_out = tf.nn.relu(tf.matmul(self.input_i, item_W1))
         self.regLoss = tf.add(self.regLoss, tf.nn.l2_loss(item_W1))
         for i in range(1, len(self.n_hidden_i)):
@@ -103,8 +98,8 @@ class DMF(DeepRecommender):
 
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
 
-        self.U = np.zeros((self.m, self.n_hidden_u[-1]))
-        self.V = np.zeros((self.n, self.n_hidden_u[-1]))
+        self.U = np.zeros((self.num_users, self.n_hidden_u[-1]))
+        self.V = np.zeros((self.num_items, self.n_hidden_u[-1]))
 
 
         init = tf.global_variables_initializer()
@@ -146,6 +141,6 @@ class DMF(DeepRecommender):
             uid = self.data.user[u]
             return np.divide(self.V.dot(self.U[uid]),self.normalized_U[uid]*self.normalized_V)
         else:
-            return [self.data.globalMean] * self.n
+            return [self.data.globalMean] * self.num_items
 
 

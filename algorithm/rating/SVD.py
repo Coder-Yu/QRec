@@ -48,8 +48,8 @@ class SVD(IterativeRecommender):
 
 
 
-        self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.m], stddev=0.005,mean=0.02), name='U_bias')
-        self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.n], stddev=0.005,mean=0.02), name='V_bias')
+        self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.num_users], stddev=0.005,mean=0.02), name='U_bias')
+        self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.num_items], stddev=0.005,mean=0.02), name='V_bias')
 
         self.U_bias_embed = tf.nn.embedding_lookup(self.U_bias, self.u_idx)
         self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
@@ -111,5 +111,5 @@ class SVD(IterativeRecommender):
             u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])+self.data.globalMean + self.Bi + self.Bu[u]
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 

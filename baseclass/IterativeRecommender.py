@@ -36,7 +36,7 @@ class IterativeRecommender(Recommender):
         self.P = np.random.rand(len(self.data.user), self.k)/3 # latent user matrix
         self.Q = np.random.rand(len(self.data.item), self.k)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
-        self.m, self.n, self.train_size = self.data.trainingSize()
+
 
     def buildModel_tf(self):
         # initialization
@@ -45,8 +45,8 @@ class IterativeRecommender(Recommender):
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.r = tf.placeholder(tf.float32, [None], name="rating")
 
-        self.U = tf.Variable(tf.truncated_normal(shape=[self.m, self.k], stddev=0.005), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[self.n, self.k], stddev=0.005), name='V')
+        self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005), name='V')
 
         self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
         self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
@@ -86,7 +86,7 @@ class IterativeRecommender(Recommender):
         if self.data.containsUser(u):
             return (self.Q).dot(self.P[self.data.user[u]])
         else:
-            return [self.data.globalMean]*len(self.data.item)
+            return [self.data.globalMean]*self.num_items
 
     def isConverged(self,iter):
         from math import isnan

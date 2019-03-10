@@ -82,6 +82,6 @@ class BPR(IterativeRecommender):
             u = self.data.getUserId(u)
             return self.Q.dot(self.P[u])
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 
