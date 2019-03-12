@@ -154,7 +154,7 @@ class CFGAN(DeepRecommender):
         if self.data.containsUser(u):
             vec = self.data.row(u).reshape(1,self.num_items)
             res = self.sess.run([self.r_hat], feed_dict={self.C: vec})[0]
-            print res[0]
+            #print res[0]
             return res[0]
 
         else:
