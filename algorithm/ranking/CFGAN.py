@@ -10,8 +10,9 @@ class CFGAN(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(CFGAN, self).__init__(conf,trainingSet,testSet,fold)
-        self.S_zr = 0.3
-        self.S_pm = 0.2
+        #It is quite interesting and confusing that when I set ratio_zr = 0 and ratio_zp = 0, CFGAN reaches the best performance.
+        self.S_zr = 0.01
+        self.S_pm = 0.01
         self.alpha = 0.01
 
     def next_batch(self):
