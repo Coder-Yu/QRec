@@ -11,8 +11,8 @@ class CFGAN(DeepRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(CFGAN, self).__init__(conf,trainingSet,testSet,fold)
         #It is quite interesting and confusing that when I set ratio_zr = 0 and ratio_zp = 0, CFGAN reaches the best performance.
-        self.S_zr = 0.01
-        self.S_pm = 0.01
+        self.S_zr = 0.001
+        self.S_pm = 0.001
         self.alpha = 0.01
 
     def next_batch(self):
@@ -106,7 +106,7 @@ class CFGAN(DeepRecommender):
             return  D_output
 
         def r_hat():
-            r_hat = tf.nn.relu(tf.matmul(self.C, G_W1) + G_b1)
+            r_hat = tf.nn.sigmoid(tf.matmul(self.C, G_W1) + G_b1)
             # G_h2 = tf.nn.relu(tf.matmul(G_h1, G_W2) + G_b2)
             # r_hat = tf.nn.sigmoid(tf.matmul(G_h2, G_W3) + G_b3)
             return r_hat
@@ -153,9 +153,8 @@ class CFGAN(DeepRecommender):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             vec = self.data.row(u).reshape(1,self.num_items)
-            u = self.data.user[u]
             res = self.sess.run([self.r_hat], feed_dict={self.C: vec})[0]
-            #print res[0]
+            print res[0]
             return res[0]
 
         else:
