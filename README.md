@@ -14,8 +14,8 @@ Released by School of Software Engineering, Chongqing University</br>
 <h2>Latest News</h2>
 <p>
 02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
-02/12/2019 - CFGAN proposed in CIKM'18 has been added (tuning...) </br>
-02/04/2019 - NeuMF proposed in WWW'17 has been added (tuning...) </br>
+02/12/2019 - CFGAN proposed in CIKM'18 has been added.</br>
+02/04/2019 - NeuMF proposed in WWW'17 has been added.</br>
 10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
 10/02/2018 - Two deep models: DMF CDAE have been implemented.</br>
 07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
