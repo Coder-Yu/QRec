@@ -33,12 +33,11 @@ class PMF(IterativeRecommender):
 
         import tensorflow as tf
         # 构造损失函数 设置优化器
-        reg_lambda = tf.constant(self.regU, dtype=tf.float32)
+
         self.r_hat = tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), axis=1)
         self.loss = tf.nn.l2_loss(tf.subtract(self.r, self.r_hat))
-        self.reg_loss = tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.U)),
-                          tf.multiply(reg_lambda, tf.nn.l2_loss(self.V)))
-        self.total_loss = tf.add(self.loss, self.reg_loss)
+        reg_loss = self.regU*tf.nn.l2_loss(self.U_embed) +  self.regI*tf.nn.l2_loss(self.V)
+        self.total_loss = self.loss+reg_loss
         self.optimizer = tf.train.AdamOptimizer(self.lRate)
         self.train = self.optimizer.minimize(self.total_loss, var_list=[self.U, self.V])
 
