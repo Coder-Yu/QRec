@@ -233,11 +233,7 @@ papers and the code in terms of fomula presentation. If you have problems in und
     <td>Tang, Jiliang, et al. Exploiting local and global social context for recommendation, AAAI 2013.
      </td>
   </tr>
-  <tr>
-    <td scope="row">CoFactor</td>
-    <td>Liang et al., Factorization Meets the Item Embedding: Regularizing Matrix Factorization with Item Co-occurrence, RecSys2016.
-     </td>
-  </tr>
+
   <tr>
     <td scope="row">SREE</td>
     <td>Li et al., Social Recommendation Using Euclidean embedding, IJCNN 2017.
@@ -281,6 +277,11 @@ papers and the code in terms of fomula presentation. If you have problems in und
 	<td scope="row">ExpoMF</td>
     <td>Liang et al., Modeling User Exposure in Recommendation, WWW 2016.<br>
     </td>
+  </tr>
+    <tr>
+    <td scope="row">CoFactor</td>
+    <td>Liang et al., Factorization Meets the Item Embedding: Regularizing Matrix Factorization with Item Co-occurrence, RecSys2016.
+     </td>
   </tr>
   <tr>
     <td scope="row">TBPR</td>
