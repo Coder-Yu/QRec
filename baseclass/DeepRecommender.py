@@ -21,6 +21,7 @@ class DeepRecommender(IterativeRecommender):
 
 
     def initModel(self):
+        super(DeepRecommender, self).initModel()
         self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
 
