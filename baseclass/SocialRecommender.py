@@ -3,7 +3,7 @@ from data.social import SocialDAO
 from tool import config
 from os.path import abspath
 class SocialRecommender(IterativeRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
+    def __init__(self,conf,trainingSet,testSet,relation,fold='[1]'):
         super(SocialRecommender, self).__init__(conf,trainingSet,testSet,fold)
         self.social = SocialDAO(self.config,relation) #social relations access control
 

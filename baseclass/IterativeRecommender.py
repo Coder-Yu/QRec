@@ -6,7 +6,7 @@ from tool.qmath import denormalize
 from evaluation.measure import Measure
 
 class IterativeRecommender(Recommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+    def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         super(IterativeRecommender, self).__init__(conf,trainingSet,testSet,fold)
 
     def readConfiguration(self):
@@ -120,7 +120,7 @@ class IterativeRecommender(Recommender):
             # predict
             prediction = self.predict(user, item)
             # denormalize
-            prediction = denormalize(prediction, self.data.rScale[-1], self.data.rScale[0])
+            #prediction = denormalize(prediction, self.data.rScale[-1], self.data.rScale[0])
             #####################################
             pred = self.checkRatingBoundary(prediction)
             # add prediction in order to measure
@@ -135,7 +135,7 @@ class IterativeRecommender(Recommender):
         recList = {}
         testSample = {}
         for user in self.data.testSet_u:
-            if len(testSample) == 300:
+            if len(testSample) == 1000:
                 break
             testSample[user] = self.data.testSet_u[user]
 

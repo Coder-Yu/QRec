@@ -8,7 +8,7 @@ from re import split
 from collections import defaultdict
 class RatingDAO(object):
     'data access control'
-    def __init__(self,config,trainingSet = list(), testSet = list()):
+    def __init__(self,config,trainingSet, testSet):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
         self.user = {} #used to store the order of users in the training set
@@ -27,8 +27,9 @@ class RatingDAO(object):
         self.testSet_i = defaultdict(dict) # used to store the test set by hierarchy item:[user,rating]
         self.rScale = []
 
-        self.trainingData = trainingSet
-        self.testData = testSet
+        self.trainingData = trainingSet[:]
+        self.testData = testSet[:]
+
         self.__generateSet()
 
         self.__computeItemMean()
@@ -50,8 +51,8 @@ class RatingDAO(object):
         for i,entry in enumerate(self.trainingData):
             userName,itemName,rating = entry
             # makes the rating within the range [0, 1].
-            rating = normalize(float(rating), self.rScale[-1], self.rScale[0])
-            self.trainingData[i][2] = rating
+            #rating = normalize(float(rating), self.rScale[-1], self.rScale[0])
+            #self.trainingData[i][2] = rating
             # order the user
             if not self.user.has_key(userName):
                 self.user[userName] = len(self.user)

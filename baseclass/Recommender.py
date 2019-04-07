@@ -14,7 +14,7 @@ from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
 class Recommender(object):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+    def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         self.config = conf
         self.data = None
         self.isSaveModel = False
@@ -106,7 +106,7 @@ class Recommender(object):
             #predict
             prediction = self.predict(user,item)
             #denormalize
-            prediction = denormalize(prediction,self.data.rScale[-1],self.data.rScale[0])
+            #prediction = denormalize(prediction,self.data.rScale[-1],self.data.rScale[0])
             #####################################
             pred = self.checkRatingBoundary(prediction)
             # add prediction in order to measure

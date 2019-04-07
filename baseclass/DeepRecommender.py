@@ -5,16 +5,14 @@ from random import shuffle
 import tensorflow as tf
 
 class DeepRecommender(IterativeRecommender):
-    def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
+    def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         super(DeepRecommender, self).__init__(conf,trainingSet,testSet,fold)
 
     def readConfiguration(self):
         super(DeepRecommender, self).readConfiguration()
         # set the reduced dimension
         self.batch_size = int(self.config['batch_size'])
-        # regularization parameter
-        regular = config.LineConfig(self.config['reg.lambda'])
-        self.regU,self.regI,self.regB= float(regular['-u']),float(regular['-i']),float(regular['-b'])
+
 
     def printAlgorConfig(self):
         super(DeepRecommender, self).printAlgorConfig()
