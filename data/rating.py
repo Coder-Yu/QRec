@@ -42,11 +42,6 @@ class RatingDAO(object):
         triple = []
         scale = set()
         # find the maximum rating and minimum value
-        for i, entry in enumerate(self.trainingData):
-            userName, itemName, rating = entry
-            scale.add(float(rating))
-        self.rScale = list(scale)
-        self.rScale.sort()
 
         for i,entry in enumerate(self.trainingData):
             userName,itemName,rating = entry
@@ -64,6 +59,9 @@ class RatingDAO(object):
                 # userList.append
             self.trainSet_u[userName][itemName] = rating
             self.trainSet_i[itemName][userName] = rating
+            scale.add(float(rating))
+        self.rScale = list(scale)
+        self.rScale.sort()
 
         self.all_User.update(self.user)
         self.all_Item.update(self.item)
