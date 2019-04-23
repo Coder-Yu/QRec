@@ -102,7 +102,7 @@ class SVDPlusPlus(IterativeRecommender):
                     j = self.data.item[j]
                     sum += self.Y[j]
                 pred += self.Q.dot(sum / w)
-            pred += self.Q(self.P[u]) + self.data.globalMean + self.Bi + self.Bu[u]
+            pred += self.Q.dot(self.P[u]) + self.data.globalMean + self.Bi + self.Bu[u]
 
         else:
             pred = [self.data.globalMean] * len(self.data.item)
