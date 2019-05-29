@@ -35,14 +35,14 @@ class CFGAN(DeepRecommender):
 
             for i in range(int(self.S_zr*self.num_items)):
                 ng = choice(itemList)
-                while self.data.trainSet_u.has_key(ng):
+                while self.data.trainSet_u[user].has_key(ng):
                     ng = choice(itemList)
                 ng = self.data.item[ng]
                 N_zr[n][ng] = 1
 
             for i in range(int(self.S_pm*self.num_items)):
                 ng = choice(itemList)
-                while self.data.trainSet_u.has_key(ng):
+                while self.data.trainSet_u[user].has_key(ng):
                     ng = choice(itemList)
                 ng = self.data.item[ng]
                 mask[n][ng] = 1
@@ -117,7 +117,7 @@ class CFGAN(DeepRecommender):
         D_fake = discriminator(tf.concat([G_sample,self.C],1))
 
 
-        self.D_loss = -tf.reduce_mean(tf.log(D_real+10e-5) + tf.log(1. - D_fake+10e-5))
+        self.D_loss = -tf.reduce_mean(tf.log(D_real+10e-5) - tf.log(1. - D_fake+10e-5))
         self.G_loss = tf.reduce_mean(tf.log(1.-D_fake+10e-5)+self.alpha*tf.nn.l2_loss(tf.multiply(self.N_zr,G_sample)))
 
         # Only update D(X)'s parameters, so var_list = theta_D
@@ -158,7 +158,7 @@ class CFGAN(DeepRecommender):
             return res[0]
 
         else:
-            return [self.data.globalMean] * len(self.data.item)
+            return [self.data.globalMean] * self.num_items
 
 
 
