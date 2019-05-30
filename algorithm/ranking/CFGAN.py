@@ -117,7 +117,7 @@ class CFGAN(DeepRecommender):
         D_fake = discriminator(tf.concat([G_sample,self.C],1))
 
 
-        self.D_loss = -tf.reduce_mean(tf.log(D_real+10e-5) - tf.log(1. - D_fake+10e-5))
+        self.D_loss = -tf.reduce_mean(tf.log(D_real+10e-5) + tf.log(1. - D_fake+10e-5))
         self.G_loss = tf.reduce_mean(tf.log(1.-D_fake+10e-5)+self.alpha*tf.nn.l2_loss(tf.multiply(self.N_zr,G_sample)))
 
         # Only update D(X)'s parameters, so var_list = theta_D
