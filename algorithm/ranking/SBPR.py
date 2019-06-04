@@ -15,7 +15,7 @@ class SBPR(SocialRecommender):
         self.b = np.random.random(self.data.trainingSize()[1])
         print 'Preparing item sets...'
         self.PositiveSet = defaultdict(dict)
-        self.IPositiveSet = defaultdict(dict)
+        self.FPSet = defaultdict(dict)
         # self.NegativeSet = defaultdict(list)
 
         for user in self.data.user:
@@ -29,10 +29,10 @@ class SBPR(SocialRecommender):
                     if self.data.user.has_key(friend):
                         for item in self.data.trainSet_u[friend]:
                             if not self.PositiveSet[user].has_key(item):
-                                if not self.IPositiveSet[user].has_key(item):
-                                    self.IPositiveSet[user][item] = 1
+                                if not self.FPSet[user].has_key(item):
+                                    self.FPSet[user][item] = 1
                                 else:
-                                    self.IPositiveSet[user][item] += 1
+                                    self.FPSet[user][item] += 1
         Suk=1
         print 'Training...'
         iteration = 0
@@ -41,11 +41,11 @@ class SBPR(SocialRecommender):
             itemList = self.data.item.keys()
             for user in self.PositiveSet:
                 u = self.data.user[user]
-                kItems = self.IPositiveSet[user].keys()
+                kItems = self.FPSet[user].keys()
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
                     for n in range(3): #negative sampling for 3 times
-                        if len(self.IPositiveSet[user]) > 0:
+                        if len(self.FPSet[user]) > 0:
                             item_k = choice(kItems)
                             k = self.data.item[item_k]
                             s = sigmoid((self.P[u].dot(self.Q[i])+self.b[i] - self.P[u].dot(self.Q[k])-self.b[k])/ (Suk+1))
@@ -59,7 +59,7 @@ class SBPR(SocialRecommender):
                             #     item_j = choice(self.NegativeSet[user])
                             # else:
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
+                            while (self.PositiveSet[user].has_key(item_j) or self.FPSet.has_key(item_j)):
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             s = sigmoid(self.P[u].dot(self.Q[k])+self.b[k] - self.P[u].dot(self.Q[j])-self.b[j])
@@ -105,6 +105,7 @@ class SBPR(SocialRecommender):
             return predictRating
         else:
             return sigmoid(self.data.globalMean)
+
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
