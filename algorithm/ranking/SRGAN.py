@@ -336,7 +336,7 @@ class SRGAN(SocialRecommender,DeepRecommender):
 
             self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005),dtype=tf.float32)
             self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005),dtype=tf.float32)
-            self.item_selection = tf.get_variable('item_selection',initializer=tf.constant_initializer(0.05),shape=[self.num_users, self.num_items])
+            self.item_selection = tf.get_variable('item_selection',initializer=tf.constant_initializer(0.01),shape=[self.num_users, self.num_items])
 
             self.d_params = [self.user_embeddings, self.item_embeddings,self.item_selection]
 
@@ -355,7 +355,7 @@ class SRGAN(SocialRecommender,DeepRecommender):
             #get candidate list (items)
             self.candidateItems = tf.matmul(self.virtualFriends, self.u_i_matrix, transpose_a=False,transpose_b=False)
 
-            self.embedding_selection = tf.matmul(self.virtualFriends, self.item_selection, transpose_a=False,transpose_b=False)
+            self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u,name='e_s')
 
             self.virtual_items = self.sampling(tf.multiply(self.candidateItems,self.embedding_selection))
 
@@ -481,6 +481,8 @@ class SRGAN(SocialRecommender,DeepRecommender):
         #
         # self.ranking_performance()
 
+        f = open(self.foldInfo+'SRGAN.txt','w')
+        res = []
 
         print 'pretraining for generator...'
         for i in range(30):
@@ -493,7 +495,7 @@ class SRGAN(SocialRecommender,DeepRecommender):
 
         print 'Training GAN...'
 
-        for i in range(30):
+        for i in range(50):
             batch_id = 0
             while batch_id < self.train_size:
                 batch_id, user_idx, i_idx, j_idx = self.next_batch_d(batch_id)
@@ -515,7 +517,10 @@ class SRGAN(SocialRecommender,DeepRecommender):
 
                 print 'training:', i + 1, 'batch_id', batch_id, 'discriminator loss:', loss
 
-            self.ranking_performance()
+            results = self.ranking_performance()
+            res+=results
+
+        f.writelines(res)
 
 
     def predictForRanking(self, u):
