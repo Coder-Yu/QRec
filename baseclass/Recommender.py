@@ -166,43 +166,8 @@ class Recommender(object):
             for item in ratedList:
                 del itemSet[item]
 
-            #rawRes[user] = itemSet
-            Nrecommendations = []
-            for item in itemSet:
-                if len(Nrecommendations) < N:
-                    Nrecommendations.append((item, itemSet[item]))
-                else:
-                    break
-
-            Nrecommendations.sort(key=lambda d: d[1], reverse=True)
-            recommendations = [item[1] for item in Nrecommendations]
-            resNames = [item[0] for item in Nrecommendations]
-
-
-            # find the K biggest scores
-            for item in itemSet:
-                ind = N
-                l = 0
-                r = N - 1
-
-                if recommendations[r] < itemSet[item]:
-                    while True:
-                        mid = (l + r) / 2
-                        if recommendations[mid] >= itemSet[item]:
-                            l = mid + 1
-                        elif recommendations[mid] < itemSet[item]:
-                            r = mid - 1
-                        if r < l:
-                            ind = r
-                            break
-                # ind = bisect(recommendations, itemSet[item])
-
-                if ind < N - 1:
-                    recommendations[ind + 1] = itemSet[item]
-                    resNames[ind + 1] = item
-
-            recList[user] = zip(resNames, recommendations)
-
+            recs = sorted(itemSet.items(), key=lambda items: items[1], reverse=True)
+            recList[user] = recs[0:N]
 
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
