@@ -166,7 +166,7 @@ class Recommender(object):
             for item in ratedList:
                 del itemSet[item]
 
-            #rawRes[user] = itemSet
+
             Nrecommendations = []
             for item in itemSet:
                 if len(Nrecommendations) < N:
@@ -179,27 +179,30 @@ class Recommender(object):
             resNames = [item[0] for item in Nrecommendations]
 
 
-            # find the K biggest scores
+            # find the N biggest scores
             for item in itemSet:
                 ind = N
                 l = 0
                 r = N - 1
 
                 if recommendations[r] < itemSet[item]:
-                    while True:
-                        mid = (l + r) / 2
+                    while r>=l:
+                        mid = (r-l) / 2 + l
                         if recommendations[mid] >= itemSet[item]:
                             l = mid + 1
                         elif recommendations[mid] < itemSet[item]:
                             r = mid - 1
+
                         if r < l:
                             ind = r
                             break
-                # ind = bisect(recommendations, itemSet[item])
-
+                #move the items backwards
+                if ind < N - 2:
+                    recommendations[ind+2:]=recommendations[ind+1:-1]
+                    resNames[ind+2:]=resNames[ind+1:-1]
                 if ind < N - 1:
-                    recommendations[ind + 1] = itemSet[item]
-                    resNames[ind + 1] = item
+                    recommendations[ind+1] = itemSet[item]
+                    resNames[ind+1] = item
 
             recList[user] = zip(resNames, recommendations)
 
