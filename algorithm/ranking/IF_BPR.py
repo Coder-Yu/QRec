@@ -1,5 +1,4 @@
 from baseclass.SocialRecommender import SocialRecommender
-from baseclass.DeepRecommender import DeepRecommender
 from tool import config
 from random import shuffle, choice
 from collections import defaultdict
@@ -7,11 +6,7 @@ import numpy as np
 from tool.qmath import sigmoid, cosine
 from math import log
 import gensim.models.word2vec as w2v
-from random import random
-try:
-    import tensorflow as tf
-except ImportError:
-    print 'TensorFlow is undetected on your computer!'
+
 
 
 class IF_BPR(SocialRecommender):

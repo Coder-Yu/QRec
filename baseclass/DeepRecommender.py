@@ -20,10 +20,10 @@ class DeepRecommender(IterativeRecommender):
 
     def initModel(self):
         super(DeepRecommender, self).initModel()
-        self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
-        self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
+        self.u_idx = tf.placeholder(tf.int32, name="u_idx")
+        self.v_idx = tf.placeholder(tf.int32, name="v_idx")
 
-        self.r = tf.placeholder(tf.float32, [None], name="rating")
+        self.r = tf.placeholder(tf.float32, name="rating")
 
         self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005), name='U')
         self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005), name='V')
