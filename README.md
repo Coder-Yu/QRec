@@ -333,6 +333,9 @@ papers and the code in terms of fomula presentation. If you have problems in und
     <td>Chae et al. CFGAN: A Generic Collaborative Filtering Framework based
 on Generative Adversarial Networks, CIKM 2018.
      </td>
+<td scope="row">SRGAN</td>
+    <td>Yu et al. Generating Reliable Friends via Adversarial Learning to Improve Social Recommendation, ICDM 2018.
+     </td>
   </tr>
   </table>
 </div>
