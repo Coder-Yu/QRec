@@ -398,49 +398,51 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.g_update = g_opt.minimize(self.g_loss,var_list=self.g_params)
 
 
-
-    def next_batch_d(self,batch_id):
-
-        if batch_id+self.batch_size<=self.train_size:
-            users = [self.data.trainingData[idx][0] for idx in range(batch_id,self.batch_size+batch_id)]
-            items = [self.data.trainingData[idx][1] for idx in range(batch_id,self.batch_size+batch_id)]
-            batch_id+=self.batch_size
-        else:
-            users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
-            items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
-            batch_id=self.train_size
-
-        u_idx,i_idx,j_idx = [],[],[]
-        item_list = self.data.item.keys()
-        for i,user in enumerate(users):
-
-            i_idx.append(self.data.item[items[i]])
-            u_idx.append(self.data.user[user])
-
-            neg_item = choice(item_list)
-            while neg_item in self.data.trainSet_u[user]:
-                neg_item = choice(item_list)
-            j_idx.append(self.data.item[neg_item])
-
-        return batch_id,u_idx,i_idx,j_idx
-
-    def next_batch_g(self,batch_id):
-        userList = self.data.user.keys()
-        if batch_id+self.batch_size<=self.num_users:
-            profiles = np.zeros((self.batch_size, self.num_users))
-            for i,user in enumerate(userList[batch_id:self.batch_size+batch_id]):
-                ind = [self.data.user[friend] for friend in self.seededFriends[user]]
-                profiles[i][ind]=1
+    def next_batch_d(self):
+        batch_id=0
+        while batch_id<self.train_size:
+            if batch_id+self.batch_size<=self.train_size:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id,self.batch_size+batch_id)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id,self.batch_size+batch_id)]
                 batch_id+=self.batch_size
+            else:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
+                batch_id=self.train_size
 
-        else:
-            profiles = np.zeros((self.num_users-batch_id, self.num_users))
-            for i, user in enumerate(userList[self.num_users-batch_id:self.num_users]):
-                ind = [self.data.user[friend] for friend in self.seededFriends[user]]
-                profiles[i][ind] = 1
-                batch_id=self.num_users
+            u_idx,i_idx,j_idx = [],[],[]
+            item_list = self.data.item.keys()
+            for i,user in enumerate(users):
 
-        return batch_id,profiles
+                i_idx.append(self.data.item[items[i]])
+                u_idx.append(self.data.user[user])
+
+                neg_item = choice(item_list)
+                while neg_item in self.data.trainSet_u[user]:
+                    neg_item = choice(item_list)
+                j_idx.append(self.data.item[neg_item])
+
+            yield u_idx,i_idx,j_idx
+
+    def next_batch_g(self):
+        userList = self.data.user.keys()
+        batch_id=0
+        while batch_id<self.num_users:
+            if batch_id + self.batch_size <= self.num_users:
+                profiles = np.zeros((self.batch_size, self.num_users))
+                for i,user in enumerate(userList[batch_id:self.batch_size+batch_id]):
+                    ind = [self.data.user[friend] for friend in self.seededFriends[user]]
+                    profiles[i][ind]=1
+                    batch_id+=self.batch_size
+
+            else:
+                profiles = np.zeros((self.num_users-batch_id, self.num_users))
+                for i, user in enumerate(userList[self.num_users-batch_id:self.num_users]):
+                    ind = [self.data.user[friend] for friend in self.seededFriends[user]]
+                    profiles[i][ind] = 1
+                    batch_id=self.num_users
+
+            yield profiles
 
 
     def initModel(self):
@@ -486,19 +488,18 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
         print 'pretraining for generator...'
         for i in range(30):
-            batch_id=0
-            while batch_id<self.num_users:
-                batch_id,profiles = self.next_batch_g(batch_id)
+            for num,batch in enumerate(self.next_batch_g()):
+                profiles = batch
                 _,loss = self.sess.run([self.g_pretrain,self.reconstruction],feed_dict={self.X:profiles})
-                print 'pretraining:', i + 1, 'batch_id',batch_id,'generator loss:', loss
+                print 'pretraining:', i + 1, 'batch',num,'generator loss:', loss
 
 
         print 'Training GAN...'
 
-        for i in range(50):
+        for i in range(self.maxIter):
             batch_id = 0
-            while batch_id < self.train_size:
-                batch_id, user_idx, i_idx, j_idx = self.next_batch_d(batch_id)
+            for num,batch in enumerate(self.next_batch_d()):
+                user_idx, i_idx, j_idx = batch
 
                 profiles = np.zeros((len(user_idx),self.num_users))
                 for n,u in enumerate(user_idx):
@@ -515,7 +516,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
                                         feed_dict={self.u: user_idx,self.neg:j_idx,
                                                    self.pos: i_idx,self.X:profiles,self.u_i_matrix:self.matrix})
 
-                print 'training:', i + 1, 'batch_id', batch_id, 'discriminator loss:', loss
+                print 'training:', i + 1, 'batch_id', num, 'discriminator loss:', loss
 
             results = self.ranking_performance()
             res+=results
