@@ -48,8 +48,8 @@ class IterativeRecommender(Recommender):
         self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005), name='U')
         self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005), name='V')
 
-        self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
-        self.V_embed = tf.nn.embedding_lookup(self.V, self.v_idx)
+        self.user_embedding = tf.nn.embedding_lookup(self.U, self.u_idx)
+        self.item_embedding = tf.nn.embedding_lookup(self.V, self.v_idx)
 
 
     def saveModel(self):

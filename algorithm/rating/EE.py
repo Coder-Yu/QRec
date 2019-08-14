@@ -59,15 +59,15 @@ class EE(IterativeRecommender):
         self.U_bias_embed = tf.nn.embedding_lookup(self.U_bias, self.u_idx)
         self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
 
-        difference = tf.subtract(self.U_embed, self.V_embed)
+        difference = tf.subtract(self.user_embedding, self.item_embedding)
         self.r_hat = tf.reduce_sum(tf.multiply(difference, difference), axis=1)
         self.r_hat = tf.subtract(self.U_bias_embed, self.r_hat)
         self.r_hat = tf.add(self.r_hat, self.V_bias_embed)
         self.r_hat = tf.add(self.r_hat, global_mean)
 
         self.loss = tf.nn.l2_loss(tf.subtract(self.r, self.r_hat))
-        reg_loss = tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.U)),
-                          tf.multiply(reg_lambda, tf.nn.l2_loss(self.V)))
+        reg_loss = tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.user_embedding)),
+                          tf.multiply(reg_lambda, tf.nn.l2_loss(self.item_embedding)))
         reg_loss = tf.add(reg_loss,tf.multiply(reg_biase, tf.nn.l2_loss(self.U_bias)))
         reg_loss = tf.add(reg_loss, tf.multiply(reg_biase, tf.nn.l2_loss(self.V_bias)))
         self.total_loss = tf.add(self.loss, reg_loss)

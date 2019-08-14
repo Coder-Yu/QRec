@@ -54,13 +54,13 @@ class SVD(IterativeRecommender):
         self.U_bias_embed = tf.nn.embedding_lookup(self.U_bias, self.u_idx)
         self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
 
-        self.r_hat = tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), axis=1)
+        self.r_hat = tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), axis=1)
         self.r_hat = self.r_hat + self.U_bias_embed
         self.r_hat = self.r_hat + self.V_bias_embed
         self.r_hat = self.r_hat + global_mean
 
         self.loss = tf.nn.l2_loss(self.r-self.r_hat)
-        reg_loss = self.regU * tf.nn.l2_loss(self.U_embed) + self.regI * tf.nn.l2_loss(self.V)
+        reg_loss = self.regU * tf.nn.l2_loss(self.user_embedding) + self.regI * tf.nn.l2_loss(self.item_embedding)
         reg_loss += self.regB*self.U_bias_embed+ self.regB*self.U_bias_embed
         self.total_loss = self.loss + reg_loss
         optimizer = tf.train.AdamOptimizer(self.lRate)

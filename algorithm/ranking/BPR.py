@@ -76,6 +76,36 @@ class BPR(IterativeRecommender):
         else:
             return sigmoid(self.data.globalMean)
 
+    def next_batch_d(self):
+        batch_id=0
+        while batch_id<self.train_size:
+            if batch_id+self.batch_size<=self.train_size:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id,self.batch_size+batch_id)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id,self.batch_size+batch_id)]
+                batch_id+=self.batch_size
+            else:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
+                batch_id=self.train_size
+
+            u_idx,i_idx,j_idx = [],[],[]
+            item_list = self.data.item.keys()
+            for i,user in enumerate(users):
+
+                i_idx.append(self.data.item[items[i]])
+                u_idx.append(self.data.user[user])
+
+                neg_item = choice(item_list)
+                while neg_item in self.data.trainSet_u[user]:
+                    neg_item = choice(item_list)
+                j_idx.append(self.data.item[neg_item])
+
+            yield u_idx,i_idx,j_idx
+
+    def buildModel_tf(self):
+
+
+
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):

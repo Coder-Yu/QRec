@@ -34,7 +34,7 @@ class BasicMF(IterativeRecommender):
         import tensorflow as tf
         # 构造损失函数 设置优化器
 
-        self.r_hat = tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), axis=1)
+        self.r_hat = tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), axis=1)
         self.total_loss = tf.nn.l2_loss(self.r- self.r_hat)
 
         self.optimizer = tf.train.AdamOptimizer(self.lRate)
