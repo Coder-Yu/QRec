@@ -8,7 +8,7 @@
 # (at your option) any later version.
 from data.rating import RatingDAO
 from tool.file import FileIO
-from tool.qmath import denormalize
+import pandas as pd
 from tool.config import Config,LineConfig
 from os.path import abspath
 from time import strftime,localtime,time
@@ -165,7 +165,6 @@ class Recommender(object):
             ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
                 del itemSet[item]
-
 
             Nrecommendations = []
             for item in itemSet:

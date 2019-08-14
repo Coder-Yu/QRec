@@ -67,7 +67,7 @@ class RecQ(object):
             if k <= 1 or k > 10:
                 k = 3
             mkl.set_num_threads(max(1,mkl.get_max_threads()/k))
-            #create the manager used to communication in multiprocess
+            #create the manager
             manager = Manager()
             m = manager.dict()
             i = 1

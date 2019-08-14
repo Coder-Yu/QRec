@@ -17,7 +17,7 @@ def gumbel_softmax(logits, temperature=0.2):
 
 
 
-class SRGAN(SocialRecommender,DeepRecommender):
+class RSGAN(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
@@ -444,7 +444,7 @@ class SRGAN(SocialRecommender,DeepRecommender):
 
 
     def initModel(self):
-        super(SRGAN, self).initModel()
+        super(RSGAN, self).initModel()
 
         #collect implicit friends
 
@@ -481,7 +481,7 @@ class SRGAN(SocialRecommender,DeepRecommender):
         #
         # self.ranking_performance()
 
-        f = open(self.foldInfo+'SRGAN.txt','w')
+        f = open(self.foldInfo+'RSGAN.txt','w')
         res = []
 
         print 'pretraining for generator...'

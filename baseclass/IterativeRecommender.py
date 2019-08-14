@@ -187,7 +187,7 @@ class IterativeRecommender(Recommender):
             recList[user] = zip(resNames, recommendations)
         measure = Measure.rankingMeasure(testSample, recList, [10,20])
         print '-'*80
-        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 300 sampled users)'
+        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 1000 sampled users)'
         for m in measure[1:]:
             print m.strip()
         print '-'*80

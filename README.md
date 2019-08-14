@@ -3,16 +3,15 @@
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
-Released by School of Software Engineering, Chongqing University</br>
-<b>More algorithms (ranking based and context-aware) can be found in another project of mine <a href="https://github.com/Coder-Yu/Yue/">Yue</a></b>
-</br>
 
 **RecQ** is a Python library for recommender systems (Python 2.7.x) in which a number of the state-of-the-art recommendation models are implemented. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading
- open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager,
- all of them make it a perfect tool for data science researcher. Besides, GPU based deep models are also available (TensorFlow is required).
+ open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager.
+ All of them make it a perfect tool for data science researcher. Besides, GPU based deep models are also available (TensorFlow is required).
 
 <h2>Latest News</h2>
 <p>
+13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
+09/08/2019 - Our paper is accepted as full research paper by ICDM'19.
 02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
 02/12/2019 - CFGAN proposed in CIKM'18 has been added.</br>
 02/04/2019 - NeuMF proposed in WWW'17 has been added.</br>
@@ -334,7 +333,7 @@ papers and the code in terms of fomula presentation. If you have problems in und
 on Generative Adversarial Networks, CIKM 2018.
      </td>
 <tr>
-<td scope="row">SRGAN</td>
+<td scope="row">RSGAN</td>
     <td>Yu et al. Generating Reliable Friends via Adversarial Learning to Improve Social Recommendation, ICDM 2019.
      </td>
   </tr>
