@@ -11,7 +11,7 @@
 <h2>Latest News</h2>
 <p>
 13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
-09/08/2019 - Our paper is accepted as full research paper by ICDM'19.
+09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>
 02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
 02/12/2019 - CFGAN proposed in CIKM'18 has been added.</br>
 02/04/2019 - NeuMF proposed in WWW'17 has been added.</br>
