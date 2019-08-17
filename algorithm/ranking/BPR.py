@@ -1,8 +1,5 @@
 #coding:utf8
 from baseclass.IterativeRecommender import IterativeRecommender
-import math
-import numpy as np
-from tool import qmath
 from random import choice
 from tool.qmath import sigmoid
 from math import log
