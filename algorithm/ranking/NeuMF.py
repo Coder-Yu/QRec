@@ -11,24 +11,30 @@ class NeuMF(DeepRecommender):
 
 
     def next_batch(self):
-        batch_idx = np.random.randint(self.train_size, size=self.batch_size)
-        users = [self.data.trainingData[idx][0] for idx in batch_idx]
-        items = [self.data.trainingData[idx][1] for idx in batch_idx]
-        user_idx,item_idx=[],[]
-        y = []
-        for i,user in enumerate(users):
-            user_idx.append(self.data.user[user])
-            item_idx.append(self.data.item[items[i]])
-            y.append(1)
-            #According to the paper, we sampled four negative instances per positive instance
-            for instance in range(4):
-                item_j = randint(0, self.num_items - 1)
-                while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
+        batch_id=0
+        while batch_id<self.train_size:
+            if batch_id+self.batch_size<=self.train_size:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id,self.batch_size+batch_id)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id,self.batch_size+batch_id)]
+                batch_id+=self.batch_size
+            else:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
+                batch_id=self.train_size
+            u_idx,i_idx,y = [],[],[]
+            for i,user in enumerate(users):
+
+                i_idx.append(self.data.item[items[i]])
+                u_idx.append(self.data.user[user])
+                y.append(1)
+                for instance in range(4):
                     item_j = randint(0, self.num_items - 1)
-                user_idx.append(self.data.user[user])
-                item_idx.append(item_j)
-                y.append(0)
-        return user_idx,item_idx,y
+                    while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
+                        item_j = randint(0, self.num_items - 1)
+                    u_idx.append(self.data.user[user])
+                    i_idx.append(item_j)
+                    y.append(0)
+            yield u_idx,i_idx,y
 
 
     def initModel(self):
@@ -107,26 +113,29 @@ class NeuMF(DeepRecommender):
         self.sess.run(init)
 
         print 'pretraining... (GMF)'
-        for epoch in range(self.maxIter):
-            user_idx, item_idx, r = self.next_batch()
+        for iteration in range(self.maxIter):
+            for num,batch in enumerate(self.next_batch()):
+                user_idx, item_idx, r = batch
 
-            _, loss,y_mf = self.sess.run([self.mf_optimizer, self.mf_loss,self.y_mf],
-                               feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-            print 'iteration:', epoch, 'loss:', loss
+                _, loss,y_mf = self.sess.run([self.mf_optimizer, self.mf_loss,self.y_mf],
+                                   feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
+                print 'iteration:', iteration, 'batch:', num, 'loss:', loss
 
         print 'pretraining... (MLP)'
-        for epoch in range(self.maxIter/2):
-            user_idx, item_idx, r = self.next_batch()
-            _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
+        for iteration in range(self.maxIter/2):
+            for num, batch in enumerate(self.next_batch()):
+                user_idx, item_idx, r = batch
+                _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-            print 'iteration:', epoch, 'loss:', loss
+                print 'iteration:', iteration, 'batch:', num, 'loss:', loss
 
         print 'training... (NeuMF)'
-        for epoch in range(self.maxIter/10):
-            user_idx, item_idx, r = self.next_batch()
-            _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
+        for iteration in range(self.maxIter/5):
+            for num, batch in enumerate(self.next_batch()):
+                user_idx, item_idx, r = batch
+                _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-            print 'iteration:', epoch, 'loss:', loss
+                print 'iteration:', iteration, 'batch:', num, 'loss:', loss
 
     def predict_mlp(self,uid):
         user_idx = [uid]*self.num_items
