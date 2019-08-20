@@ -106,7 +106,7 @@ def get_row(Y, i):
 
 def a_row_batch(Y_batch, theta_batch, beta, lam_y, mu):
     '''Compute the posterior of exposure latent variables A by batch'''
-    pEX = sqrt(lam_y / 2 * np.pi) * \
+    pEX = sqrt(lam_y / 2 / np.pi) * \
           np.exp(-lam_y * theta_batch.dot(beta.T) ** 2 / 2)
     #print pEX.shape,mu.shape
     A = (pEX + EPS) / (pEX + EPS + (1 - mu) / mu)
