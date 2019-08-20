@@ -26,9 +26,9 @@ class SERec(SocialRecommender):
         self.s= 2.2
         self.init_std = 0.5
         self.theta = self.init_std * \
-            np.random.randn(self.num_users, self.k).astype(np.float32)
+            np.random.randn(self.num_users, self.embed_size).astype(np.float32)
         self.beta = self.init_std * \
-            np.random.randn(self.num_items, self.k).astype(np.float32)
+            np.random.randn(self.num_items, self.embed_size).astype(np.float32)
         self.mu = self.init_mu * np.ones((self.num_users,self.num_items), dtype=np.float32)
         self.n_jobs=4
         self.batch_size=1000

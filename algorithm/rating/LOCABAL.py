@@ -22,7 +22,7 @@ class LOCABAL(SocialRecommender):
 
     def initModel(self):
         super(LOCABAL, self).initModel()
-        self.H = np.random.rand(self.k,self.k)
+        self.H = np.random.rand(self.embed_size,self.embed_size)
         G = nx.DiGraph()
         for re in self.social.relation:
             G.add_edge(re[0], re[1])
@@ -74,7 +74,7 @@ class LOCABAL(SocialRecommender):
                     error = self.S[user][friend] - np.dot(np.dot(p,self.H),q)
                     self.loss+=self.alpha*error**2
                     #update latent vectors
-                    self.H+=self.lRate*self.alpha*error*(p.reshape(self.k,1).dot(q.reshape(1,self.k)))
+                    self.H+=self.lRate*self.alpha*error*(p.reshape(self.embed_size,1).dot(q.reshape(1,self.embed_size)))
                     self.H-=self.lRate*self.regS*self.H
                     self.P[u]+=self.lRate*self.alpha*error*(self.H.dot(q))
                     self.P[k]+=self.lRate*self.alpha*error*(p.T.dot(self.H))

@@ -282,7 +282,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
         vec = tf.nn.softmax(vec)
 
-        logits = gumbel_softmax(vec, 0.2)
+        logits = gumbel_softmax(vec, 0.1)
         return logits
 
 
@@ -334,8 +334,8 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
         with tf.variable_scope('discriminator'):
 
-            self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005),dtype=tf.float32)
-            self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005),dtype=tf.float32)
+            self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),dtype=tf.float32)
+            self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005),dtype=tf.float32)
             self.item_selection = tf.get_variable('item_selection',initializer=tf.constant_initializer(0.01),shape=[self.num_users, self.num_items])
 
             self.d_params = [self.user_embeddings, self.item_embeddings,self.item_selection]
@@ -357,7 +357,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
             self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u,name='e_s')
 
-            self.virtual_items = self.sampling(tf.multiply(self.candidateItems,self.embedding_selection))
+            self.virtual_items = self.sampling(tf.nn.softmax(tf.multiply(self.candidateItems,self.embedding_selection)))
 
             self.v_i_embedding = tf.matmul(self.virtual_items,self.item_embeddings,transpose_a=False,transpose_b=False)
 
@@ -380,7 +380,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
             self.d_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_uf)))-tf.reduce_sum(tf.log(tf.sigmoid(y_fs)))+\
                           self.regU*(tf.nn.l2_loss(self.u_embedding)+tf.nn.l2_loss(self.i_embedding)+tf.nn.l2_loss(self.j_embedding))
             #
-            self.g_loss = 100*tf.reduce_sum(y_uf) #better performance
+            self.g_loss = 30*tf.reduce_sum(y_uf) #better performance
 
 
             d_pre = tf.train.AdamOptimizer(self.lRate)

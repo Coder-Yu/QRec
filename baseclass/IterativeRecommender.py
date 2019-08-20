@@ -12,7 +12,7 @@ class IterativeRecommender(Recommender):
     def readConfiguration(self):
         super(IterativeRecommender, self).readConfiguration()
         # set the reduced dimension
-        self.k = int(self.config['num.factors'])
+        self.embed_size = int(self.config['num.factors'])
         # set maximum iteration
         self.maxIter = int(self.config['num.max.iter'])
         # set learning rate
@@ -27,14 +27,14 @@ class IterativeRecommender(Recommender):
 
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
-        print 'Reduced Dimension:',self.k
+        print 'Reduced Dimension:',self.embed_size
         print 'Maximum Iteration:',self.maxIter
         print 'Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB)
         print '='*80
 
     def initModel(self):
-        self.P = np.random.rand(len(self.data.user), self.k)/3 # latent user matrix
-        self.Q = np.random.rand(len(self.data.item), self.k)/3  # latent item matrix
+        self.P = np.random.rand(len(self.data.user), self.embed_size)/3 # latent user matrix
+        self.Q = np.random.rand(len(self.data.item), self.embed_size)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
 
@@ -45,8 +45,8 @@ class IterativeRecommender(Recommender):
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.r = tf.placeholder(tf.float32, [None], name="rating")
 
-        self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.k], stddev=0.005), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.k], stddev=0.005), name='V')
+        self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='V')
 
         self.user_biases = tf.Variable(tf.truncated_normal(shape=[self.num_users, 1], stddev=0.005), name='U')
         self.item_biases = tf.Variable(tf.truncated_normal(shape=[self.num_items, 1], stddev=0.005), name='U')
