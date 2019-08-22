@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     print 'Deep Recommenders:'
     print 'd1. APR           d2. CDAE          d3. DMF           d4. NeuMF           d5. CFGAN'
-    print 'd6. IRGAN         d7. RSGAN'
+    print 'd6. IRGAN         d7. RSGAN         d8. NGCF'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'

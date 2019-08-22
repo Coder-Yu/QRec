@@ -288,7 +288,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
     def build_graph(self):
 
-        self.u = tf.placeholder(tf.int32, name="user_holder")
+
         self.u_i_matrix = tf.placeholder(tf.float32, name="feedback_matrix")
         self.pos = tf.placeholder(tf.int32, name="positive_item")
         self.fnd = tf.placeholder(tf.int32, name="friend_item")
@@ -334,16 +334,12 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
         with tf.variable_scope('discriminator'):
 
-            self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),dtype=tf.float32)
-            self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005),dtype=tf.float32)
             self.item_selection = tf.get_variable('item_selection',initializer=tf.constant_initializer(0.01),shape=[self.num_users, self.num_items])
 
             self.d_params = [self.user_embeddings, self.item_embeddings,self.item_selection]
 
             # placeholder definition
-            self.u = tf.placeholder(tf.int32,name="u")
-
-            self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u,name='u_e')
+            self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx,name='u_e')
             self.i_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.pos,name='i_e')
             #self.f_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.fnd,name='f_e')
             self.j_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.neg,name='j_e')
@@ -355,7 +351,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
             #get candidate list (items)
             self.candidateItems = tf.matmul(self.virtualFriends, self.u_i_matrix, transpose_a=False,transpose_b=False)
 
-            self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u,name='e_s')
+            self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u_idx,name='e_s')
 
             self.virtual_items = self.sampling(tf.nn.softmax(tf.multiply(self.candidateItems,self.embedding_selection)))
 
@@ -509,11 +505,11 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
 
                 #generator
-                _,loss = self.sess.run([self.g_update,self.g_loss],feed_dict={self.u: user_idx,self.neg:j_idx,
+                _,loss = self.sess.run([self.g_update,self.g_loss],feed_dict={self.u_idx: user_idx,self.neg:j_idx,
                                                    self.pos: i_idx,self.X:profiles,self.u_i_matrix:self.matrix})
                 #discriminator
                 _, loss = self.sess.run([self.d_update, self.d_loss],
-                                        feed_dict={self.u: user_idx,self.neg:j_idx,
+                                        feed_dict={self.u_idx: user_idx,self.neg:j_idx,
                                                    self.pos: i_idx,self.X:profiles,self.u_i_matrix:self.matrix})
 
                 print 'training:', i + 1, 'batch_id', num, 'discriminator loss:', loss
@@ -530,7 +526,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
             u = self.data.user[u]
 
             # In our experiments, discriminator performs better than generator
-            res = self.sess.run(self.d_output, {self.u:u})
+            res = self.sess.run(self.d_output, {self.u_idx:u})
             return res
 
         else:
