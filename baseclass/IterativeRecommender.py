@@ -71,7 +71,7 @@ class IterativeRecommender(Recommender):
             else:
                 self.lRate *= 0.5
 
-        if self.maxLRate > 0 and self.lRate > self.maxLRate:
+        if self.lRate > self.maxLRate > 0:
             self.lRate = self.maxLRate
 
 
@@ -90,7 +90,7 @@ class IterativeRecommender(Recommender):
     def predictForRanking(self,u):
         'used to rank all the items for the user'
         if self.data.containsUser(u):
-            return (self.Q).dot(self.P[self.data.user[u]])
+            return self.Q.dot(self.P[self.data.user[u]])
         else:
             return [self.data.globalMean]*self.num_items
 

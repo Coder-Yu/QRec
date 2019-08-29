@@ -97,7 +97,7 @@ class Recommender(object):
             return round(prediction,3)
 
     def evalRatings(self):
-        res = [] #used to contain the text of the result
+        res = list() #used to contain the text of the result
         res.append('userId  itemId  original  prediction\n')
         #predict
         for ind,entry in enumerate(self.data.testData):
@@ -237,12 +237,12 @@ class Recommender(object):
             self.printAlgorConfig()
         #load model from disk or build model
         if self.isLoadModel:
-            print 'Loading model %s...' %(self.foldInfo)
+            print 'Loading model %s...' %self.foldInfo
             self.loadModel()
         else:
-            print 'Initializing model %s...' %(self.foldInfo)
+            print 'Initializing model %s...' %self.foldInfo
             self.initModel()
-            print 'Building Model %s...' %(self.foldInfo)
+            print 'Building Model %s...' %self.foldInfo
             try:
                 import tensorflow
                 if self.evalSettings.contains('-tf'):
@@ -253,7 +253,7 @@ class Recommender(object):
                 self.buildModel()
 
         #preict the ratings or item ranking
-        print 'Predicting %s...' %(self.foldInfo)
+        print 'Predicting %s...' %self.foldInfo
         if self.ranking.isMainOn():
             self.evalRanking()
         else:
@@ -261,7 +261,7 @@ class Recommender(object):
 
         #save model
         if self.isSaveModel:
-            print 'Saving model %s...' %(self.foldInfo)
+            print 'Saving model %s...' %self.foldInfo
             self.saveModel()
         # with open(self.foldInfo+'measure.txt','w') as f:
         #     f.writelines(self.record)

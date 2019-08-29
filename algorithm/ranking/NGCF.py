@@ -34,11 +34,28 @@ class NGCF(DeepRecommender):
 
             yield u_idx, i_idx, j_idx
 
+    def getNeignbors(self):
+        user_Neighbors = dict()
+        item_Neighbors = dict()
+        for user in self.data.user:
+            uid = self.data.user[user]
+            user_Neighbors[uid]=[self.data.item[item] for item in self.data.trainSet_u[user]]
+        for item in self.data.item:
+            iid = self.data.item[item]
+            item_Neighbors[iid]=[self.data.user[user] for user in self.data.trainSet_i[item]]
+
+        return user_Neighbors,item_Neighbors
+
 
     def initModel(self):
         super(NGCF, self).initModel()
 
-        regularizer = tf.contrib.layers.l2_regularizer(scale=0.001)
+        self.u_neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_items], name="u_n_idx")
+        self.i_Neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_users], name="i_n_idx")
+
+
+        self.u_ = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx)
+        self.v_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.v_idx)
 
         self.weights = dict()
 
@@ -48,20 +65,13 @@ class NGCF(DeepRecommender):
         self.n_layers = 3
 
         for k in range(self.n_layers):
-            self.weights['W_gc_%d' % k] = tf.Variable(
-                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_gc_%d' % k)
-            self.weights['b_gc_%d' % k] = tf.Variable(
-                initializer([1, self.weight_size_list[k + 1]]), name='b_gc_%d' % k)
+            self.weights['W_%d_1' % k] = tf.Variable(
+                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_%d_1' % k)
+            self.weights['b_%d_2' % k] = tf.Variable(
+                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_%d_2' % k)
 
-            self.weights['W_bi_%d' % k] = tf.Variable(
-                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_bi_%d' % k)
-            self.weights['b_bi_%d' % k] = tf.Variable(
-                initializer([1, self.weight_size_list[k + 1]]), name='b_bi_%d' % k)
 
-            self.weights['W_mlp_%d' % k] = tf.Variable(
-                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_mlp_%d' % k)
-            self.weights['b_mlp_%d' % k] = tf.Variable(
-                initializer([1, self.weight_size_list[k + 1]]), name='b_mlp_%d' % k)
+
 
 
         ego_embeddings = tf.concat([self.weights['user_embedding'], self.weights['item_embedding']], axis=0)
