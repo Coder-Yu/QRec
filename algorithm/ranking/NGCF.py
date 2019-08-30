@@ -21,7 +21,7 @@ class NGCF(DeepRecommender):
                 items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
                 batch_id = self.train_size
 
-            u_idx, i_idx, j_idx, N_u, N_i, N_j,p_ui,p_uj = [], [], [], [], [], [],[],[]
+            u_idx, i_idx, j_idx, p_ui, p_uj = [], [], [], [], []
             item_list = self.data.item.keys()
             for i, user in enumerate(users):
 
@@ -35,26 +35,7 @@ class NGCF(DeepRecommender):
 
                 p_ui.append(sqrt(len(self.data.trainSet_u[user])*len(self.data.trainSet_i[items[i]])))
                 p_uj.append(sqrt(len(self.data.trainSet_u[user])*len(self.data.trainSet_i[items[neg_item]])))
-
-                n_u = self.data.trainSet_u[user].keys()
-                n_u = [self.data.item[v] for v in n_u]
-                array = np.zeros(self.num_items)
-                array[n_u]=1
-                N_u.append(array)
-
-                n_i = self.data.trainSet_i[items[i]].keys()
-                n_i = [self.data.user[v] for v in n_i]
-                array = np.zeros(self.num_users)
-                array[n_i]=1
-                N_i.append(array)
-
-                n_j = self.data.trainSet_i[neg_item].keys()
-                n_j = [self.data.user[v] for v in n_j]
-                array = np.zeros(self.num_users)
-                array[n_j]=1
-                N_j.append(array)
-
-            yield u_idx, i_idx, j_idx, N_u, N_i, N_j,p_ui,p_uj
+            yield u_idx, i_idx, j_idx,p_ui,p_uj
 
     def getNeignbors(self):
         user_Neighbors = dict()
@@ -91,11 +72,6 @@ class NGCF(DeepRecommender):
                 initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_%d_1' % k)
             self.weights['b_%d_2' % k] = tf.Variable(
                 initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_%d_2' % k)
-
-
-
-
-
 
         self.neighbors_u = tf.Placeholder(tf.int32,[None,self.num_items])
         self.neighbors_i = tf.Placeholder(tf.int32,[None,self.num_users])
