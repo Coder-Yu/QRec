@@ -114,23 +114,6 @@ class NGCF(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
-        print 'pretraining... (GMF)'
-        for iteration in range(self.maxIter):
-            for num,batch in enumerate(self.next_batch()):
-                user_idx, item_idx, r = batch
-
-                _, loss,y_mf = self.sess.run([self.mf_optimizer, self.mf_loss,self.y_mf],
-                                   feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-                print 'iteration:', iteration, 'batch:', num, 'loss:', loss
-
-        print 'pretraining... (MLP)'
-        for iteration in range(self.maxIter/2):
-            for num, batch in enumerate(self.next_batch()):
-                user_idx, item_idx, r = batch
-                _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
-                                          feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-                print 'iteration:', iteration, 'batch:', num, 'loss:', loss
-
         print 'training... (NeuMF)'
         for iteration in range(self.maxIter/5):
             for num, batch in enumerate(self.next_batch()):
@@ -139,15 +122,6 @@ class NGCF(DeepRecommender):
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
                 print 'iteration:', iteration, 'batch:', num, 'loss:', loss
 
-    def predict_mlp(self,uid):
-        user_idx = [uid]*self.num_items
-        y_mlp = self.sess.run([self.y_mlp],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.num_items)})
-        return y_mlp[0]
-
-    def predict_mf(self,uid):
-        user_idx = [uid]*self.num_items
-        y_mf = self.sess.run([self.y_mf],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.num_items)})
-        return y_mf[0]
 
     def predict_neu(self,uid):
         user_idx = [uid]*self.num_items
