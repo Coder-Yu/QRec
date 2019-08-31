@@ -21,7 +21,7 @@ class NGCF(DeepRecommender):
                 items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
                 batch_id = self.train_size
 
-            u_idx, i_idx, j_idx, p_ui, p_uj = [], [], [], [], []
+            u_idx, i_idx, j_idx, p_u, p_i, p_j = [], [], [], [], [], []
             item_list = self.data.item.keys()
             for i, user in enumerate(users):
 
@@ -33,9 +33,11 @@ class NGCF(DeepRecommender):
                     neg_item = choice(item_list)
                 j_idx.append(self.data.item[neg_item])
 
-                p_ui.append(sqrt(len(self.data.trainSet_u[user])*len(self.data.trainSet_i[items[i]])))
-                p_uj.append(sqrt(len(self.data.trainSet_u[user])*len(self.data.trainSet_i[items[neg_item]])))
-            yield u_idx, i_idx, j_idx,p_ui,p_uj
+                p_u.append(sqrt(len(self.data.trainSet_u[user])))
+                p_i.append(sqrt(len(self.data.trainSet_i[items[i]])))
+                p_i.append(sqrt(len(self.data.trainSet_j[neg_item])))
+
+            yield u_idx, i_idx, j_idx,p_u,p_i,p_j
 
     def getNeignbors(self):
         user_Neighbors = dict()
@@ -55,59 +57,85 @@ class NGCF(DeepRecommender):
 
         self.u_neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_items], name="u_n_idx")
         self.i_Neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_users], name="i_n_idx")
+        self.j_idx = tf.placeholder(tf.int32, [None], name="j_idx")
+        self.p_u = tf.placeholder(tf.int32, [None], name="j_idx")
+        self.p_i = tf.placeholder(tf.int32, [None], name="j_idx")
+        self.p_j = tf.placeholder(tf.int32, [None], name="j_idx")
 
+        decay_u = np.zeros(self.num_users)
+        for user in self.data.user:
+            uid = self.data.user[user]
+            decay_u[uid] = sqrt(len(self.data.trainSet_u[user]))
+        decay_i = np.zeros(self.num_items)
+        for item in self.data.item:
+            iid = self.data.user[item]
+            decay_i[iid] = sqrt(len(self.data.trainSet_i[item]))
 
-        self.u_ = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx)
-        self.v_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.v_idx)
-
-        self.weights = dict()
+        self.variables = dict()
 
         initializer = tf.contrib.layers.xavier_initializer()
-        self.weight_size = [self.embed_size*4,self.embed_size*2,self.embed_size]
-        self.weight_size_list = [self.embed_size] + self.weight_size
+        weight_size = [self.embed_size*4,self.embed_size*2,self.embed_size]
+        weight_size_list = [self.embed_size] + weight_size
+
         self.n_layers = 3
 
+        #initialize parameters
         for k in range(self.n_layers):
-            self.weights['W_%d_1' % k] = tf.Variable(
-                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_%d_1' % k)
-            self.weights['b_%d_2' % k] = tf.Variable(
-                initializer([self.weight_size_list[k], self.weight_size_list[k + 1]]), name='W_%d_2' % k)
+            self.variables['W_%d_1' % k] = tf.Variable(
+                initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_1' % k)
+            self.variables['W_%d_2' % k] = tf.Variable(
+                initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
+            self.variables['user_embeddings_%d' % k] = tf.Variable(
+                tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='user_embeddings_d' % k)
+            self.variables['item_embeddings_%d' % k] = tf.Variable(
+                tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='user_embeddings_d' % k)
+            self.variables['u_embedding_%d'] = tf.nn.embedding_lookup(self.variables['user_embeddings_%d' % k], self.u_idx)
+            self.variables['v_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k], self.v_idx)
+            self.variables['j_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k], self.j_idx)
 
         self.neighbors_u = tf.Placeholder(tf.int32,[None,self.num_items])
-        self.neighbors_i = tf.Placeholder(tf.int32,[None,self.num_users])
+        self.neighbors_v = tf.Placeholder(tf.int32,[None,self.num_users])
+        self.neighbors_j = tf.Placeholder(tf.int32,[None,self.num_users])
+
+
+        for k in range(self.n_layers):
+
+            # aggregate messages of items.
+            sum_item_messages = tf.matmul(self.neighbors_u,self.variables['item_embeddings_%d' % k]/decay_i)
+            W_1_e_i = tf.matmul(self.variables['W_%d_1' % k],sum_item_messages,transpose_b=True)
+            sum_item_messages = tf.multiply(self.variables['u_embedding_%d']/self.p_u,sum_item_messages)
+            sum_item_messages = tf.matmul(self.variables['W_%d_2' % k],sum_item_messages,transpose_b=True)
+            sum_item_messages =+ W_1_e_i
+            e_u = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k],self.variables['u_embedding_%d'],transpose_b=True)+sum_item_messages)
+
+            # aggregate messages of positive item.
+            sum_user_messages = tf.matmul(self.neighbors_v, self.variables['user_embeddings_%d' % k] / decay_u)
+            W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
+            sum_user_messages = tf.multiply(self.variables['v_embedding_%d'] / self.p_i, sum_user_messages)
+            sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
+            sum_user_messages = + W_1_e_u
+            e_i = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['v_embedding_%d'],
+                                             transpose_b=True) + sum_user_messages)
+
+            # aggregate messages of negative item.
+            sum_user_messages = tf.matmul(self.neighbors_j, self.variables['user_embeddings_%d' % k] / decay_u)
+            W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
+            sum_user_messages = tf.multiply(self.variables['j_embedding_%d'] / self.p_j, sum_user_messages)
+            sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
+            sum_user_messages = + W_1_e_u
+            e_j = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['j_embedding_%d'],
+                                             transpose_b=True) + sum_user_messages)
 
 
 
-        all_embeddings = [ego_embeddings]
 
-        for k in range(0, self.n_layers):
+            # # message dropout.
+            # ego_embeddings = tf.nn.dropout(ego_embeddings, 1 - self.prob_dropout[k])
+            #
+            # # normalize the distribution of embeddings.
+            # norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
 
-            # sum messages of neighbors.
-            side_embeddings = tf.concat(temp_embed, 0)
-            # transformed sum messages of neighbors.
-            sum_embeddings = tf.nn.leaky_relu(
-                tf.matmul(side_embeddings, self.weights['W_gc_%d' % k]) + self.weights['b_gc_%d' % k])
 
-            # bi messages of neighbors.
-            bi_embeddings = tf.multiply(ego_embeddings, side_embeddings)
-            # transformed bi messages of neighbors.
-            bi_embeddings = tf.nn.leaky_relu(
-                tf.matmul(bi_embeddings, self.weights['W_bi_%d' % k]) + self.weights['b_bi_%d' % k])
-
-            # non-linear activation.
-            ego_embeddings = sum_embeddings + bi_embeddings
-
-            # message dropout.
-            ego_embeddings = tf.nn.dropout(ego_embeddings, 1 - self.prob_dropout[k])
-
-            # normalize the distribution of embeddings.
-            norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
-
-            all_embeddings += [norm_embeddings]
-
-        all_embeddings = tf.concat(all_embeddings, 1)
-        u_g_embeddings, i_g_embeddings = tf.split(all_embeddings, [self.num_users, self.n_items], 0)
-        return u_g_embeddings, i_g_embeddings
 
     def buildModel(self):
 
