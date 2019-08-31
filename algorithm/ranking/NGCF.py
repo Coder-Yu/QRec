@@ -35,7 +35,7 @@ class NGCF(DeepRecommender):
 
                 p_u.append(sqrt(len(self.data.trainSet_u[user])))
                 p_i.append(sqrt(len(self.data.trainSet_i[items[i]])))
-                p_i.append(sqrt(len(self.data.trainSet_j[neg_item])))
+                p_j.append(sqrt(len(self.data.trainSet_j[neg_item])))
 
             yield u_idx, i_idx, j_idx,p_u,p_i,p_j
 
@@ -85,45 +85,52 @@ class NGCF(DeepRecommender):
                 initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_1' % k)
             self.variables['W_%d_2' % k] = tf.Variable(
                 initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
+
+        for k in range(-1,self.n_layers):
             self.variables['user_embeddings_%d' % k] = tf.Variable(
-                tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='user_embeddings_d' % k)
+                tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),
+                name='user_embeddings_d' % k)
             self.variables['item_embeddings_%d' % k] = tf.Variable(
-                tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='user_embeddings_d' % k)
-            self.variables['u_embedding_%d'] = tf.nn.embedding_lookup(self.variables['user_embeddings_%d' % k], self.u_idx)
-            self.variables['v_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k], self.v_idx)
-            self.variables['j_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k], self.j_idx)
+                tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005),
+                name='user_embeddings_d' % k)
+            self.variables['u_embedding_%d'] = tf.nn.embedding_lookup(self.variables['user_embeddings_%d' % k],
+                                                                      self.u_idx)
+            self.variables['v_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
+                                                                      self.v_idx)
+            self.variables['j_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
+                                                                      self.j_idx)
 
         self.neighbors_u = tf.Placeholder(tf.int32,[None,self.num_items])
         self.neighbors_v = tf.Placeholder(tf.int32,[None,self.num_users])
         self.neighbors_j = tf.Placeholder(tf.int32,[None,self.num_users])
 
 
-        for k in range(self.n_layers):
+        for k in range(0,self.n_layers):
 
             # aggregate messages of items.
-            sum_item_messages = tf.matmul(self.neighbors_u,self.variables['item_embeddings_%d' % k]/decay_i)
+            sum_item_messages = tf.matmul(self.neighbors_u,self.variables['item_embeddings_%d' %(k-1)]/decay_i)
             W_1_e_i = tf.matmul(self.variables['W_%d_1' % k],sum_item_messages,transpose_b=True)
-            sum_item_messages = tf.multiply(self.variables['u_embedding_%d']/self.p_u,sum_item_messages)
+            sum_item_messages = tf.multiply(self.variables['u_embedding_%d' %(k-1)]/self.p_u,sum_item_messages)
             sum_item_messages = tf.matmul(self.variables['W_%d_2' % k],sum_item_messages,transpose_b=True)
             sum_item_messages =+ W_1_e_i
-            e_u = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k],self.variables['u_embedding_%d'],transpose_b=True)+sum_item_messages)
+            e_u = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k],self.variables['u_embedding_%d' %(k-1)],transpose_b=True)+sum_item_messages)
 
             # aggregate messages of positive item.
-            sum_user_messages = tf.matmul(self.neighbors_v, self.variables['user_embeddings_%d' % k] / decay_u)
+            sum_user_messages = tf.matmul(self.neighbors_v, self.variables['user_embeddings_%d' %(k-1)] / decay_u)
             W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
-            sum_user_messages = tf.multiply(self.variables['v_embedding_%d'] / self.p_i, sum_user_messages)
+            sum_user_messages = tf.multiply(self.variables['v_embedding_%d' %(k-1)] / self.p_i, sum_user_messages)
             sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
             sum_user_messages = + W_1_e_u
-            e_i = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['v_embedding_%d'],
+            e_i = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['v_embedding_%d' %(k-1)],
                                              transpose_b=True) + sum_user_messages)
 
             # aggregate messages of negative item.
-            sum_user_messages = tf.matmul(self.neighbors_j, self.variables['user_embeddings_%d' % k] / decay_u)
+            sum_user_messages = tf.matmul(self.neighbors_j, self.variables['user_embeddings_%d' % %(k-1)] / decay_u)
             W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
-            sum_user_messages = tf.multiply(self.variables['j_embedding_%d'] / self.p_j, sum_user_messages)
+            sum_user_messages = tf.multiply(self.variables['j_embedding_%d' %(k-1)] / self.p_j, sum_user_messages)
             sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
             sum_user_messages = + W_1_e_u
-            e_j = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['j_embedding_%d'],
+            e_j = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['j_embedding_%d' %(k-1)],
                                              transpose_b=True) + sum_user_messages)
 
 
