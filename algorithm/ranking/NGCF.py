@@ -21,7 +21,7 @@ class NGCF(DeepRecommender):
                 items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
                 batch_id = self.train_size
 
-            u_idx, i_idx, j_idx, p_u, p_i, p_j = [], [], [], [], [], []
+            u_idx, i_idx, j_idx = [], [], []
             item_list = self.data.item.keys()
             for i, user in enumerate(users):
 
@@ -33,27 +33,11 @@ class NGCF(DeepRecommender):
                     neg_item = choice(item_list)
                 j_idx.append(self.data.item[neg_item])
 
-                p_u.append(sqrt(len(self.data.trainSet_u[user])))
-                p_i.append(sqrt(len(self.data.trainSet_i[items[i]])))
-                p_j.append(sqrt(len(self.data.trainSet_j[neg_item])))
-
-            yield u_idx, i_idx, j_idx,p_u,p_i,p_j
-
-    def getNeignbors(self):
-        user_Neighbors = dict()
-        item_Neighbors = dict()
-        for user in self.data.user:
-            uid = self.data.user[user]
-            user_Neighbors[uid]=[self.data.item[item] for item in self.data.trainSet_u[user]]
-        for item in self.data.item:
-            iid = self.data.item[item]
-            item_Neighbors[iid]=[self.data.user[user] for user in self.data.trainSet_i[item]]
-
-        return user_Neighbors,item_Neighbors
-
+            yield u_idx, i_idx, j_idx
 
     def initModel(self):
         super(NGCF, self).initModel()
+
 
         self.u_neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_items], name="u_n_idx")
         self.i_Neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_users], name="i_n_idx")
@@ -63,14 +47,17 @@ class NGCF(DeepRecommender):
         self.p_j = tf.placeholder(tf.int32, [None], name="j_idx")
 
         decay_u = np.zeros(self.num_users)
+
         for user in self.data.user:
             uid = self.data.user[user]
             decay_u[uid] = sqrt(len(self.data.trainSet_u[user]))
+        decay_u = tf.convert_to_tensor(decay_u)
         decay_i = np.zeros(self.num_items)
+
         for item in self.data.item:
             iid = self.data.user[item]
             decay_i[iid] = sqrt(len(self.data.trainSet_i[item]))
-
+        decay_i = tf.convert_to_tensor(decay_i)
         self.variables = dict()
 
         initializer = tf.contrib.layers.xavier_initializer()
@@ -86,25 +73,25 @@ class NGCF(DeepRecommender):
             self.variables['W_%d_2' % k] = tf.Variable(
                 initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
 
-        for k in range(-1,self.n_layers):
-            self.variables['user_embeddings_%d' % k] = tf.Variable(
-                tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),
-                name='user_embeddings_d' % k)
-            self.variables['item_embeddings_%d' % k] = tf.Variable(
-                tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005),
-                name='user_embeddings_d' % k)
-            self.variables['u_embedding_%d'] = tf.nn.embedding_lookup(self.variables['user_embeddings_%d' % k],
-                                                                      self.u_idx)
-            self.variables['v_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
-                                                                      self.v_idx)
-            self.variables['j_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
-                                                                      self.j_idx)
+        # for k in range(-1,self.n_layers):
+        #     self.variables['user_embeddings_%d' % k] = tf.Variable(
+        #         tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),
+        #         name='user_embeddings_d' % k)
+        #     self.variables['item_embeddings_%d' % k] = tf.Variable(
+        #         tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005),
+        #         name='user_embeddings_d' % k)
+        #     self.variables['u_embedding_%d'] = tf.nn.embedding_lookup(self.variables['user_embeddings_%d' % k],
+        #                                                               self.u_idx)
+        #     self.variables['v_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
+        #                                                               self.v_idx)
+        #     self.variables['j_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
+        #                                                               self.j_idx)
 
         self.neighbors_u = tf.Placeholder(tf.int32,[None,self.num_items])
         self.neighbors_v = tf.Placeholder(tf.int32,[None,self.num_users])
         self.neighbors_j = tf.Placeholder(tf.int32,[None,self.num_users])
 
-
+        all_embeddings =
         for k in range(0,self.n_layers):
 
             # aggregate messages of items.
@@ -112,15 +99,16 @@ class NGCF(DeepRecommender):
             W_1_e_i = tf.matmul(self.variables['W_%d_1' % k],sum_item_messages,transpose_b=True)
             sum_item_messages = tf.multiply(self.variables['u_embedding_%d' %(k-1)]/self.p_u,sum_item_messages)
             sum_item_messages = tf.matmul(self.variables['W_%d_2' % k],sum_item_messages,transpose_b=True)
-            sum_item_messages =+ W_1_e_i
-            e_u = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k],self.variables['u_embedding_%d' %(k-1)],transpose_b=True)+sum_item_messages)
+            sum_item_messages += W_1_e_i
+            e_u = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k],self.variables['u_embedding_%d' %(k-1)],
+                                             transpose_b=True)+sum_item_messages)
 
             # aggregate messages of positive item.
             sum_user_messages = tf.matmul(self.neighbors_v, self.variables['user_embeddings_%d' %(k-1)] / decay_u)
             W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
             sum_user_messages = tf.multiply(self.variables['v_embedding_%d' %(k-1)] / self.p_i, sum_user_messages)
             sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
-            sum_user_messages = + W_1_e_u
+            sum_user_messages += W_1_e_u
             e_i = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['v_embedding_%d' %(k-1)],
                                              transpose_b=True) + sum_user_messages)
 
@@ -129,7 +117,7 @@ class NGCF(DeepRecommender):
             W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
             sum_user_messages = tf.multiply(self.variables['j_embedding_%d' %(k-1)] / self.p_j, sum_user_messages)
             sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
-            sum_user_messages = + W_1_e_u
+            sum_user_messages += W_1_e_u
             e_j = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['j_embedding_%d' %(k-1)],
                                              transpose_b=True) + sum_user_messages)
 
