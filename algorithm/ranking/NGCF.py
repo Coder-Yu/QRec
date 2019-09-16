@@ -40,36 +40,12 @@ class NGCF(DeepRecommender):
 
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
 
-        all_embeddings = [ego_embeddings]
-
         indices = [[self.data.user[item[0]],self.num_users+self.data.item[item[1]]] for item in self.data.trainingData]
         indices += [self.num_users+[self.data.item[item[1]],self.data.user[item[0]]] for item in self.data.trainingData]
         values = [self.data.trainingData[item[2]/sqrt(len(self.data.trainSet_u[item[0]]))/
                                          sqrt(len(self.data.trainSet_i[item[1]]))] for item in self.data.trainingData]*2
 
         norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_items+self.num_items])
-
-
-
-        # self.u_neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_items], name="u_n_idx")
-        # self.i_Neighbors_matrix = tf.placeholder(tf.int32, [None, self.num_users], name="i_n_idx")
-        # self.j_idx = tf.placeholder(tf.int32, [None], name="j_idx")
-        # self.p_u = tf.placeholder(tf.int32, [None], name="j_idx")
-        # self.p_i = tf.placeholder(tf.int32, [None], name="j_idx")
-        # self.p_j = tf.placeholder(tf.int32, [None], name="j_idx")
-        #
-        # decay_u = np.zeros(self.num_users)
-        #
-        # for user in self.data.user:
-        #     uid = self.data.user[user]
-        #     decay_u[uid] = sqrt(len(self.data.trainSet_u[user]))
-        # decay_u = tf.convert_to_tensor(decay_u)
-        # decay_i = np.zeros(self.num_items)
-        #
-        # for item in self.data.item:
-        #     iid = self.data.user[item]
-        #     decay_i[iid] = sqrt(len(self.data.trainSet_i[item]))
-        # decay_i = tf.convert_to_tensor(decay_i)
 
         self.weights = dict()
 
@@ -86,71 +62,28 @@ class NGCF(DeepRecommender):
             self.weights['W_%d_2' % k] = tf.Variable(
                 initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
 
+        all_embeddings = [ego_embeddings]
         for k in range(self.n_layers):
+            side_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
+            sum_embeddings = tf.matmul(side_embeddings+ego_embeddings, self.weights['W_%d_1' % k])
+            bi_embeddings = tf.multiply(ego_embeddings, side_embeddings)
+            bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2' % k])
 
+            ego_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
 
+            # message dropout.
+            ego_embeddings = tf.nn.dropout(ego_embeddings, rate=0.1)
 
-        # for k in range(-1,self.n_layers):
-        #     self.variables['user_embeddings_%d' % k] = tf.Variable(
-        #         tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),
-        #         name='user_embeddings_d' % k)
-        #     self.variables['item_embeddings_%d' % k] = tf.Variable(
-        #         tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005),
-        #         name='user_embeddings_d' % k)
-        #     self.variables['u_embedding_%d'] = tf.nn.embedding_lookup(self.variables['user_embeddings_%d' % k],
-        #                                                               self.u_idx)
-        #     self.variables['v_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
-        #                                                               self.v_idx)
-        #     self.variables['j_embedding_%d'] = tf.nn.embedding_lookup(self.variables['item_embeddings_%d' % k],
-        #                                                               self.j_idx)
+            # normalize the distribution of embeddings.
+            norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
 
-        # self.neighbors_u = tf.Placeholder(tf.int32,[None,self.num_items])
-        # self.neighbors_v = tf.Placeholder(tf.int32,[None,self.num_users])
-        # self.neighbors_j = tf.Placeholder(tf.int32,[None,self.num_users])
+            all_embeddings += [norm_embeddings]
 
-        #all_embeddings =
-        # for k in range(0,self.n_layers):
-        #
-        #     # aggregate messages of items.
-        #     sum_item_messages = tf.matmul(self.neighbors_u,self.variables['item_embeddings_%d' %(k-1)]/decay_i)
-        #     W_1_e_i = tf.matmul(self.variables['W_%d_1' % k],sum_item_messages,transpose_b=True)
-        #     sum_item_messages = tf.multiply(self.variables['u_embedding_%d' %(k-1)]/self.p_u,sum_item_messages)
-        #     sum_item_messages = tf.matmul(self.variables['W_%d_2' % k],sum_item_messages,transpose_b=True)
-        #     sum_item_messages += W_1_e_i
-        #     e_u = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k],self.variables['u_embedding_%d' %(k-1)],
-        #                                      transpose_b=True)+sum_item_messages)
-        #
-        #     # aggregate messages of positive item.
-        #     sum_user_messages = tf.matmul(self.neighbors_v, self.variables['user_embeddings_%d' %(k-1)] / decay_u)
-        #     W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
-        #     sum_user_messages = tf.multiply(self.variables['v_embedding_%d' %(k-1)] / self.p_i, sum_user_messages)
-        #     sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
-        #     sum_user_messages += W_1_e_u
-        #     e_i = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['v_embedding_%d' %(k-1)],
-        #                                      transpose_b=True) + sum_user_messages)
-        #
-        #     # aggregate messages of negative item.
-        #     sum_user_messages = tf.matmul(self.neighbors_j, self.variables['user_embeddings_%d' % %(k-1)] / decay_u)
-        #     W_1_e_u = tf.matmul(self.variables['W_%d_1' % k], sum_user_messages, transpose_b=True)
-        #     sum_user_messages = tf.multiply(self.variables['j_embedding_%d' %(k-1)] / self.p_j, sum_user_messages)
-        #     sum_user_messages = tf.matmul(self.variables['W_%d_2' % k], sum_user_messages, transpose_b=True)
-        #     sum_user_messages += W_1_e_u
-        #     e_j = tf.nn.leaky_relu(tf.matmul(self.variables['W_%d_1' % k], self.variables['j_embedding_%d' %(k-1)],
-        #                                      transpose_b=True) + sum_user_messages)
-
-
-
-
-            # # message dropout.
-            # ego_embeddings = tf.nn.dropout(ego_embeddings, 1 - self.prob_dropout[k])
-            #
-            # # normalize the distribution of embeddings.
-            # norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
-
+        all_embeddings = tf.concat(all_embeddings, 1)
+        self.multi_user_embeddings, self.multi_item_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
 
 
     def buildModel(self):
-
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
@@ -161,12 +94,6 @@ class NGCF(DeepRecommender):
                 _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
                 print 'iteration:', iteration, 'batch:', num, 'loss:', loss
-
-
-    def predict_neu(self,uid):
-        user_idx = [uid]*self.num_items
-        y_neu = self.sess.run([self.y_neu],feed_dict={self.u_idx: user_idx, self.i_idx: range(self.num_items)})
-        return y_neu[0]
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
