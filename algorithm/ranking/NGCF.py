@@ -41,11 +41,10 @@ class NGCF(DeepRecommender):
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
 
         indices = [[self.data.user[item[0]],self.num_users+self.data.item[item[1]]] for item in self.data.trainingData]
-        indices += [self.num_users+[self.data.item[item[1]],self.data.user[item[0]]] for item in self.data.trainingData]
-        values = [self.data.trainingData[item[2]/sqrt(len(self.data.trainSet_u[item[0]]))/
-                                         sqrt(len(self.data.trainSet_i[item[1]]))] for item in self.data.trainingData]*2
+        indices += [[self.num_users+self.data.item[item[1]],self.data.user[item[0]]] for item in self.data.trainingData]
+        values = [float(item[2])/sqrt(len(self.data.trainSet_u[item[0]]))/sqrt(len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData]*2
 
-        norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_items+self.num_items])
+        norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
 
         self.weights = dict()
 
@@ -72,7 +71,7 @@ class NGCF(DeepRecommender):
             ego_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
 
             # message dropout.
-            ego_embeddings = tf.nn.dropout(ego_embeddings, rate=0.1)
+            ego_embeddings = tf.nn.dropout(ego_embeddings, keep_prob=0.9)
 
             # normalize the distribution of embeddings.
             norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
@@ -82,23 +81,41 @@ class NGCF(DeepRecommender):
         all_embeddings = tf.concat(all_embeddings, 1)
         self.multi_user_embeddings, self.multi_item_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
 
+        self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
+        self.neg_item_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.neg_idx)
+        self.u_embedding = tf.nn.embedding_lookup(self.multi_user_embeddings, self.u_idx)
+        self.v_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
 
     def buildModel(self):
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
-        print 'training... (NeuMF)'
-        for iteration in range(self.maxIter/5):
-            for num, batch in enumerate(self.next_batch()):
-                user_idx, item_idx, r = batch
-                _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
-                                          feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-                print 'iteration:', iteration, 'batch:', num, 'loss:', loss
+
+        y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
+            - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
+
+        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.u_embedding) +
+                                                                    tf.nn.l2_loss(self.v_embedding) +
+                                                                    tf.nn.l2_loss(self.neg_item_embedding))
+        opt = tf.train.AdamOptimizer(self.lRate)
+
+        train = opt.minimize(loss)
+
+        with tf.Session() as sess:
+            init = tf.global_variables_initializer()
+            sess.run(init)
+            for iteration in range(self.maxIter):
+                for n, batch in enumerate(self.next_batch()):
+                    user_idx, i_idx, j_idx = batch
+                    _, l = sess.run([train, loss],
+                                    feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
+                    print 'training:', iteration + 1, 'batch', n, 'loss:', l
+            self.P, self.Q = sess.run([self.multi_user_embeddings, self.multi_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
-            u = self.data.user[u]
-            return self.predict_neu(u)
+            u = self.data.getUserId(u)
+            return self.Q.dot(self.P[u])
         else:
             return [self.data.globalMean] * self.num_items
