@@ -10,6 +10,7 @@
 
 <h2>Latest News</h2>
 <p>
+17/09/2019 - NGCF proposed in SIGIR'19 has been added. </br>
 13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
 09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>
 02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
@@ -331,12 +332,17 @@ papers and the code in terms of fomula presentation. If you have problems in und
     <td scope="row">CFGAN</td>
     <td>Chae et al. CFGAN: A Generic Collaborative Filtering Framework based
 on Generative Adversarial Networks, CIKM 2018.
-     </td>
-<tr>
-<td scope="row">RSGAN</td>
-    <td>Yu et al. Generating Reliable Friends via Adversarial Learning to Improve Social Recommendation, ICDM 2019.
-     </td>
-  </tr>
+     </td>    
+    <tr>
+    <td scope="row">NGCF</td>
+        <td>Wang et al. Neural Graph Collaborative Filtering, SIGIR 2019.
+         </td>
+      </tr>
+    <tr>
+    <td scope="row">RSGAN</td>
+        <td>Yu et al. Generating Reliable Friends via Adversarial Learning to Improve Social Recommendation, ICDM 2019.
+         </td>
+      </tr>
   </table>
 </div>
 
