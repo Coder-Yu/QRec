@@ -288,8 +288,9 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
     def build_graph(self):
 
-
-        self.u_i_matrix = tf.placeholder(tf.float32, name="feedback_matrix")
+        indices = [[self.data.item[item[1]], self.data.user[item[0]]] for item in self.data.trainingData]
+        values = [item[2] for item in self.data.trainingData]
+        self.i_u_matrix = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_items, self.num_users])
         self.pos = tf.placeholder(tf.int32, name="positive_item")
         self.fnd = tf.placeholder(tf.int32, name="friend_item")
         self.neg = tf.placeholder(tf.int32, name="neg_holder")
@@ -349,11 +350,13 @@ class RSGAN(SocialRecommender,DeepRecommender):
             self.virtualFriends = self.sampling(self.g_output) #one-hot
 
             #get candidate list (items)
-            self.candidateItems = tf.matmul(self.virtualFriends, self.u_i_matrix, transpose_a=False,transpose_b=False)
+            self.candidateItems = tf.transpose(tf.sparse_tensor_dense_matmul(self.i_u_matrix,tf.transpose(self.virtualFriends)))
 
             self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u_idx,name='e_s')
 
-            self.virtual_items = self.sampling(tf.nn.softmax(tf.multiply(self.candidateItems,self.embedding_selection)))
+            self.virtual_items = self.sampling(tf.multiply(self.candidateItems,self.embedding_selection))
+
+            #self.weights = tf.reduce_sum(tf.multiply(self.virtual_items,self.popularty),1)
 
             self.v_i_embedding = tf.matmul(self.virtual_items,self.item_embeddings,transpose_a=False,transpose_b=False)
 
@@ -444,6 +447,10 @@ class RSGAN(SocialRecommender,DeepRecommender):
     def initModel(self):
         super(RSGAN, self).initModel()
 
+        self.popularty = np.zeros(self.num_items)
+        for item in self.data.item:
+            iid = self.data.item[item]
+            self.popularty[iid]=len(self.data.trainSet_i[item])
         #collect implicit friends
 
         self.readNegativeFeedbacks()
@@ -506,18 +513,18 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
                 #generator
                 _,loss = self.sess.run([self.g_update,self.g_loss],feed_dict={self.u_idx: user_idx,self.neg:j_idx,
-                                                   self.pos: i_idx,self.X:profiles,self.u_i_matrix:self.matrix})
+                                                   self.pos: i_idx,self.X:profiles})
                 #discriminator
                 _, loss = self.sess.run([self.d_update, self.d_loss],
                                         feed_dict={self.u_idx: user_idx,self.neg:j_idx,
-                                                   self.pos: i_idx,self.X:profiles,self.u_i_matrix:self.matrix})
+                                                   self.pos: i_idx,self.X:profiles})
 
                 print 'training:', i + 1, 'batch_id', num, 'discriminator loss:', loss
 
-            results = self.ranking_performance()
-            res+=results
-
-        f.writelines(res)
+        #     results = self.ranking_performance()
+        #     res+=results
+        #
+        # f.writelines(res)
 
 
     def predictForRanking(self, u):
