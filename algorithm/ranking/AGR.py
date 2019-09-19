@@ -291,15 +291,7 @@ class AGR(SocialRecommender,DeepRecommender):
         self.g_loss = 30 * tf.reduce_sum(y_uf)  # better performance
 
 
-
-        y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
-            - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
-
-        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.u_embedding) +
-                                                                    tf.nn.l2_loss(self.v_embedding) +
-                                                                    tf.nn.l2_loss(self.neg_item_embedding))
-
-        self.d_output = tf.reduce_sum(tf.multiply(self.u_embedding, self.item_embeddings), 1)
+        self.d_output = tf.reduce_sum(tf.multiply(self.u_embedding, self.multi_item_embeddings), 1)
 
         d_opt = tf.train.AdamOptimizer(self.lRate)
 
@@ -307,10 +299,6 @@ class AGR(SocialRecommender,DeepRecommender):
 
         g_opt = tf.train.AdamOptimizer(self.lRate)
         self.g_update = g_opt.minimize(self.g_loss, var_list=self.g_params)
-
-        opt = tf.train.AdamOptimizer(self.lRate)
-
-        train = opt.minimize(loss)
 
         init = tf.global_variables_initializer()
         self.sess.run(init)

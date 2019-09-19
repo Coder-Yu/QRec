@@ -49,7 +49,7 @@ class NGCF(DeepRecommender):
         self.weights = dict()
 
         initializer = tf.contrib.layers.xavier_initializer()
-        weight_size = [self.embed_size*4,self.embed_size*2,self.embed_size]
+        weight_size = [self.embed_size,self.embed_size,self.embed_size]
         weight_size_list = [self.embed_size] + weight_size
 
         self.n_layers = 3
