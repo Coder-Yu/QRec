@@ -87,9 +87,6 @@ class NGCF(DeepRecommender):
         self.v_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
 
     def buildModel(self):
-        init = tf.global_variables_initializer()
-        self.sess.run(init)
-
 
         y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
             - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
@@ -101,16 +98,15 @@ class NGCF(DeepRecommender):
 
         train = opt.minimize(loss)
 
-        with tf.Session() as sess:
-            init = tf.global_variables_initializer()
-            sess.run(init)
-            for iteration in range(self.maxIter):
-                for n, batch in enumerate(self.next_batch()):
-                    user_idx, i_idx, j_idx = batch
-                    _, l = sess.run([train, loss],
-                                    feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
-                    print 'training:', iteration + 1, 'batch', n, 'loss:', l
-            self.P, self.Q = sess.run([self.multi_user_embeddings, self.multi_item_embeddings])
+        init = tf.global_variables_initializer()
+        self.sess.run(init)
+        for iteration in range(self.maxIter):
+            for n, batch in enumerate(self.next_batch()):
+                user_idx, i_idx, j_idx = batch
+                _, l = self.sess.run([train, loss],
+                                feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
+                print 'training:', iteration + 1, 'batch', n, 'loss:', l
+        self.P, self.Q = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

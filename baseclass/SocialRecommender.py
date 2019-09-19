@@ -38,6 +38,14 @@ class SocialRecommender(IterativeRecommender):
             if self.social.followers.has_key(pair[0]):
                 del self.social.followers[pair[0]][pair[1]]
 
+        idx = []
+        for n,pair in enumerate(self.social.relation):
+            if pair[0] not in self.data.user or pair[1] not in self.data.user:
+                idx.append(n)
+
+        for item in reversed(idx):
+            del self.social.relation[item]
+
     def readConfiguration(self):
         super(SocialRecommender, self).readConfiguration()
         regular = config.LineConfig(self.config['reg.lambda'])

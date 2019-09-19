@@ -458,13 +458,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.computeSimilarity()
         self.build_graph()
 
-        self.matrix = np.zeros(shape=(self.num_users, self.num_items), dtype=np.float32)
-        for item in self.data.trainingData:
-            u = self.data.user[item[0]]
-            i = self.data.item[item[1]]
-            self.matrix[u][i] = 1.0
-
-
 
     def buildModel(self):
         # minimax training
