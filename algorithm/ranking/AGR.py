@@ -70,7 +70,7 @@ class AGR(SocialRecommender,DeepRecommender):
                 self.social.relation]
 
             values = [float(item[2]) / sqrt(len(self.social.followees[item[0]])+1) / sqrt(
-                len(self.social.followees[item[1]])+1) for item in self.social.relation]
+                len(self.social.followers[item[1]])+1) for item in self.social.relation]
 
             norm_adj = tf.SparseTensor(indices=indices, values=values,
                                    dense_shape=[self.num_users, self.num_users])
@@ -260,6 +260,7 @@ class AGR(SocialRecommender,DeepRecommender):
             self.item_selection = tf.get_variable('item_selection', initializer=tf.constant_initializer(0.01),
                                                   shape=[self.num_users, self.num_items])
 
+            self.g_params.append(self.item_selection)
             # get candidate list (items)
             self.candidateItems = tf.transpose(
                 tf.sparse_tensor_dense_matmul(self.i_u_matrix, tf.transpose(self.implicit_friend)))
