@@ -336,8 +336,8 @@ class RSGAN(SocialRecommender,DeepRecommender):
         with tf.variable_scope('discriminator'):
 
             self.item_selection = tf.get_variable('item_selection',initializer=tf.constant_initializer(0.01),shape=[self.num_users, self.num_items])
-
-            self.d_params = [self.user_embeddings, self.item_embeddings,self.item_selection]
+            self.g_params.append(self.item_selection)
+            self.d_params = [self.user_embeddings, self.item_embeddings]
 
             # placeholder definition
             self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx,name='u_e')
