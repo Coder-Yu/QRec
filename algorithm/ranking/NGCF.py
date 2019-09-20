@@ -37,7 +37,8 @@ class NGCF(DeepRecommender):
 
     def initModel(self):
         super(NGCF, self).initModel()
-
+        self.isTraining = tf.placeholder(tf.int32)
+        self.isTraining = tf.cast(self.isTraining, tf.bool)
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
 
         indices = [[self.data.user[item[0]],self.num_users+self.data.item[item[1]]] for item in self.data.trainingData]
@@ -49,7 +50,7 @@ class NGCF(DeepRecommender):
         self.weights = dict()
 
         initializer = tf.contrib.layers.xavier_initializer()
-        weight_size = [self.embed_size,self.embed_size,self.embed_size]
+        weight_size = [self.embed_size,self.embed_size,self.embed_size] #can be changed
         weight_size_list = [self.embed_size] + weight_size
 
         self.n_layers = 3
@@ -71,7 +72,12 @@ class NGCF(DeepRecommender):
             ego_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
 
             # message dropout.
-            ego_embeddings = tf.nn.dropout(ego_embeddings, keep_prob=0.9)
+            def without_dropout():
+                return ego_embeddings
+            def dropout():
+                return tf.nn.dropout(ego_embeddings, keep_prob=0.9)
+
+            ego_embeddings = tf.cond(self.isTraining,lambda:dropout(),lambda:without_dropout())
 
             # normalize the distribution of embeddings.
             norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
@@ -85,6 +91,8 @@ class NGCF(DeepRecommender):
         self.neg_item_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.neg_idx)
         self.u_embedding = tf.nn.embedding_lookup(self.multi_user_embeddings, self.u_idx)
         self.v_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
+
+        self.test = tf.reduce_sum(tf.multiply(self.u_embedding,self.multi_item_embeddings),1)
 
     def buildModel(self):
 
@@ -104,14 +112,13 @@ class NGCF(DeepRecommender):
             for n, batch in enumerate(self.next_batch()):
                 user_idx, i_idx, j_idx = batch
                 _, l = self.sess.run([train, loss],
-                                feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
+                                feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isTraining:1})
                 print 'training:', iteration + 1, 'batch', n, 'loss:', l
-        self.P, self.Q = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             u = self.data.getUserId(u)
-            return self.Q.dot(self.P[u])
+            return self.sess.run(self.test,feed_dict={self.u_idx:u,self.isTraining:0})
         else:
             return [self.data.globalMean] * self.num_items
