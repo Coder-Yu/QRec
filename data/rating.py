@@ -49,11 +49,11 @@ class RatingDAO(object):
             #rating = normalize(float(rating), self.rScale[-1], self.rScale[0])
             #self.trainingData[i][2] = rating
             # order the user
-            if not self.user.has_key(userName):
+            if userName not in self.user:
                 self.user[userName] = len(self.user)
                 self.id2user[self.user[userName]] = userName
             # order the item
-            if not self.item.has_key(itemName):
+            if itemName not in self.item:
                 self.item[itemName] = len(self.item)
                 self.id2item[self.item[itemName]] = itemName
                 # userList.append
@@ -68,10 +68,10 @@ class RatingDAO(object):
         for entry in self.testData:
             userName, itemName, rating = entry
             # order the user
-            if not self.user.has_key(userName):
+            if userName not in self.user:
                 self.all_User[userName] = len(self.all_User)
             # order the item
-            if not self.item.has_key(itemName):
+            if itemName not in self.item:
                 self.all_Item[itemName] = len(self.all_Item)
 
             self.testSet_u[userName][itemName] = rating
@@ -107,11 +107,11 @@ class RatingDAO(object):
             self.itemMeans[c] = sum(self.trainSet_i[c].values()) / float(len(self.trainSet_i[c]))
 
     def getUserId(self,u):
-        if self.user.has_key(u):
+        if u in self.user:
             return self.user[u]
 
     def getItemId(self,i):
-        if self.item.has_key(i):
+        if i in self.item:
             return self.item[i]
 
     def trainingSize(self):
@@ -122,7 +122,7 @@ class RatingDAO(object):
 
     def contains(self,u,i):
         'whether user u rated item i'
-        if self.user.has_key(u) and self.trainSet_u[u].has_key(i):
+        if u in self.user and i in self.trainSet_u[u]:
             return True
         else:
             return False
@@ -130,14 +130,14 @@ class RatingDAO(object):
 
     def containsUser(self,u):
         'whether user is in training set'
-        if self.user.has_key(u):
+        if u in self.user:
             return True
         else:
             return False
 
     def containsItem(self,i):
         'whether item is in training set'
-        if self.item.has_key(i):
+        if i in self.item:
             return True
         else:
             return False

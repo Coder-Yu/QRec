@@ -1,17 +1,14 @@
 import numpy as np
 from structure import sparseMatrix,new_sparseMatrix
-from tool.config import Config,LineConfig
-from tool.qmath import normalize
-import os.path
-from re import split
+from collections import defaultdict
 
 class SocialDAO(object):
-    def __init__(self,conf,relation=list()):
+    def __init__(self,conf,relation=None):
         self.config = conf
         self.user = {} #used to store the order of users
         self.relation = relation
-        self.followees = {}
-        self.followers = {}
+        self.followees = defaultdict(dict)
+        self.followers = defaultdict(dict)
         self.trustMatrix = self.__generateSet()
 
     def __generateSet(self):
@@ -19,16 +16,12 @@ class SocialDAO(object):
         for line in self.relation:
             userId1,userId2,weight = line
             #add relations to dict
-            if not self.followees.has_key(userId1):
-                self.followees[userId1] = {}
             self.followees[userId1][userId2] = weight
-            if not self.followers.has_key(userId2):
-                self.followers[userId2] = {}
             self.followers[userId2][userId1] = weight
             # order the user
-            if not self.user.has_key(userId1):
+            if userId1 not in self.user:
                 self.user[userId1] = len(self.user)
-            if not self.user.has_key(userId2):
+            if userId2 not in self.user:
                 self.user[userId2] = len(self.user)
             triple.append([self.user[userId1], self.user[userId2], weight])
         return new_sparseMatrix.SparseMatrix(triple)
@@ -45,7 +38,7 @@ class SocialDAO(object):
         return self.trustMatrix.elem(u1,u2)
 
     def weight(self,u1,u2):
-        if self.followees.has_key(u1) and self.followees[u1].has_key(u2):
+        if u1 in self.followees and u2 in self.followees[u1]:
             return self.followees[u1][u2]
         else:
             return 0
@@ -66,16 +59,16 @@ class SocialDAO(object):
             return {}
 
     def hasFollowee(self,u1,u2):
-        if self.followees.has_key(u1):
-            if self.followees[u1].has_key(u2):
+        if u1 in self.followees:
+            if u2 in self.followees[u1]:
                 return True
             else:
                 return False
         return False
 
     def hasFollower(self,u1,u2):
-        if self.followers.has_key(u1):
-            if self.followers[u1].has_key(u2):
+        if u1 in self.followers:
+            if u2 in self.followers[u1]:
                 return True
             else:
                 return False
