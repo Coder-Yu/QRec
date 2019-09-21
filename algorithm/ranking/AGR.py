@@ -62,6 +62,20 @@ class AGR(SocialRecommender,DeepRecommender):
         initializer = tf.contrib.layers.xavier_initializer()
         #Generator
         self.g_params = []
+
+        self.CUNet = defaultdict(dict)
+        print 'Building the collaborative user net. It may take a few seconds...'
+        self.implictConnection = []
+        for user1 in self.data.trainSet_u:
+            s1 = set(self.data.trainSet_u[user1])
+            for user2 in self.data.trainSet_u:
+                if user1 <> user2:
+                    s2 = set(self.data.trainSet_u[user2])
+                    weight = len(s1.intersection(s2))
+                    if weight > 0:
+                        self.CUNet[user1][user2] = weight
+                        self.implictConnection.append((user1, user2, weight))
+
         with tf.name_scope("generator_social_graph"):
             user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='sg_U')
             self.g_params.append(user_embeddings)
@@ -69,8 +83,14 @@ class AGR(SocialRecommender,DeepRecommender):
             indices = [[self.data.user[item[0]], self.data.user[item[1]]] for item in
                 self.social.relation]
 
+            indices += [[self.data.user[item[0]], self.data.user[item[1]]] for item in
+                       self.implictConnection]
+
             values = [float(item[2]) / sqrt(len(self.social.followees[item[0]])+1) / sqrt(
                 len(self.social.followers[item[1]])+1) for item in self.social.relation]
+
+            values += [float(item[2]) / sqrt(len(self.CUNet[item[0]])) / sqrt(
+                len(self.CUNet[item[1]])) for item in self.implictConnection]
 
             norm_adj = tf.SparseTensor(indices=indices, values=values,
                                    dense_shape=[self.num_users, self.num_users])
@@ -109,65 +129,6 @@ class AGR(SocialRecommender,DeepRecommender):
 
             self.sg_user_embeddings = sum(all_sg_embeddings)/social_graph_layers
             self.sg_embedding = tf.nn.embedding_lookup(self.sg_user_embeddings, self.u_idx)
-
-        self.CUNet = defaultdict(dict)
-        self.implictConnection = []
-        for user1 in self.data.trainSet_u:
-            s1 = set(self.data.trainSet_u[user1])
-            for user2 in self.data.trainSet_u:
-                if user1 <> user2:
-                    s2 = set(self.data.trainSet_u[user2])
-                    weight = len(s1.intersection(s2))
-                    if weight > 0:
-                        self.CUNet[user1][user2] = weight
-                        self.implictConnection.append((user1,user2,weight))
-
-        with tf.name_scope("generator_ui_graph"):
-            user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='ui_U')
-            self.g_params.append(user_embeddings)
-
-            indices = [[self.data.user[item[0]], self.data.user[item[1]]] for item in
-                       self.implictConnection]
-            values = [float(item[2]) / sqrt(len(self.CUNet[item[0]])) / sqrt(
-                len(self.CUNet[item[1]])) for item in self.implictConnection]
-
-            norm_adj = tf.SparseTensor(indices=indices, values=values,
-                                       dense_shape=[self.num_users, self.num_users])
-
-            weight_size = [self.embed_size, self.embed_size, self.embed_size]
-            weight_size_list = [self.embed_size] + weight_size
-
-            ui_graph_layers = 3
-
-            # initialize parameters
-            for k in range(ui_graph_layers):
-                self.weights['ui_W_%d_1' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='ui_W_%d_1' % k)
-                self.weights['ui_W_%d_2' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='ui_W_%d_2' % k)
-                self.g_params.append(self.weights['ui_W_%d_1' % k])
-                self.g_params.append(self.weights['ui_W_%d_2' % k])
-
-            all_ui_embeddings = [user_embeddings]
-
-            for k in range(ui_graph_layers):
-                side_embeddings = tf.sparse_tensor_dense_matmul(norm_adj, user_embeddings)
-                sum_embeddings = tf.matmul(side_embeddings + user_embeddings, self.weights['ui_W_%d_1' % k])
-                bi_embeddings = tf.multiply(user_embeddings, side_embeddings)
-                bi_embeddings = tf.matmul(bi_embeddings, self.weights['ui_W_%d_2' % k])
-
-                user_embeddings = tf.nn.leaky_relu(sum_embeddings + bi_embeddings)
-
-                # message dropout.
-                user_embeddings = tf.nn.dropout(user_embeddings, keep_prob=0.9)
-
-                # normalize the distribution of embeddings.
-                norm_embeddings = tf.math.l2_normalize(user_embeddings, axis=1)
-
-                all_ui_embeddings += [norm_embeddings]
-
-            self.ui_user_embeddings = sum(all_ui_embeddings)/ui_graph_layers
-            self.ui_embedding = tf.nn.embedding_lookup(self.ui_user_embeddings, self.u_idx)
 
 
         self.d_weights = dict()
@@ -238,7 +199,7 @@ class AGR(SocialRecommender,DeepRecommender):
             # initialize parameters
             mlp_layers = 3
             weight_size = [self.embed_size * 4, self.embed_size * 2, self.num_users]
-            weight_size_list = [self.embed_size*3] + weight_size
+            weight_size_list = [self.embed_size*2] + weight_size
 
             for k in range(mlp_layers):
                 self.weights['mlp_W_%d' % k] = tf.Variable(
@@ -246,7 +207,7 @@ class AGR(SocialRecommender,DeepRecommender):
                 self.g_params.append(self.weights['mlp_W_%d' % k])
 
 
-            input = tf.concat([self.sg_embedding,self.ui_embedding,self.x_item_embedding],1)
+            input = tf.concat([self.sg_embedding,self.x_item_embedding],1)
             for k in range(self.n_layers):
                 input = tf.nn.leaky_relu(tf.matmul(input,self.weights['mlp_W_%d' %k]))
 
