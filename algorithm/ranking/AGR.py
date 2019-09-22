@@ -63,37 +63,51 @@ class AGR(SocialRecommender,DeepRecommender):
         #Generator
         self.g_params = []
 
-        self.CUNet = defaultdict(dict)
-        print 'Building the collaborative user net. It may take a few seconds...'
-        self.implictConnection = []
-        for user1 in self.data.trainSet_u:
-            s1 = set(self.data.trainSet_u[user1])
-            for user2 in self.data.trainSet_u:
-                if user1 <> user2:
-                    s2 = set(self.data.trainSet_u[user2])
-                    weight = len(s1.intersection(s2))
-                    if weight > 0:
-                        self.CUNet[user1][user2] = weight
-                        self.implictConnection.append((user1, user2, weight))
+        # self.CUNet = defaultdict(dict)
+        # print 'Building the collaborative user net. It may take a few seconds...'
+        # self.implictConnection = []
 
-        with tf.name_scope("generator_social_graph"):
-            user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='sg_U')
+        self.isTraining = tf.placeholder(tf.int32)
+        self.isTraining = tf.cast(self.isTraining, tf.bool)
+
+        # for user1 in self.data.trainSet_u:
+        #     s1 = set(self.data.trainSet_u[user1])
+        #     for user2 in self.data.trainSet_u:
+        #         if user1 <> user2:
+        #             s2 = set(self.data.trainSet_u[user2])
+        #             weight = len(s1.intersection(s2))
+        #             if weight > 0:
+        #                 self.CUNet[user1][user2] = weight
+        #                 self.implictConnection.append((user1, user2, weight))
+
+        indices = [[self.data.user[item[0]], self.num_users + self.data.item[item[1]]] for item in
+                   self.data.trainingData]
+        indices += [[self.num_users + self.data.item[item[1]], self.data.user[item[0]]] for item in
+                    self.data.trainingData]
+        values = [float(item[2]) / sqrt(len(self.data.trainSet_u[item[0]])) / sqrt(
+            len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData] * 2
+
+        R = tf.SparseTensor(indices=indices, values=values,
+                                   dense_shape=[self.num_users + self.num_items, self.num_users + self.num_items])
+
+
+        with tf.name_scope("generator"):
+            user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='g_U')
+            item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='g_I')
+
+            ego_embeddings = tf.concat([self.user_embeddings, self.item_embeddings], axis=0)
+
             self.g_params.append(user_embeddings)
+            self.g_params.append(item_embeddings)
 
-            indices = [[self.data.user[item[0]], self.data.user[item[1]]] for item in
+            indices+= [[self.data.user[item[0]], self.data.user[item[1]]] for item in
                 self.social.relation]
 
-            indices += [[self.data.user[item[0]], self.data.user[item[1]]] for item in
-                       self.implictConnection]
-
-            values = [float(item[2]) / sqrt(len(self.social.followees[item[0]])+1) / sqrt(
+            values += [float(item[2]) / sqrt(len(self.social.followees[item[0]])+1) / sqrt(
                 len(self.social.followers[item[1]])+1) for item in self.social.relation]
 
-            values += [float(item[2]) / sqrt(len(self.CUNet[item[0]])) / sqrt(
-                len(self.CUNet[item[1]])) for item in self.implictConnection]
-
-            norm_adj = tf.SparseTensor(indices=indices, values=values,
-                                   dense_shape=[self.num_users, self.num_users])
+            S_R = tf.SparseTensor(indices=indices, values=values,
+                                   dense_shape=[self.num_users+self.num_items, self.num_users+self.num_items])
 
 
             weight_size = [self.embed_size, self.embed_size, self.embed_size]
@@ -103,97 +117,44 @@ class AGR(SocialRecommender,DeepRecommender):
 
             # initialize parameters
             for k in range(social_graph_layers):
-                self.weights['SG_W_%d_1' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='SG_W_%d_1' % k)
-                self.weights['SG_W_%d_2' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='SG_W_%d_2' % k)
-                self.g_params.append(self.weights['SG_W_%d_1' % k])
-                self.g_params.append(self.weights['SG_W_%d_2' % k])
+                self.weights['g_W_%d_1' % k] = tf.Variable(
+                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='g_W_%d_1' % k)
+                self.weights['g_W_%d_2' % k] = tf.Variable(
+                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='g_W_%d_2' % k)
+                self.g_params.append(self.weights['g_W_%d_1' % k])
+                self.g_params.append(self.weights['g_W_%d_2' % k])
 
-            all_sg_embeddings = [user_embeddings]
+            all_g_embeddings = [ego_embeddings]
             for k in range(social_graph_layers):
-                side_embeddings = tf.sparse_tensor_dense_matmul(norm_adj, user_embeddings)
-                sum_embeddings = tf.matmul(side_embeddings + user_embeddings, self.weights['SG_W_%d_1' % k])
-                bi_embeddings = tf.multiply(user_embeddings, side_embeddings)
-                bi_embeddings = tf.matmul(bi_embeddings, self.weights['SG_W_%d_2' % k])
-
-                user_embeddings = tf.nn.leaky_relu(sum_embeddings + bi_embeddings)
-
-                # message dropout.
-                user_embeddings = tf.nn.dropout(user_embeddings, keep_prob=0.9)
-
-                # normalize the distribution of embeddings.
-                norm_embeddings = tf.math.l2_normalize(user_embeddings, axis=1)
-
-                all_sg_embeddings += [norm_embeddings]
-
-            self.sg_user_embeddings = sum(all_sg_embeddings)/social_graph_layers
-            self.sg_embedding = tf.nn.embedding_lookup(self.sg_user_embeddings, self.u_idx)
-
-
-        self.d_weights = dict()
-        #Discriminator
-        self.d_params = [self.user_embeddings, self.item_embeddings]
-        with tf.name_scope("discrminator"):
-            ego_embeddings = tf.concat([self.user_embeddings, self.item_embeddings], axis=0)
-
-            indices = [[self.data.user[item[0]], self.num_users + self.data.item[item[1]]] for item in
-                       self.data.trainingData]
-            indices += [[self.num_users + self.data.item[item[1]], self.data.user[item[0]]] for item in
-                        self.data.trainingData]
-            values = [float(item[2]) / sqrt(len(self.data.trainSet_u[item[0]])) / sqrt(
-                len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData] * 2
-
-            norm_adj = tf.SparseTensor(indices=indices, values=values,
-                                       dense_shape=[self.num_users + self.num_items, self.num_users + self.num_items])
-
-            weight_size = [self.embed_size, self.embed_size, self.embed_size]
-            weight_size_list = [self.embed_size] + weight_size
-
-            self.n_layers = 3
-
-            # initialize parameters
-            for k in range(self.n_layers):
-                self.weights['W_%d_1' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_1' % k)
-                self.weights['W_%d_2' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
-                self.d_params.append(self.weights['W_%d_1' % k])
-                self.d_params.append(self.weights['W_%d_2' % k])
-
-            all_embeddings = [ego_embeddings]
-
-            for k in range(self.n_layers):
-                side_embeddings = tf.sparse_tensor_dense_matmul(norm_adj, ego_embeddings)
-                sum_embeddings = tf.matmul(side_embeddings + ego_embeddings, self.weights['W_%d_1' % k])
+                side_embeddings = tf.sparse_tensor_dense_matmul(S_R, ego_embeddings)
+                sum_embeddings = tf.matmul(side_embeddings + ego_embeddings, self.weights['g_W_%d_1' % k])
                 bi_embeddings = tf.multiply(ego_embeddings, side_embeddings)
-                bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2' % k])
+                bi_embeddings = tf.matmul(bi_embeddings, self.weights['g_W_%d_2' % k])
 
                 ego_embeddings = tf.nn.leaky_relu(sum_embeddings + bi_embeddings)
 
                 # message dropout.
-                ego_embeddings = tf.nn.dropout(ego_embeddings, keep_prob=0.9)
+                def without_dropout():
+                    return ego_embeddings
+
+                def dropout():
+                    return tf.nn.dropout(ego_embeddings, keep_prob=0.9)
+
+                ego_embeddings = tf.cond(self.isTraining, lambda: dropout(), lambda: without_dropout())
 
                 # normalize the distribution of embeddings.
                 norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
 
-                all_embeddings += [norm_embeddings]
+                all_g_embeddings += [norm_embeddings]
 
-            total_embeddings = tf.concat(all_embeddings, 1)
-            total_embeddings_v2 = sum(all_embeddings)
 
-            self.multi_user_embeddings, self.multi_item_embeddings = tf.split(total_embeddings,
-                                                                              [self.num_users, self.num_items], 0)
+            g_total_embeddings = sum(all_g_embeddings)/social_graph_layers
 
-            self.multi_user_embeddings_v2, self.multi_item_embeddings_v2 = tf.split(total_embeddings_v2,
-                                                                              [self.num_users, self.num_items], 0)
+            g_user_embeddings, g_item_embeddings = tf.split(g_total_embeddings,[self.num_users, self.num_items], 0)
 
-            self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
-            self.neg_item_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.neg_idx)
-            self.u_embedding = tf.nn.embedding_lookup(self.multi_user_embeddings, self.u_idx)
-            self.v_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
-            self.x_item_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings_v2, self.v_idx)
 
+            self.g_u_embedding = tf.nn.embedding_lookup(g_user_embeddings, self.u_idx)
+            self.g_i_embedding = tf.nn.embedding_lookup(g_item_embeddings, self.v_idx)
         #MLP (friend and item generation)
         with tf.name_scope("item_generator"):
             # initialize parameters
@@ -207,8 +168,8 @@ class AGR(SocialRecommender,DeepRecommender):
                 self.g_params.append(self.weights['mlp_W_%d' % k])
 
 
-            input = tf.concat([self.sg_embedding,self.x_item_embedding],1)
-            for k in range(self.n_layers):
+            input = tf.concat([self.g_u_embedding,self.g_i_embedding],1)
+            for k in range(mlp_layers):
                 input = tf.nn.leaky_relu(tf.matmul(input,self.weights['mlp_W_%d' %k]))
 
             #one_hot implicit friend
@@ -230,9 +191,64 @@ class AGR(SocialRecommender,DeepRecommender):
 
             self.virtual_items = self.sampling(tf.multiply(self.candidateItems, self.embedding_selection))
 
+
+        self.d_weights = dict()
+        #Discriminator
+        self.d_params = [self.user_embeddings, self.item_embeddings]
+        with tf.name_scope("discrminator"):
+            ego_embeddings = tf.concat([self.user_embeddings, self.item_embeddings], axis=0)
+
+            weight_size = [self.embed_size, self.embed_size, self.embed_size]
+            weight_size_list = [self.embed_size] + weight_size
+
+            self.n_layers = 3
+
+            # initialize parameters
+            for k in range(self.n_layers):
+                self.weights['W_%d_1' % k] = tf.Variable(
+                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_1' % k)
+                self.weights['W_%d_2' % k] = tf.Variable(
+                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
+                self.d_params.append(self.weights['W_%d_1' % k])
+                self.d_params.append(self.weights['W_%d_2' % k])
+
+            all_embeddings = [ego_embeddings]
+            for k in range(self.n_layers):
+                side_embeddings = tf.sparse_tensor_dense_matmul(R, ego_embeddings)
+                #friend_embeddings = tf.matmul(self.implicit_friend, ego_embeddings[:self.num_users])
+
+                sum_embeddings = tf.matmul(side_embeddings + ego_embeddings, self.weights['W_%d_1' % k])
+                bi_embeddings = tf.multiply(ego_embeddings, side_embeddings)
+                bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2' % k])
+
+                ego_embeddings = tf.nn.leaky_relu(sum_embeddings + bi_embeddings)
+
+                # message dropout.
+                def without_dropout():
+                    return ego_embeddings
+
+                def dropout():
+                    return tf.nn.dropout(ego_embeddings, keep_prob=0.9)
+
+                ego_embeddings = tf.cond(self.isTraining, lambda: dropout(), lambda: without_dropout())
+
+                # normalize the distribution of embeddings.
+                norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
+
+                all_embeddings += [norm_embeddings]
+
+            total_embeddings = tf.concat(all_embeddings, 1)
+
+            self.multi_user_embeddings, self.multi_item_embeddings = tf.split(total_embeddings,
+                                                                              [self.num_users, self.num_items], 0)
+
+
+            self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
+            self.neg_item_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.neg_idx)
+            self.u_embedding = tf.nn.embedding_lookup(self.multi_user_embeddings, self.u_idx)
+            self.v_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
             self.v_i_embedding = tf.matmul(self.virtual_items, self.multi_item_embeddings, transpose_a=False,
                                            transpose_b=False)
-
 
     def initModel(self):
         super(AGR, self).initModel()
@@ -274,12 +290,12 @@ class AGR(SocialRecommender,DeepRecommender):
                 # generator
                 _, loss = self.sess.run([self.g_update, self.g_loss],
                                         feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx,
-                                                   self.v_idx: i_idx})
+                                                   self.v_idx: i_idx,self.isTraining:1})
 
                 # discriminator
                 _, loss = self.sess.run([self.d_update, self.d_loss],
                                         feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx,
-                                                   self.v_idx: i_idx})
+                                                   self.v_idx: i_idx,self.isTraining:1})
 
                 print 'training:', i + 1, 'batch_id', num, 'discriminator loss:', loss
 
@@ -289,7 +305,7 @@ class AGR(SocialRecommender,DeepRecommender):
             u = self.data.user[u]
 
             # In our experiments, discriminator performs better than generator
-            res = self.sess.run(self.d_output, {self.u_idx:u})
+            res = self.sess.run(self.d_output, {self.u_idx:u,self.isTraining:0})
             return res
 
         else:
