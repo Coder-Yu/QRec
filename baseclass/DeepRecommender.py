@@ -30,7 +30,10 @@ class DeepRecommender(IterativeRecommender):
 
         self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx)
         self.v_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.v_idx)
-        self.sess = tf.Session()
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.sess = tf.Session(config=config)
 
 
 

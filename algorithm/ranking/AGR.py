@@ -157,23 +157,13 @@ class AGR(SocialRecommender,DeepRecommender):
             self.g_i_embedding = tf.nn.embedding_lookup(g_item_embeddings, self.v_idx)
         #MLP (friend and item generation)
         with tf.name_scope("item_generator"):
-            # initialize parameters
-            mlp_layers = 3
-            weight_size = [self.embed_size * 4, self.embed_size * 2, self.num_users]
-            weight_size_list = [self.embed_size*2] + weight_size
 
-            for k in range(mlp_layers):
-                self.weights['mlp_W_%d' % k] = tf.Variable(
-                    initializer([weight_size_list[k], weight_size_list[k + 1]]), name='mlp_W_%d' % k)
-                self.g_params.append(self.weights['mlp_W_%d' % k])
+            u_features = self.g_u_embedding + self.g_i_embedding + tf.multiply(self.g_u_embedding,self.g_i_embedding)
 
-
-            input = tf.concat([self.g_u_embedding,self.g_i_embedding],1)
-            for k in range(mlp_layers):
-                input = tf.nn.leaky_relu(tf.matmul(input,self.weights['mlp_W_%d' %k]))
+            u_scores = tf.matmul(u_features,g_user_embeddings,transpose_b=True)
 
             #one_hot implicit friend
-            self.implicit_friend = self.sampling(input)
+            self.implicit_friend = self.sampling(u_scores)
             indices = [[self.data.item[item[1]], self.data.user[item[0]]] for item in self.data.trainingData]
             values = [item[2] for item in self.data.trainingData]
             self.i_u_matrix = tf.SparseTensor(indices=indices, values=values,
@@ -181,15 +171,19 @@ class AGR(SocialRecommender,DeepRecommender):
 
             self.item_selection = tf.get_variable('item_selection', initializer=tf.constant_initializer(0.01),
                                                   shape=[self.num_users, self.num_items])
-
             self.g_params.append(self.item_selection)
+
             # get candidate list (items)
             self.candidateItems = tf.transpose(
                 tf.sparse_tensor_dense_matmul(self.i_u_matrix, tf.transpose(self.implicit_friend)))
 
-            self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u_idx, name='e_s')
+            # f_features = tf.matmul(self.implicit_friend,g_user_embeddings)
+            # f_features += self.g_i_embedding + tf.multiply(f_features,self.g_i_embedding)
+            # i_scores = tf.matmul(f_features,g_item_embeddings,transpose_b=True)
 
-            self.virtual_items = self.sampling(tf.multiply(self.candidateItems, self.embedding_selection))
+            embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u_idx, name='e_s')
+
+            self.virtual_items = self.sampling(tf.multiply(self.candidateItems, embedding_selection))
 
 
         self.d_weights = dict()
