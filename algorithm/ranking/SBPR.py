@@ -136,18 +136,18 @@ class SBPR(SocialRecommender):
 
         self.neg_item_embedding = tf.nn.embedding_lookup(self.V, self.neg_idx)
         self.social_item_embedding = tf.nn.embedding_lookup(self.V, self.social_idx)
+        # self.pos_item_bias = tf.nn.embedding_lookup(self.item_biases, self.u_idx)
+        # self.neg_item_bias = tf.nn.embedding_lookup(self.item_biases, self.neg_idx)
+        # self.social_item_bias = tf.nn.embedding_lookup(self.item_biases, self.social_idx)
 
-        self.neg_item_bias = tf.nn.embedding_lookup(self.item_biases, self.neg_idx)
-        self.social_item_bias = tf.nn.embedding_lookup(self.item_biases, self.social_idx)
-
-        y_ik = (tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), 1)+self.item_bias
-                -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1)-self.social_item_bias)/(self.weights+1)
-        y_kj = tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1)+self.social_item_bias\
-               -tf.reduce_sum(tf.multiply(self.user_embedding, self.neg_item_embedding), 1)-self.neg_item_bias
+        y_ik = (tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), 1)
+                -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1))/(self.weights+1)
+        y_kj = tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1)\
+               -tf.reduce_sum(tf.multiply(self.user_embedding, self.neg_item_embedding), 1)
         loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ik))) - tf.reduce_sum(tf.log(tf.sigmoid(y_kj)))
         + self.regU * (tf.nn.l2_loss(self.user_embedding) + tf.nn.l2_loss(self.item_embedding)
-                       + tf.nn.l2_loss(self.neg_item_embedding)+tf.nn.l2_loss(self.social_item_embedding)
-                       +tf.nn.l2_loss(self.item_biases)+tf.nn.l2_loss(self.social_item_bias)+tf.nn.l2_loss(self.neg_item_bias))
+                       + tf.nn.l2_loss(self.neg_item_embedding)+tf.nn.l2_loss(self.social_item_embedding))
+                       #+tf.nn.l2_loss(self.pos_item_bias)+tf.nn.l2_loss(self.social_item_bias)+tf.nn.l2_loss(self.neg_item_bias))
 
         opt = tf.train.AdamOptimizer(self.lRate)
 
@@ -182,7 +182,7 @@ class SBPR(SocialRecommender):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             u = self.data.getUserId(u)
-            return self.Q.dot(self.P[u])+self.b
+            return self.Q.dot(self.P[u])
         else:
             return [self.data.globalMean] * self.num_items
 
