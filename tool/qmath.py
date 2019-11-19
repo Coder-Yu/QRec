@@ -32,6 +32,16 @@ def cosine_sp(x1,x2):
     except ZeroDivisionError:
         return 0
 
+def euclidean_sp(x1,x2):
+    'x1,x2 are dicts,this version is for sparse representation'
+    total = 0
+    try:
+        for k in x1:
+            if x2.has_key(k):
+                total+=x1[k]**2-x2[k]**2
+        return 1/total
+    except ZeroDivisionError:
+        return 0
 
 def cosine(x1,x2):
     #find common ratings
@@ -100,7 +110,7 @@ def similarity(x1,x2,sim):
     if sim == 'pcc':
         return pearson_sp(x1,x2)
     if sim == 'euclidean':
-        return euclidean(x1,x2)
+        return euclidean_sp(x1,x2)
     else:
         return cosine_sp(x1, x2)
 
