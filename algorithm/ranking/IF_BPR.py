@@ -157,9 +157,9 @@ class IF_BPR(SocialRecommender):
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
-                                    nextNode = choice(self.UFNet[lastNode])
+                                    nextNode = choice(self.UTNet[lastNode])
                                     while not self.data.user.has_key(nextNode):
-                                        nextNode = choice(self.UFNet[lastNode])
+                                        nextNode = choice(self.UTNet[lastNode])
 
                                 path.append(tp + nextNode)
                                 lastNode = nextNode
@@ -217,9 +217,9 @@ class IF_BPR(SocialRecommender):
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
-                                    nextNode = choice(self.UFNet[lastNode])
+                                    nextNode = choice(self.UTNet[lastNode])
                                     while not self.data.user.has_key(nextNode):
-                                        nextNode = choice(self.UFNet[lastNode])
+                                        nextNode = choice(self.UTNet[lastNode])
 
                                 path.append(tp + nextNode)
                                 lastNode = nextNode
