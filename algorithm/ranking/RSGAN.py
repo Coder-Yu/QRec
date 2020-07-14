@@ -479,8 +479,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
         #
         # self.ranking_performance()
 
-        f = open(self.foldInfo+'RSGAN.txt','w')
-        res = []
 
         print 'pretraining for generator...'
         for i in range(30):

@@ -137,7 +137,7 @@ class IterativeRecommender(Recommender):
         return self.measure
 
     def ranking_performance(self):
-        N = 20
+        N = 10
         recList = {}
         testSample = {}
         for user in self.data.testSet_u:
@@ -191,7 +191,7 @@ class IterativeRecommender(Recommender):
                     recommendations[ind + 1] = itemSet[item]
                     resNames[ind + 1] = item
             recList[user] = zip(resNames, recommendations)
-        measure = Measure.rankingMeasure(testSample, recList, [10,20])
+        measure = Measure.rankingMeasure(testSample, recList, [10])
         print '-'*80
         print 'Ranking Performance '+self.foldInfo+' (Top-10 On 1000 sampled users)'
         for m in measure[1:]:

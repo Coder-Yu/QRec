@@ -23,14 +23,12 @@ class RecQ(object):
                 binarized = True
                 bottom = float(self.evaluation['-b'])
             if self.evaluation.contains('-testSet'):
-                #specify testSet
-
+                #specified testSet
                 self.trainingData = FileIO.loadDataSet(config, config['ratings'],binarized=binarized,threshold=bottom)
                 self.testData = FileIO.loadDataSet(config, self.evaluation['-testSet'], bTest=True,binarized=binarized,threshold=bottom)
 
             elif self.evaluation.contains('-ap'):
-                #auto partition
-
+                #random auto partition
                 self.trainingData = FileIO.loadDataSet(config,config['ratings'],binarized=binarized,threshold=bottom)
                 self.trainingData,self.testData = DataSplit.\
                     dataSplit(self.trainingData,test_ratio=float(self.evaluation['-ap']),binarized=binarized)
@@ -40,19 +38,13 @@ class RecQ(object):
                 #self.trainingData,self.testData = DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv']))
 
         else:
-            print 'Evaluation is not well configured!'
+            print 'Wrong configuration of evaluation!'
             exit(-1)
 
         if config.contains('social'):
             self.socialConfig = LineConfig(self.config['social.setup'])
             self.relation = FileIO.loadRelationship(config,self.config['social'])
-
-        print 'preprocessing...'
-
-
-
-
-
+        print 'Reading data and preprocessing...'
 
     def execute(self):
         #import the algorithm module
@@ -64,19 +56,17 @@ class RecQ(object):
             exec (importStr)
         if self.evaluation.contains('-cv'):
             k = int(self.evaluation['-cv'])
-            if k <= 1 or k > 10:
+            if k <= 1 or k > 10: #limit to 1-10 fold cross validation
                 k = 3
             mkl.set_num_threads(max(1,mkl.get_max_threads()/k))
-            #create the manager
+            #create the manager for communication among multiple processes
             manager = Manager()
-            m = manager.dict()
+            mDict = manager.dict()
             i = 1
             tasks = []
-
             binarized = False
             if self.evaluation.contains('-b'):
                 binarized = True
-
             for train,test in DataSplit.crossValidation(self.trainingData,k,binarized=binarized):
                 fold = '['+str(i)+']'
                 if self.config.contains('social'):
@@ -84,7 +74,7 @@ class RecQ(object):
                 else:
                     recommender = self.config['recommender']+ "(self.config,train,test,fold)"
                #create the process
-                p = Process(target=run,args=(m,eval(recommender),i))
+                p = Process(target=run,args=(mDict,eval(recommender),i))
                 tasks.append(p)
                 i+=1
             #start the processes
@@ -96,8 +86,8 @@ class RecQ(object):
             if self.evaluation.contains('-p'):
                 for p in tasks:
                     p.join()
-            #compute the mean error of k-fold cross validation
-            self.measure = [dict(m)[i] for i in range(1,k+1)]
+            #compute the average error of k-fold cross validation
+            self.measure = [dict(mDict)[i] for i in range(1,k+1)]
             res = []
             for i in range(len(self.measure[0])):
                 if self.measure[0][i][:3] == 'Top':
@@ -115,14 +105,12 @@ class RecQ(object):
             FileIO.writeFile(outDir,fileName,res)
             print 'The result of %d-fold cross validation:\n%s' %(k,''.join(res))
 
-
         else:
             if self.config.contains('social'):
                 recommender = self.config['recommender']+'(self.config,self.trainingData,self.testData,self.relation)'
             else:
                 recommender = self.config['recommender'] + '(self.config,self.trainingData,self.testData)'
             eval(recommender).execute()
-
 
 def run(measure,algor,order):
     measure[order] = algor.execute()
