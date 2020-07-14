@@ -34,7 +34,6 @@ class RatingDAO(object):
 
 
     def __generateSet(self):
-        triple = []
         scale = set()
         # find the maximum rating and minimum value
 
@@ -54,9 +53,9 @@ class RatingDAO(object):
                 # userList.append
             self.trainSet_u[userName][itemName] = rating
             self.trainSet_i[itemName][userName] = rating
-            #scale.add(float(rating))
-        # self.rScale = list(scale)
-        # self.rScale.sort()
+            scale.add(float(rating))
+        self.rScale = list(scale)
+        self.rScale.sort()
 
         for entry in self.testData:
             userName, itemName, rating = entry
