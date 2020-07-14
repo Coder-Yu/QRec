@@ -10,7 +10,6 @@ class ItemKNN(Recommender):
     def readConfiguration(self):
         super(ItemKNN, self).readConfiguration()
         self.sim = self.config['similarity']
-        self.shrinkage =int(self.config['num.shrinkage'])
         self.neighbors = int(self.config['num.neighbors'])
 
     def printAlgorConfig(self):
@@ -18,7 +17,6 @@ class ItemKNN(Recommender):
         super(ItemKNN, self).printAlgorConfig()
         print 'Specified Arguments of',self.config['recommender']+':'
         print 'num.neighbors:',self.config['num.neighbors']
-        print 'num.shrinkage:', self.config['num.shrinkage']
         print 'similarity:', self.config['similarity']
         print '='*80
 
@@ -52,7 +50,7 @@ class ItemKNN(Recommender):
         pred = self.data.itemMeans[i]+sum/float(denom)
         return pred
 
-    def computeCorr(self):
+    def computeSimilarities(self):
         'compute correlation among items'
         print 'Computing item similarities...'
         for idx,i1 in enumerate(self.data.testSet_i):

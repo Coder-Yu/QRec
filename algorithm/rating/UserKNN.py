@@ -11,7 +11,6 @@ class UserKNN(Recommender):
     def readConfiguration(self):
         super(UserKNN, self).readConfiguration()
         self.sim = self.config['similarity']
-        self.shrinkage =int(self.config['num.shrinkage'])
         self.neighbors = int(self.config['num.neighbors'])
 
     def printAlgorConfig(self):
@@ -19,13 +18,12 @@ class UserKNN(Recommender):
         super(UserKNN, self).printAlgorConfig()
         print 'Specified Arguments of',self.config['recommender']+':'
         print 'num.neighbors:',self.config['num.neighbors']
-        print 'num.shrinkage:', self.config['num.shrinkage']
         print 'similarity:', self.config['similarity']
         print '='*80
 
     def initModel(self):
         self.topUsers = {}
-        self.computeCorr()
+        self.computeSimilarities()
 
     def predict(self,u,i):
         #find the closest neighbors of user u
@@ -53,7 +51,7 @@ class UserKNN(Recommender):
         return pred
 
 
-    def computeCorr(self):
+    def computeSimilarities(self):
         'compute correlation among users'
         print 'Computing user similarities...'
         for idx,u1 in enumerate(self.data.testSet_u):
