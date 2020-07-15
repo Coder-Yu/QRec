@@ -22,7 +22,7 @@ class ItemKNN(Recommender):
 
     def initModel(self):
         self.topItems = {}
-        self.computeCorr()
+        self.computeSimilarities()
 
     def predict(self,u,i):
         #find the closest neighbors of item i
