@@ -1,39 +1,10 @@
-#coding:utf8
 from baseclass.DeepRecommender import DeepRecommender
-from random import choice
 import tensorflow as tf
-import numpy as np
 from math import sqrt
 class LightGCN(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(LightGCN, self).__init__(conf,trainingSet,testSet,fold)
-
-    def next_batch(self):
-        batch_id = 0
-        while batch_id < self.train_size:
-            if batch_id + self.batch_size <= self.train_size:
-                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.batch_size + batch_id)]
-                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.batch_size + batch_id)]
-                batch_id += self.batch_size
-            else:
-                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
-                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
-                batch_id = self.train_size
-
-            u_idx, i_idx, j_idx = [], [], []
-            item_list = self.data.item.keys()
-            for i, user in enumerate(users):
-
-                i_idx.append(self.data.item[items[i]])
-                u_idx.append(self.data.user[user])
-
-                neg_item = choice(item_list)
-                while neg_item in self.data.trainSet_u[user]:
-                    neg_item = choice(item_list)
-                j_idx.append(self.data.item[neg_item])
-
-            yield u_idx, i_idx, j_idx
 
     def initModel(self):
         super(LightGCN, self).initModel()
@@ -80,7 +51,7 @@ class LightGCN(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         for iteration in range(self.maxIter):
-            for n, batch in enumerate(self.next_batch()):
+            for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 _, l = self.sess.run([train, loss],
                                 feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})

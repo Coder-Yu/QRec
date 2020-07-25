@@ -58,12 +58,6 @@ class IterativeRecommender(Recommender):
         self.item_embedding = tf.nn.embedding_lookup(self.V, self.v_idx)
 
 
-    def saveModel(self):
-        pass
-
-    def loadModel(self):
-        pass
-
     def updateLearningRate(self,iter):
         if iter > 1:
             if abs(self.lastLoss) > abs(self.loss):
@@ -118,11 +112,9 @@ class IterativeRecommender(Recommender):
         return converged
 
     def rating_performance(self):
-
         res = []
         for ind, entry in enumerate(self.data.testData):
             user, item, rating = entry
-
             # predict
             prediction = self.predict(user, item)
             # denormalize
@@ -131,9 +123,7 @@ class IterativeRecommender(Recommender):
             pred = self.checkRatingBoundary(prediction)
             # add prediction in order to measure
             res.append([user,item,rating,pred])
-
         self.measure = Measure.ratingMeasure(res)
-
         return self.measure
 
     def ranking_performance(self):
