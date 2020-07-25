@@ -2,12 +2,12 @@ from baseclass.Recommender import Recommender
 from tool import config
 import numpy as np
 from random import shuffle
-from tool.qmath import denormalize
 from evaluation.measure import Measure
 
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         super(IterativeRecommender, self).__init__(conf,trainingSet,testSet,fold)
+        self.bestPerformance = []
 
     def readConfiguration(self):
         super(IterativeRecommender, self).readConfiguration()
@@ -37,7 +37,6 @@ class IterativeRecommender(Recommender):
         self.Q = np.random.rand(len(self.data.item), self.embed_size)/3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
-
     def buildModel_tf(self):
         # initialization
         import tensorflow as tf
@@ -57,20 +56,16 @@ class IterativeRecommender(Recommender):
         self.user_embedding = tf.nn.embedding_lookup(self.U, self.u_idx)
         self.item_embedding = tf.nn.embedding_lookup(self.V, self.v_idx)
 
-
     def updateLearningRate(self,iter):
         if iter > 1:
             if abs(self.lastLoss) > abs(self.loss):
                 self.lRate *= 1.05
             else:
                 self.lRate *= 0.5
-
         if self.lRate > self.maxLRate > 0:
             self.lRate = self.maxLRate
 
-
     def predict(self,u,i):
-
         if self.data.containsUser(u) and self.data.containsItem(i):
             return self.P[self.data.user[u]].dot(self.Q[self.data.item[i]])
         elif self.data.containsUser(u) and not self.data.containsItem(i):
@@ -79,7 +74,6 @@ class IterativeRecommender(Recommender):
             return self.data.itemMeans[i]
         else:
             return self.data.globalMean
-
 
     def predictForRanking(self,u):
         'used to rank all the items for the user'
@@ -97,7 +91,7 @@ class IterativeRecommender(Recommender):
         if self.ranking.isMainOn():
             print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
                   %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
-            measure = self.ranking_performance()
+            measure = self.ranking_performance(iter)
         else:
             measure = self.rating_performance()
             print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
@@ -117,16 +111,14 @@ class IterativeRecommender(Recommender):
             user, item, rating = entry
             # predict
             prediction = self.predict(user, item)
-            # denormalize
-            #prediction = denormalize(prediction, self.data.rScale[-1], self.data.rScale[0])
-            #####################################
             pred = self.checkRatingBoundary(prediction)
-            # add prediction in order to measure
             res.append([user,item,rating,pred])
         self.measure = Measure.ratingMeasure(res)
         return self.measure
 
-    def ranking_performance(self):
+    def ranking_performance(self,iteration):
+        #for quick evaluation, we only rank 2000 items
+        #results of 1000 users would be evaluated
         N = 10
         recList = {}
         testSample = {}
@@ -138,30 +130,26 @@ class IterativeRecommender(Recommender):
         for user in testSample:
             itemSet = {}
             predictedItems = self.predictForRanking(user)
-            for id, rating in enumerate(predictedItems):
+            for id, rating in enumerate(predictedItems[:2000]):
                 itemSet[self.data.id2item[id]] = rating
-
             ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
-                del itemSet[item]
-
+                if item in itemSet:
+                    del itemSet[item]
             Nrecommendations = []
             for item in itemSet:
                 if len(Nrecommendations) < N:
                     Nrecommendations.append((item, itemSet[item]))
                 else:
                     break
-
             Nrecommendations.sort(key=lambda d: d[1], reverse=True)
             recommendations = [item[1] for item in Nrecommendations]
             resNames = [item[0] for item in Nrecommendations]
-
             # find the K biggest scores
             for item in itemSet:
                 ind = N
                 l = 0
                 r = N - 1
-
                 if recommendations[r] < itemSet[item]:
                     while True:
                         mid = (l + r) / 2
@@ -172,8 +160,6 @@ class IterativeRecommender(Recommender):
                         if r < l:
                             ind = r
                             break
-                # ind = bisect(recommendations, itemSet[item])
-                            # move the items backwards
                 if ind < N - 2:
                     recommendations[ind + 2:] = recommendations[ind + 1:-1]
                     resNames[ind + 2:] = resNames[ind + 1:-1]
@@ -182,11 +168,42 @@ class IterativeRecommender(Recommender):
                     resNames[ind + 1] = item
             recList[user] = zip(resNames, recommendations)
         measure = Measure.rankingMeasure(testSample, recList, [10])
+        if len(self.bestPerformance)>0:
+            count = 0
+            performance = {}
+            for m in measure[1:]:
+                k,v = m.strip().split(':')
+                performance[k]=float(v)
+            for k in self.bestPerformance[1]:
+                if self.bestPerformance[1][k] > performance[k]:
+                    count += 1
+                else:
+                    count -=1
+            if count<0:
+                self.bestPerformance[1]=performance
+                self.bestPerformance[0]=iteration
+        else:
+            self.bestPerformance.append(iteration)
+            performance = {}
+            for m in measure[1:]:
+                k,v = m.strip().split(':')
+                performance[k]=float(v)
+                self.bestPerformance.append(performance)
         print '-'*80
-        print 'Ranking Performance '+self.foldInfo+' (Top-10 On 1000 sampled users)'
-        for m in measure[1:]:
-            print m.strip()
+        print 'Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)'
+        measure = [m.strip() for m in measure[1:]]
+        print '*Current Performance*'
+        print 'iteration:',iteration,' | '.join(measure)
+        bp = ''
+        # for k in self.bestPerformance[1]:
+        #     bp+=k+':'+str(self.bestPerformance[1][k])+' | '
+        bp += 'Precision'+':'+str(self.bestPerformance[1]['Precision'])+' | '
+        bp += 'Recall' + ':' + str(self.bestPerformance[1]['Recall']) + ' | '
+        bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
+        bp += 'MAP' + ':' + str(self.bestPerformance[1]['MAP']) + ' | '
+        bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
+        print '*Best Performance* '
+        print 'iteration:',self.bestPerformance[0],bp
         print '-'*80
-        #self.record.append(measure[3].strip()+' '+measure[4])
         return measure
 
