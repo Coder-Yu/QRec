@@ -1,5 +1,5 @@
 from baseclass.IterativeRecommender import IterativeRecommender
-from random import shuffle,randint
+from random import shuffle,randint,choice
 import tensorflow as tf
 
 class DeepRecommender(IterativeRecommender):
