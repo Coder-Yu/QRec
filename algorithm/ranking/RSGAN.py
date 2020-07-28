@@ -61,7 +61,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.topK = 100
 
         self.G = np.random.rand(self.num_users, 50) * 0.1
-        self.W = np.random.rand(self.num_items, 50) * 0.1
+        self.W = np.random.rand(self.num_users, 50) * 0.1
 
         self.UFNet = defaultdict(list) # a -> b #a trusts b
         for u in self.social.followees:

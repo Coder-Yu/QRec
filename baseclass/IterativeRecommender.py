@@ -189,7 +189,7 @@ class IterativeRecommender(Recommender):
                 k,v = m.strip().split(':')
                 performance[k]=float(v)
                 self.bestPerformance.append(performance)
-        print '-'*150
+        print '-'*120
         print 'Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)'
         measure = [m.strip() for m in measure[1:]]
         print '*Current Performance*'
@@ -204,6 +204,6 @@ class IterativeRecommender(Recommender):
         bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
         print '*Best Performance* '
         print 'iteration:',self.bestPerformance[0],bp
-        print '-'*150
+        print '-'*120
         return measure
 
