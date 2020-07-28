@@ -10,7 +10,8 @@
 
 <h2>Latest News</h2>
 <p>
-23/07/2020 -LightGCN proposed in SIGIR'20 has been added. </br>
+29/07/2020 - ESRF proposed in my TKDE manuscript (under review) has been added. </p>br>
+23/07/2020 - LightGCN proposed in SIGIR'20 has been added. </br>
 17/09/2019 - NGCF proposed in SIGIR'19 has been added. </br>
 13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
 09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>

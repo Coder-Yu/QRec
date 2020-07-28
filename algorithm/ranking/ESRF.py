@@ -49,9 +49,9 @@ class ESRF(SocialRecommender,DeepRecommender):
         self.itemAdjacency = Y.transpose().tocsr()
         B = S.multiply(S.transpose())
         U = S - B
-        print 'S:', S.sum()
-        print 'B:', B.sum()
-        print 'U:', U.sum()
+        # print 'S:', S.sum()
+        # print 'B:', B.sum()
+        # print 'U:', U.sum()
 
         Ds = spdiags(S.sum(axis=1).reshape(self.num_users),diags=[0],m=self.num_users,n=self.num_users)
         np.reciprocal(Ds.data, out=Ds.data,where=Ds.data!=0)
