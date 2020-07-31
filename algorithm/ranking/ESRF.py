@@ -122,16 +122,12 @@ class ESRF(SocialRecommender,DeepRecommender):
         A10 = Da.dot(A10)
 
         A = S + A1 + A2 + A3 + A4 + A5 + A6 + A7 + A8 + A9 + A10
-        #print A.todense()
         Da = spdiags(A.sum(axis=1).reshape(self.num_users),diags=[0],m=self.num_users,n=self.num_users)
         np.reciprocal(Da.data, out=Da.data,where=Da.data!=0)
         A = Da.dot(A)
-        #print A.todense()
         return A
 
     def buildMotifGCN(self,adjacency):
-        # self.isTraining = tf.placeholder(tf.int32)
-        # self.isTraining = tf.cast(self.isTraining, tf.bool)
         self.relation_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),name='U_r')
         #convert sparse matrix to sparse tensor
         adjacency = adjacency.tocoo()
@@ -151,17 +147,8 @@ class ESRF(SocialRecommender,DeepRecommender):
         user_embeddings = tf.reduce_sum(all_embeddings, 0)
 
         # construct concrete selector layer
-
-        # self.g_weights['c_selector'] = tf.Variable(
-        #     initializer([self.n_layers_G * self.embed_size, self.K]), name='c_selector')
         self.g_weights['c_selector'] = tf.Variable(
             initializer([self.K,self.num_users]), name='c_selector')
-        # def getAlternativeNeighborhood(embedding):
-        # This piece of code often suffers from OOM error
-        #     user_features = tf.multiply(embedding,user_embeddings)
-        #     alphaEmbeddings = tf.transpose(tf.matmul(user_features, self.g_weights['c_selector']))
-        #     one_hot_vector = tf.reduce_sum(self.sampling(alphaEmbeddings), 0)
-        #     return one_hot_vector
         def getAlternativeNeighborhood(embedding):
             user_features = tf.matmul(tf.reshape(embedding,[1,self.embed_size]),user_embeddings,transpose_b=True)
             alphaEmbeddings = tf.multiply(user_features, self.g_weights['c_selector'])
@@ -187,7 +174,6 @@ class ESRF(SocialRecommender,DeepRecommender):
         decoderEmbeddings = tf.matmul(decoderEmbeddings, self.g_weights['decoder_%d' % (decoder_layers-1)])
         decoderEmbeddings = tf.nn.sigmoid(decoderEmbeddings)
         self.socialReconstruction = decoderEmbeddings
-        #self.inputAdjacency = tf.placeholder(tf.float32, name="input_ad")
         self.mask = tf.placeholder(tf.float32, name="input_ad")
 
         #training
@@ -214,10 +200,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         norm_adj = tf.SparseTensor(indices=indices, values=values,
                                    dense_shape=[self.num_users + self.num_items, self.num_users + self.num_items])
 
-        indices = [[i,i] for i in range(self.num_users)]
-        values = [1.0]*self.num_users
-        assignMatrix = tf.SparseTensor(indices=indices, values=values,
-                                   dense_shape=[self.num_users + self.num_items,self.num_users])
+        zero_padding = tf.zeros([self.num_items,self.embed_size],tf.float32)
         initializer = tf.contrib.layers.xavier_initializer()
 
         all_embeddings = [ego_embeddings]
@@ -232,12 +215,9 @@ class ESRF(SocialRecommender,DeepRecommender):
 
         for k in range(self.n_layers_D):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj, ego_embeddings)
-            #social_embeddings = tf.matmul(self.alternativeNeighborhood, ego_embeddings[:self.num_users]) / self.K
-            #ego_embeddings += tf.sparse_tensor_dense_matmul(assignMatrix, social_embeddings)
 
             #social attention (applying attention may be a little time-consuming)
             selectedItemEmbeddings = tf.gather(ego_embeddings[self.num_users:],self.sampledItems)
-            #hybridEmbeddings = tf.multiply(selectedItemEmbeddings,ego_embeddings[:self.num_users])
             vals,indexes = tf.nn.top_k(self.alternativeNeighborhood,self.K)
             indexes = tf.cast(indexes,tf.float32)
             attentionEmbeddings = tf.concat([indexes,ego_embeddings[:self.num_users]],axis=1)
@@ -246,14 +226,11 @@ class ESRF(SocialRecommender,DeepRecommender):
             def attention(embedding):
                 alternativeNeighors,u_embedding,i_embedding = tf.split(tf.reshape(embedding,[1,self.K+2*self.embed_size]),[self.K,self.embed_size,self.embed_size],axis=1)
                 alternativeNeighors = tf.cast(alternativeNeighors[0],tf.int32)
-                # i_embedding = tf.matmul(i_embedding,self.d_weights['attention_m%d' % k])
-                # u_embedding = tf.matmul(u_embedding, self.d_weights['attention_m%d' % k])
                 friendsEmbedding = tf.gather(ego_embeddings[:self.num_users],alternativeNeighors)
                 friendsEmbedding = tf.matmul(friendsEmbedding,self.d_weights['attention_m1%d' % k])
                 u_embedding = tf.matmul(u_embedding,self.d_weights['attention_m1%d' % k])
                 i_embedding = tf.matmul(i_embedding,self.d_weights['attention_m2%d' % k])
                 res = tf.reduce_sum(tf.multiply(self.d_weights['attention_v%d' % k],friendsEmbedding+u_embedding+i_embedding),1)
-                #res = tf.multiply(res,self.d_weights['attention_v%d' % k])
                 res = tf.nn.relu(res)
                 weights = tf.nn.softmax(res)
 
@@ -271,7 +248,7 @@ class ESRF(SocialRecommender,DeepRecommender):
                 return ego_embeddings
             def with_social(embeddings):
                 socialEmbeddings = tf.cond(self.isAttentive, lambda: with_attention(), lambda: without_attention())
-                embeddings += tf.sparse_tensor_dense_matmul(assignMatrix, socialEmbeddings)
+                embeddings += tf.concat([socialEmbeddings,zero_padding],0)
                 return embeddings
 
             ego_embeddings = tf.cond(self.isSocial, lambda: with_social(ego_embeddings), lambda: without_social())
@@ -290,7 +267,6 @@ class ESRF(SocialRecommender,DeepRecommender):
         y_ui = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1)
         currentNeighbors = tf.gather(self.alternativeNeighborhood, self.u_idx)
         friendEmbeddings = tf.matmul(currentNeighbors, self.multi_user_embeddings)/self.K
-        #self.h_loss = tf.nn.l2_loss(self.u_embedding-self.friendEmbeddings)
         y_vi = tf.reduce_sum(tf.multiply(friendEmbeddings, self.v_embedding), 1)
         self.g_adv_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_vi-y_ui)))
         self.g_loss = 0.5*self.g_adv_loss+self.r_loss
@@ -298,7 +274,6 @@ class ESRF(SocialRecommender,DeepRecommender):
         self.g_train = opt.minimize(self.g_loss, var_list=[self.g_weights,self.relation_embeddings])
 
     def buildDiscriminator(self):
-        #self.test = tf.reduce_sum(tf.multiply(self.u_embedding, self.multi_item_embeddings), 1)
         y_ui = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1)
         y_uj = tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
         currentNeighbors = tf.gather(self.alternativeNeighborhood,self.u_idx)
@@ -380,9 +355,6 @@ class ESRF(SocialRecommender,DeepRecommender):
             self.isConverged(iteration + 1+self.maxIter/2)
                 #print 'H loss:', iteration + 1, 'batch', n, 'H_loss:', h
 
-            # _, l = self.sess.run([self.r_train, self.r_loss],
-            #                                    feed_dict={self.isTraining: 1, self.mask: mask})
-            #print 'training:', iteration + 1, 'relation loss:', l
         self.attentiveTraining = 1
         #adversarial learning with attention
         for iteration in range(self.maxIter/2):
