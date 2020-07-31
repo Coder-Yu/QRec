@@ -20,7 +20,10 @@ class ESRF(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
-        self.beta = 0.2
+        self.beta = 0.3 #controling the magnitude of adversarial learning
+        self.K = 20 #the number of alternative neighbors
+        self.n_layers_D = 4 #the number of layers of the recommendation module (discriminator)
+        self.n_layers_G = 3 #the number of layers of the alternative neigbhor generation module (generator)
 
     def buildSparseRelationMatrix(self):
         row, col, entries = [], [], []
@@ -138,8 +141,6 @@ class ESRF(SocialRecommender,DeepRecommender):
         self.g_weights = dict()
         initializer = tf.contrib.layers.xavier_initializer()
 
-        self.n_layers_G = 3
-
         all_embeddings = [self.relation_embeddings]
         user_embeddings = self.relation_embeddings
         for d in range(self.n_layers_G):
@@ -150,7 +151,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         user_embeddings = tf.reduce_sum(all_embeddings, 0)
 
         # construct concrete selector layer
-        self.K = 20
+
         # self.g_weights['c_selector'] = tf.Variable(
         #     initializer([self.n_layers_G * self.embed_size, self.K]), name='c_selector')
         self.g_weights['c_selector'] = tf.Variable(
@@ -163,7 +164,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         #     return one_hot_vector
         def getAlternativeNeighborhood(embedding):
             user_features = tf.matmul(tf.reshape(embedding,[1,self.embed_size]),user_embeddings,transpose_b=True)
-            alphaEmbeddings = tf.multiply(user_features[0], self.g_weights['c_selector'])
+            alphaEmbeddings = tf.multiply(user_features, self.g_weights['c_selector'])
             one_hot_vector = tf.reduce_sum(self.sampling(alphaEmbeddings), 0)
             return one_hot_vector
 
@@ -197,6 +198,8 @@ class ESRF(SocialRecommender,DeepRecommender):
     def buildRecGCN(self):
         self.isSocial = tf.placeholder(tf.int32)
         self.isSocial = tf.cast(self.isSocial, tf.bool)
+        self.isAttentive = tf.placeholder(tf.int32)
+        self.isAttentive = tf.cast(self.isAttentive, tf.bool)
         self.sampledItems = tf.placeholder(tf.int32)
         self.d_weights = dict()
         ego_embeddings = tf.concat([self.user_embeddings, self.item_embeddings], axis=0)
@@ -217,8 +220,6 @@ class ESRF(SocialRecommender,DeepRecommender):
                                    dense_shape=[self.num_users + self.num_items,self.num_users])
         initializer = tf.contrib.layers.xavier_initializer()
 
-        self.n_layers_D = 4
-
         all_embeddings = [ego_embeddings]
 
         for k in range(self.n_layers_D):
@@ -226,60 +227,50 @@ class ESRF(SocialRecommender,DeepRecommender):
                 initializer([self.embed_size,self.embed_size]), name='attention_m1%d' % k)
             self.d_weights['attention_m2%d' % k] = tf.Variable(
                 initializer([self.embed_size, self.embed_size]), name='attention_m2%d' % k)
-            self.d_weights['attention_m3%d' % k] = tf.Variable(
-                initializer([self.embed_size, self.embed_size]), name='attention_m3%d' % k)
-            self.d_weights['attention_v1%d' % k] = tf.Variable(
+            self.d_weights['attention_v%d' % k] = tf.Variable(
                 initializer([1,self.embed_size]), name='attention_v1%d' % k)
-            self.d_weights['attention_v2%d' % k] = tf.Variable(
-                initializer([1,self.embed_size]), name='attention_v2%d' % k)
-            self.d_weights['attention_v3%d' % k] = tf.Variable(
-                initializer([1,self.embed_size]), name='attention_v3%d' % k)
 
         for k in range(self.n_layers_D):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj, ego_embeddings)
             #social_embeddings = tf.matmul(self.alternativeNeighborhood, ego_embeddings[:self.num_users]) / self.K
             #ego_embeddings += tf.sparse_tensor_dense_matmul(assignMatrix, social_embeddings)
 
-            # #social attention (applying attention may be a little time-consuming)
-            # selectedItemEmbeddings = tf.gather(ego_embeddings[self.num_users:],self.sampledItems)
-            # #hybridEmbeddings = tf.multiply(selectedItemEmbeddings,ego_embeddings[:self.num_users])
-            # vals,indexes = tf.nn.top_k(self.alternativeNeighborhood,self.K)
-            # indexes = tf.cast(indexes,tf.float32)
-            # attentionEmbeddings = tf.concat([indexes,selectedItemEmbeddings],axis=1)
-            # attentionEmbeddings = tf.concat([attentionEmbeddings,ego_embeddings[:self.num_users]],axis=1)
-            #
-            # def attention(embedding):
-            #     alternativeNeighors,i_embedding,u_embedding = tf.split(tf.reshape(embedding,[1,self.K+2*self.embed_size]),[self.K,self.embed_size,self.embed_size],axis=1)
-            #     alternativeNeighors = tf.cast(alternativeNeighors[0],tf.int32)
-            #     # i_embedding = tf.matmul(i_embedding,self.d_weights['attention_m%d' % k])
-            #     # u_embedding = tf.matmul(u_embedding, self.d_weights['attention_m%d' % k])
-            #     friendsEmbedding = tf.gather(ego_embeddings[:self.num_users],alternativeNeighors)
-            #     hybridEmbedding = tf.multiply(friendsEmbedding,i_embedding)
-            #     hybridEmbedding = tf.multiply(hybridEmbedding,u_embedding)
-            #     #weights 1:
-            #     #weights1 = tf.matmul(hybridEmbedding, self.d_weights['attention_m1%d' % k])
-            #     weights1 = tf.nn.relu(tf.matmul(self.d_weights['attention_v1%d' % k],hybridEmbedding,transpose_b=True))
-            #     weights1 = tf.nn.softmax(weights1)
-            #     # #weights 2:
-            #     # weights2 = tf.matmul(hybridEmbedding, self.d_weights['attention_m2%d' % k])
-            #     weights2 = tf.nn.relu(tf.matmul(self.d_weights['attention_v2%d' % k],hybridEmbedding,transpose_b=True))
-            #     weights2 = tf.nn.softmax(weights2)
-            #     # #weights 3:
-            #     # weights3 = tf.matmul(hybridEmbedding, self.d_weights['attention_m3%d' % k])
-            #     weights3 = tf.nn.relu(tf.matmul(self.d_weights['attention_v3%d' % k],hybridEmbedding,transpose_b=True))
-            #     weights3 = tf.nn.softmax(weights3)
-            #
-            #     weights = (weights1+weights2+weights3)/3
-            #     # weights = tf.matmul(self.d_weights['attention_v%d' % k],weights,transpose_b=True)
-            #     # weights = tf.nn.softmax(weights)
-            #     socialEmbedding = tf.matmul(tf.reshape(weights,[1,self.K]),tf.gather(ego_embeddings[:self.num_users],alternativeNeighors))
-            #     return socialEmbedding[0]
-            # socialEmbeddings = tf.vectorized_map(fn=lambda em: attention(em),elems=attentionEmbeddings)
+            #social attention (applying attention may be a little time-consuming)
+            selectedItemEmbeddings = tf.gather(ego_embeddings[self.num_users:],self.sampledItems)
+            #hybridEmbeddings = tf.multiply(selectedItemEmbeddings,ego_embeddings[:self.num_users])
+            vals,indexes = tf.nn.top_k(self.alternativeNeighborhood,self.K)
+            indexes = tf.cast(indexes,tf.float32)
+            attentionEmbeddings = tf.concat([indexes,ego_embeddings[:self.num_users]],axis=1)
+            attentionEmbeddings = tf.concat([attentionEmbeddings, selectedItemEmbeddings], axis=1)
+
+            def attention(embedding):
+                alternativeNeighors,u_embedding,i_embedding = tf.split(tf.reshape(embedding,[1,self.K+2*self.embed_size]),[self.K,self.embed_size,self.embed_size],axis=1)
+                alternativeNeighors = tf.cast(alternativeNeighors[0],tf.int32)
+                # i_embedding = tf.matmul(i_embedding,self.d_weights['attention_m%d' % k])
+                # u_embedding = tf.matmul(u_embedding, self.d_weights['attention_m%d' % k])
+                friendsEmbedding = tf.gather(ego_embeddings[:self.num_users],alternativeNeighors)
+                friendsEmbedding = tf.matmul(friendsEmbedding,self.d_weights['attention_m1%d' % k])
+                u_embedding = tf.matmul(u_embedding,self.d_weights['attention_m1%d' % k])
+                i_embedding = tf.matmul(i_embedding,self.d_weights['attention_m2%d' % k])
+                res = tf.reduce_sum(tf.multiply(self.d_weights['attention_v%d' % k],friendsEmbedding+u_embedding+i_embedding),1)
+                #res = tf.multiply(res,self.d_weights['attention_v%d' % k])
+                res = tf.nn.relu(res)
+                weights = tf.nn.softmax(res)
+
+                socialEmbedding = tf.matmul(tf.reshape(weights,[1,self.K]),tf.gather(ego_embeddings[:self.num_users],alternativeNeighors))
+                return socialEmbedding[0]
+            attentive_socialEmbeddings = tf.vectorized_map(fn=lambda em: attention(em),elems=attentionEmbeddings)
+            nonattentive_socialEmbeddings = tf.matmul(self.alternativeNeighborhood, ego_embeddings[:self.num_users]) / self.K
+
+            def without_attention():
+                return nonattentive_socialEmbeddings
+            def with_attention():
+                return attentive_socialEmbeddings
 
             def without_social():
                 return ego_embeddings
             def with_social(embeddings):
-                socialEmbeddings = tf.matmul(self.alternativeNeighborhood, embeddings[:self.num_users])/self.K
+                socialEmbeddings = tf.cond(self.isAttentive, lambda: with_attention(), lambda: without_attention())
                 embeddings += tf.sparse_tensor_dense_matmul(assignMatrix, socialEmbeddings)
                 return embeddings
 
@@ -318,7 +309,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         reg_loss = self.regU * (tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.v_embedding) + tf.nn.l2_loss(self.neg_item_embedding))
         adversarial_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ui-y_vi)))
         self.d_loss = pairwise_loss + reg_loss
-        self.d_advloss = pairwise_loss + reg_loss + 0.5*adversarial_loss+s_Regularization
+        self.d_advloss = pairwise_loss + reg_loss + 0.2*adversarial_loss+s_Regularization
         opt = tf.train.AdamOptimizer(self.lRate)
         self.d_train = opt.minimize(self.d_loss,var_list = [self.user_embeddings,self.item_embeddings])
         self.d_adv_train = opt.minimize(self.d_advloss, var_list=[self.user_embeddings, self.item_embeddings,self.d_weights])
@@ -356,6 +347,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         adjacency = self.adjacency.todense()
         mask = np.ones_like(adjacency)
         mask[adjacency>0]=10
+        self.attentiveTraining = 0
         #pretrain Motif-based GCN
         for iteration in range(10):
             _, l = self.sess.run([self.r_train, self.r_loss],
@@ -363,37 +355,57 @@ class ESRF(SocialRecommender,DeepRecommender):
 
             print 'training:', iteration + 1, 'loss:', l
 
-
+        #conventional training
         for iteration in range(self.maxIter/2):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx= batch
                 selectedItems = self.sampleItems()
                 _d,ld = self.sess.run([self.d_train,self.d_loss],
-                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:0,self.sampledItems:selectedItems})
-                print 'D training_1:', iteration + 1, 'batch', n, 'D_loss:', ld
-
+                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:0,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
+                #print 'D training_1:', iteration + 1, 'batch', n, 'D_loss:', ld
+        #adversarial learning without attention
         for iteration in range(self.maxIter/2):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 selectedItems = self.sampleItems()
                 _d, lad,ld,_g, lg = self.sess.run([self.d_adv_train, self.d_advloss, self.d_loss,self.g_train, self.g_adv_loss],
-                                       feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:1,self.sampledItems:selectedItems,self.mask:mask})
-                print 'D training:', iteration + 1, 'batch', n, 'D_Adv_loss:', lad, 'D_loss',ld
-                print 'G training:', iteration + 1, 'batch', n, 'G_loss:', lg
+                                       feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:1,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems,self.mask:mask})
+                # print 'D training:', iteration + 1, 'batch', n, 'D_Adv_loss:', lad, 'D_loss',ld
+                # print 'G training:', iteration + 1, 'batch', n, 'G_loss:', lg
 
             selectedItems = self.sampleItems()
             self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
                                            feed_dict={self.u_idx: [0], self.neg_idx: [0],
-                                                      self.v_idx: [0], self.isSocial: 1,self.sampledItems:selectedItems})
-            self.isConverged(iteration + 1)
+                                                      self.v_idx: [0], self.isSocial: 1,self.isAttentive:0,self.sampledItems:selectedItems})
+            self.isConverged(iteration + 1+self.maxIter/2)
                 #print 'H loss:', iteration + 1, 'batch', n, 'H_loss:', h
 
             # _, l = self.sess.run([self.r_train, self.r_loss],
             #                                    feed_dict={self.isTraining: 1, self.mask: mask})
             #print 'training:', iteration + 1, 'relation loss:', l
+        self.attentiveTraining = 1
+        #adversarial learning with attention
+        for iteration in range(self.maxIter/2):
+            for n, batch in enumerate(self.next_batch_pairwise()):
+                user_idx, i_idx, j_idx = batch
+                selectedItems = self.sampleItems()
+                _d, lad,ld,_g, lg = self.sess.run([self.d_adv_train, self.d_advloss, self.d_loss,self.g_train, self.g_adv_loss],
+                                       feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:1,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems,self.mask:mask})
+                # print 'D training:', iteration + 1, 'batch', n, 'D_Adv_loss:', lad, 'D_loss',ld
+                # print 'G training:', iteration + 1, 'batch', n, 'G_loss:', lg
+
+            selectedItems = self.sampleItems()
+            self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
+                                           feed_dict={self.u_idx: [0], self.neg_idx: [0],
+                                                      self.v_idx: [0], self.isSocial: 1,self.isAttentive:1,self.sampledItems:selectedItems})
+            self.isConverged(iteration + 1+self.maxIter)
+
+        self.U,self.V = self.bestU,self.bestV
+
+    def saveModel(self):
         selectedItems = self.sampleItems()
-        self.U,self.V = self.sess.run([self.multi_user_embeddings,self.multi_item_embeddings],feed_dict={self.u_idx: [0], self.neg_idx: [0],
-                                                                                                         self.v_idx: [0],self.isSocial:1,self.sampledItems:selectedItems})
+        self.bestU, self.bestV = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
+                                       feed_dict={self.u_idx: [0], self.neg_idx: [0], self.v_idx: [0], self.isSocial: 1, self.isAttentive:self.attentiveTraining,self.sampledItems: selectedItems})
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

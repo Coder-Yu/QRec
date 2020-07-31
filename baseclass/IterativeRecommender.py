@@ -182,6 +182,7 @@ class IterativeRecommender(Recommender):
             if count<0:
                 self.bestPerformance[1]=performance
                 self.bestPerformance[0]=iteration
+                self.saveModel()
         else:
             self.bestPerformance.append(iteration)
             performance = {}
