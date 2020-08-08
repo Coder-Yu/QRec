@@ -179,7 +179,7 @@ class ESRF(SocialRecommender,DeepRecommender):
             self.d_weights['attention_m2%d' % k] = tf.Variable(
                 initializer([self.embed_size, self.embed_size]), name='attention_m2%d' % k)
             self.d_weights['attention_v%d' % k] = tf.Variable(
-                initializer([1,self.embed_size]), name='attention_v1%d' % k)
+                initializer([1,self.embed_size*2]), name='attention_v1%d' % k)
 
         vals, indexes = tf.nn.top_k(self.alternativeNeighborhood, self.K)
         for k in range(self.n_layers_D):
@@ -198,8 +198,8 @@ class ESRF(SocialRecommender,DeepRecommender):
                 alternativeNeighors = tf.cast(alternativeNeighors[0],tf.int32)
                 friendsEmbedding = tf.gather(ego_embeddings[:self.num_users],alternativeNeighors)
                 friendsEmbedding = tf.matmul(friendsEmbedding,self.d_weights['attention_m1%d' % k])
-                res = tf.reduce_sum(tf.multiply(self.d_weights['attention_v%d' % k],friendsEmbedding+u_embedding+i_embedding),1)
-                res = tf.nn.relu(res)
+                i_embedding = tf.reshape(tf.concat([i_embedding] * self.K, 1), [self.K, self.embed_size])
+                res = tf.reduce_sum(tf.multiply(self.d_weights['attention_v%d' % k],tf.sigmoid(tf.concat([friendsEmbedding + u_embedding, i_embedding]))), 1)
                 weights = tf.nn.softmax(res)
                 socialEmbedding = tf.matmul(tf.reshape(weights,[1,self.K]),tf.gather(ego_embeddings[:self.num_users],alternativeNeighors))
                 return socialEmbedding[0]
@@ -216,7 +216,7 @@ class ESRF(SocialRecommender,DeepRecommender):
             def with_social(embeddings):
                 socialEmbeddings = tf.cond(self.isAttentive, lambda: with_attention(), lambda: without_attention())
                 #return embeddings+tf.concat([socialEmbeddings,zero_padding],0)
-                return tf.concat([(embeddings[:self.num_users]+socialEmbeddings),embeddings[self.num_users:]],0)
+                return tf.concat([(embeddings[:self.num_users]+socialEmbeddings)/2,embeddings[self.num_users:]],0)
 
             ego_embeddings = tf.cond(self.isSocial, lambda: with_social(new_embeddings), lambda: without_social())
 
@@ -238,7 +238,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         y_vi = tf.reduce_sum(tf.multiply(friendEmbeddings, self.v_embedding), 1)
         self.g_adv_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_vi-y_ui)))
         self.g_loss = self.beta*self.g_adv_loss#+self.r_loss
-        opt = tf.train.AdamOptimizer(self.lRate)
+        opt = tf.train.AdamOptimizer(self.lRate*10)
         self.g_train = opt.minimize(self.g_loss, var_list=[self.g_weights,self.relation_embeddings])
 
     def buildDiscriminator(self):
@@ -302,7 +302,7 @@ class ESRF(SocialRecommender,DeepRecommender):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx= batch
                 self.sess.run([self.d_train,self.d_loss],
-                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:1,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
+                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isSocial:0,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
 
         #adversarial learning without attention
         for iteration in range(self.maxIter/2):
