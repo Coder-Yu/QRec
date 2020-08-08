@@ -199,7 +199,7 @@ class ESRF(SocialRecommender,DeepRecommender):
                 friendsEmbedding = tf.gather(ego_embeddings[:self.num_users],alternativeNeighors)
                 friendsEmbedding = tf.matmul(friendsEmbedding,self.d_weights['attention_m1%d' % k])
                 i_embedding = tf.reshape(tf.concat([i_embedding] * self.K, 1), [self.K, self.embed_size])
-                res = tf.reduce_sum(tf.multiply(self.d_weights['attention_v%d' % k],tf.sigmoid(tf.concat([friendsEmbedding + u_embedding, i_embedding]))), 1)
+                res = tf.reduce_sum(tf.multiply(self.d_weights['attention_v%d' % k],tf.sigmoid(tf.concat([friendsEmbedding + u_embedding, i_embedding],1))), 1)
                 weights = tf.nn.softmax(res)
                 socialEmbedding = tf.matmul(tf.reshape(weights,[1,self.K]),tf.gather(ego_embeddings[:self.num_users],alternativeNeighors))
                 return socialEmbedding[0]
