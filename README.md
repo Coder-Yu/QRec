@@ -347,7 +347,12 @@ on Generative Adversarial Networks, CIKM 2018.
       </tr>
      <tr>
     <td scope="row">LightGCN</td>
-        <td>LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation, SIGIR 2020.
+        <td>He et al. LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation, SIGIR 2020.
+         </td>
+      </tr>
+     <tr>
+    <td scope="row">DHCF</td>
+        <td>Ji et al. Dual Channel Hypergraph Collaborative Filtering, KDD 2020.
          </td>
       </tr>
   </table>
