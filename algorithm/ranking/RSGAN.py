@@ -293,10 +293,11 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.i = tf.placeholder(tf.int32, name="item_holder")
 
         with tf.name_scope("generator"):
-            #AutoEncoder
+            #CDAE
             initializer = tf.contrib.layers.xavier_initializer()
             self.X = tf.placeholder(tf.float32, [None, self.num_users])
-            #self.sample = tf.placeholder(tf.float32, [None, self.num_users])
+            self.V = tf.Variable(initializer([self.num_users, 200]))
+            chosen_user_embeddings = tf.nn.embedding_lookup(self.V,self.u_idx)
 
             self.weights = {
                 'encoder': tf.Variable(initializer([self.num_users, 200])),
@@ -307,12 +308,10 @@ class RSGAN(SocialRecommender,DeepRecommender):
                 'decoder': tf.Variable(initializer([self.num_users])),
             }
 
-            self.g_params = [self.weights, self.biases]
+            self.g_params = [self.weights, self.biases,self.V]
 
-
-            layer = tf.nn.sigmoid(tf.matmul(self.X, self.weights['encoder']) + self.biases['encoder'])
+            layer = tf.nn.sigmoid(tf.matmul(self.X, self.weights['encoder']) + self.biases['encoder']+chosen_user_embeddings)
             self.g_output = tf.nn.sigmoid(tf.matmul(layer, self.weights['decoder']) + self.biases['decoder'])
-
 
             self.y_pred = tf.multiply(self.X, self.g_output)
             self.y_pred = tf.maximum(1e-6, self.y_pred)
@@ -336,21 +335,16 @@ class RSGAN(SocialRecommender,DeepRecommender):
             # placeholder definition
             self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx,name='u_e')
             self.i_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.pos,name='i_e')
-            #self.f_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.fnd,name='f_e')
             self.j_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.neg,name='j_e')
-            #self.i_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.i,name='f_e')
+
 
             #generate virtual friends by gumbel-softmax
             self.virtualFriends = self.sampling(self.g_output) #one-hot
 
             #get candidate list (items)
             self.candidateItems = tf.transpose(tf.sparse_tensor_dense_matmul(self.i_u_matrix,tf.transpose(self.virtualFriends)))
-
             self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u_idx,name='e_s')
-
             self.virtual_items = self.sampling(tf.multiply(self.candidateItems,self.embedding_selection))
-
-            #self.weights = tf.reduce_sum(tf.multiply(self.virtual_items,self.popularty),1)
 
             self.v_i_embedding = tf.matmul(self.virtual_items,self.item_embeddings,transpose_a=False,transpose_b=False)
             y_us = tf.reduce_sum(tf.multiply(self.u_embedding,self.i_embedding),1)\
@@ -386,36 +380,33 @@ class RSGAN(SocialRecommender,DeepRecommender):
         batch_id=0
         while batch_id<self.num_users:
             if batch_id + self.batch_size <= self.num_users:
+                sampled_users = []
                 profiles = np.zeros((self.batch_size, self.num_users))
                 for i,user in enumerate(userList[batch_id:self.batch_size+batch_id]):
                     ind = [self.data.user[friend] for friend in self.seededFriends[user]]
                     profiles[i][ind]=1
-                    batch_id+=self.batch_size
+                    sampled_users.append(self.data.user[user])
+                batch_id+=self.batch_size
 
             else:
-                profiles = np.zeros((self.num_users-batch_id, self.num_users))
-                for i, user in enumerate(userList[self.num_users-batch_id:self.num_users]):
+                profiles = []
+                sampled_users = []
+                for i, user in enumerate(userList[self.num_users-batch_id:]):
+                    vals = np.zeros(self.num_users)
                     ind = [self.data.user[friend] for friend in self.seededFriends[user]]
-                    profiles[i][ind] = 1
-                    batch_id=self.num_users
-
-            yield profiles
+                    vals[ind]=1
+                    profiles.append(vals)
+                    sampled_users.append(self.data.user[user])
+                batch_id=self.num_users
+            yield profiles,sampled_users
 
 
     def initModel(self):
         super(RSGAN, self).initModel()
-
-        self.popularty = np.zeros(self.num_items)
-        for item in self.data.item:
-            iid = self.data.item[item]
-            self.popularty[iid]=len(self.data.trainSet_i[item])
-        #collect implicit friends
-
         self.readNegativeFeedbacks()
         self.randomWalks()
         self.computeSimilarity()
         self.build_graph()
-
 
     def buildModel(self):
         # minimax training
@@ -423,33 +414,16 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.sess.run(init)
         # pretraining
 
-        #print 'pretraining for discriminator...'
-        # self.friend_item_set(self.seed_friends)
-        # for i in range(30):
-        #     batch_id=0
-        #     while batch_id<self.train_size:
-        #         batch_id,user_idx, i_idx, j_idx = self.next_batch_d(batch_id)
-        #         _, loss = self.sess.run([self.d_pretrain, self.d_pretrain_loss],
-        #                                 feed_dict={self.u: user_idx, self.neg: j_idx,
-        #                                            self.pos:i_idx})
-        #
-        #         print 'pretraining:', i + 1, 'batch_id',batch_id,'discriminator loss:', loss
-        #
-        # self.ranking_performance()
-
-
         print 'pretraining for generator...'
         for i in range(30):
             for num,batch in enumerate(self.next_batch_g()):
-                profiles = batch
-                _,loss = self.sess.run([self.g_pretrain,self.reconstruction],feed_dict={self.X:profiles})
+                profiles,uid = batch
+                _,loss = self.sess.run([self.g_pretrain,self.reconstruction],feed_dict={self.X:profiles,self.u_idx:uid})
                 print 'pretraining:', i + 1, 'batch',num,'generator loss:', loss
 
 
         print 'Training GAN...'
-
         for i in range(self.maxIter):
-            batch_id = 0
             for num,batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 profiles = np.zeros((len(user_idx),self.num_users))
@@ -463,22 +437,15 @@ class RSGAN(SocialRecommender,DeepRecommender):
                                                    self.pos: i_idx,self.X:profiles})
                 #discriminator
                 _, loss = self.sess.run([self.d_update, self.d_loss],
-                                        feed_dict={self.u_idx: user_idx,self.neg:j_idx,
-                                                   self.pos: i_idx,self.X:profiles})
+                                        feed_dict={self.u_idx: user_idx,self.neg:j_idx,self.pos: i_idx,self.X:profiles})
 
                 print 'training:', i + 1, 'batch_id', num, 'discriminator loss:', loss
-
-        #     results = self.ranking_performance()
-        #     res+=results
-        #
-        # f.writelines(res)
 
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             u = self.data.user[u]
-
             # In our experiments, discriminator performs better than generator
             res = self.sess.run(self.d_output, {self.u_idx:u})
             return res

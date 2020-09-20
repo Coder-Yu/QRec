@@ -5,8 +5,6 @@ from random import choice,random
 from tool import config
 import tensorflow as tf
 
-
-
 class CDAE(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -23,7 +21,8 @@ class CDAE(DeepRecommender):
     def next_batch(self):
         X = np.zeros((self.batch_size,self.num_items))
         uids = []
-        sample = np.zeros((self.batch_size, self.num_items))
+        positive = np.zeros((self.batch_size, self.num_items))
+        negative = np.zeros((self.batch_size, self.num_items))
         userList = self.data.user.keys()
         itemList = self.data.item.keys()
         for n in range(self.batch_size):
@@ -33,15 +32,15 @@ class CDAE(DeepRecommender):
             ratedItems, values = self.data.userRated(user)
             for item in ratedItems:
                 iid = self.data.item[item]
-                sample[n][iid]=1
+                positive[n][iid]=1
             for i in range(self.negative_sp*len(ratedItems)):
                 ng = choice(itemList)
                 while self.data.trainSet_u.has_key(ng):
                     ng = choice(itemList)
                 n_id = self.data.item[ng]
-                sample[n][n_id]=1
+                negative[n][n_id]=1
             X[n]=vec
-        return X,uids,sample
+        return X,uids,positive,negative
 
     def readConfiguration(self):
         super(CDAE, self).readConfiguration()
@@ -55,12 +54,12 @@ class CDAE(DeepRecommender):
         self.negative_sp = 5
         initializer = tf.contrib.layers.xavier_initializer()
         self.X = tf.placeholder(tf.float32, [None, self.num_items])
-        self.mask_corruption = tf.placeholder(tf.float32, [None, self.num_items])
-        self.sample = tf.placeholder(tf.float32, [None, self.num_items])
 
-        self.U = tf.Variable(initializer([self.num_users, self.n_hidden]))
+        self.positive = tf.placeholder(tf.float32, [None, self.num_items])
+        self.negative = tf.placeholder(tf.float32, [None, self.num_items])
+        self.V = tf.Variable(initializer([self.num_users, self.n_hidden]))
 
-        self.U_embed = tf.nn.embedding_lookup(self.U, self.u_idx)
+        self.U_embeding = tf.nn.embedding_lookup(self.V, self.u_idx)
 
 
 
@@ -72,29 +71,27 @@ class CDAE(DeepRecommender):
             'encoder': tf.Variable(initializer([self.n_hidden])),
             'decoder': tf.Variable(initializer([self.num_items])),
         }
-
+        self.mask_corruption = tf.placeholder(tf.float32, [None, self.num_items])
 
     def buildModel(self):
-        self.corrupted_input = tf.multiply(self.X,self.mask_corruption)
-        self.encoder_op = self.encoder(self.corrupted_input,self.U_embed)
+        self.corrupted_input = tf.multiply(self.mask_corruption,self.X)
+        self.encoder_op = self.encoder(self.corrupted_input,self.U_embeding)
         self.decoder_op = self.decoder(self.encoder_op)
+        y_pred = tf.multiply(self.decoder_op,self.mask_corruption)
+        y_pred = tf.maximum(1e-6,y_pred)
+        y_positive = tf.multiply(self.positive,self.mask_corruption)
+        y_negative = tf.multiply(self.negative,self.mask_corruption)
 
 
-        self.y_pred = tf.multiply(self.sample,self.decoder_op)
-
-        y_true = tf.multiply(self.sample,self.corrupted_input)
-
-        self.y_pred = tf.maximum(1e-6, self.y_pred)
-
-        self.loss = -tf.multiply(y_true,tf.log(self.y_pred))-tf.multiply((1-y_true),tf.log(1-self.y_pred))
+        self.loss = -tf.multiply(y_positive,tf.log(y_pred))-tf.multiply((y_negative),tf.log(1-y_pred))
 
 
         self.reg_loss = self.regU*(tf.nn.l2_loss(self.weights['encoder'])+tf.nn.l2_loss(self.weights['decoder'])+
                                    tf.nn.l2_loss(self.biases['encoder'])+tf.nn.l2_loss(self.biases['decoder']))
 
-        self.reg_loss = self.reg_loss + self.regU*tf.nn.l2_loss(self.U_embed)
-        self.loss = self.loss + self.reg_loss
-        self.loss = tf.reduce_mean(self.loss)
+        self.reg_loss = self.reg_loss + self.regU*tf.nn.l2_loss(self.U_embeding)
+        #self.loss = self.loss
+        self.loss = tf.reduce_mean(self.loss) + self.reg_loss
 
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
 
@@ -106,9 +103,10 @@ class CDAE(DeepRecommender):
         for epoch in range(self.maxIter):
 
             mask = np.random.binomial(1, self.corruption_level,(self.batch_size, self.num_items))
-            batch_xs,users,sample = self.next_batch()
+            batch_xs,users,positive,negative = self.next_batch()
 
-            _, loss,y = self.sess.run([optimizer, self.loss,self.y_pred], feed_dict={self.X: batch_xs,self.mask_corruption:mask,self.u_idx:users,self.sample:sample})
+            _, loss= self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,
+                                                                                     self.u_idx:users,self.positive:positive,self.negative:negative})
 
             print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"loss=", "{:.9f}".format(loss)
             #print y
