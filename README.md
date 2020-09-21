@@ -10,6 +10,7 @@
 
 <h2>Latest News</h2>
 <p>
+22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
 29/07/2020 - ESRF proposed in my TKDE manuscript (under review) has been added. </br>
 23/07/2020 - LightGCN proposed in SIGIR'20 has been added. </br>
@@ -339,6 +340,11 @@ on Generative Adversarial Networks, CIKM 2018.
     <tr>
     <td scope="row">NGCF</td>
         <td>Wang et al. Neural Graph Collaborative Filtering, SIGIR 2019.
+         </td>
+      </tr>
+     <tr>
+    <td scope="row">DiffNet</td>
+        <td>Wu et al. A Neural Influence Diffusion Model for Social Recommendation, SIGIR 2019.
          </td>
       </tr>
     <tr>
