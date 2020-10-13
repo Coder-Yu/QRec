@@ -1,7 +1,4 @@
-from sklearn.metrics.pairwise import pairwise_distances,cosine_similarity
-import numpy as np
 from numpy.linalg import norm
-from scipy.stats.stats import pearsonr
 from math import sqrt,exp
 
 def l1(x):

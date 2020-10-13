@@ -9,34 +9,6 @@ class NeuMF(DeepRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(NeuMF, self).__init__(conf,trainingSet,testSet,fold)
 
-
-    def next_batch(self):
-        batch_id=0
-        while batch_id<self.train_size:
-            if batch_id+self.batch_size<=self.train_size:
-                users = [self.data.trainingData[idx][0] for idx in range(batch_id,self.batch_size+batch_id)]
-                items = [self.data.trainingData[idx][1] for idx in range(batch_id,self.batch_size+batch_id)]
-                batch_id+=self.batch_size
-            else:
-                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
-                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
-                batch_id=self.train_size
-            u_idx,i_idx,y = [],[],[]
-            for i,user in enumerate(users):
-
-                i_idx.append(self.data.item[items[i]])
-                u_idx.append(self.data.user[user])
-                y.append(1)
-                for instance in range(4):
-                    item_j = randint(0, self.num_items - 1)
-                    while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
-                        item_j = randint(0, self.num_items - 1)
-                    u_idx.append(self.data.user[user])
-                    i_idx.append(item_j)
-                    y.append(0)
-            yield u_idx,i_idx,y
-
-
     def initModel(self):
         super(NeuMF, self).initModel()
         # parameters used are consistent with default settings in the original paper
@@ -114,7 +86,7 @@ class NeuMF(DeepRecommender):
 
         print 'pretraining... (GMF)'
         for iteration in range(self.maxIter):
-            for num,batch in enumerate(self.next_batch()):
+            for num,batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
 
                 _, loss,y_mf = self.sess.run([self.mf_optimizer, self.mf_loss,self.y_mf],
@@ -123,7 +95,7 @@ class NeuMF(DeepRecommender):
 
         print 'pretraining... (MLP)'
         for iteration in range(self.maxIter/2):
-            for num, batch in enumerate(self.next_batch()):
+            for num, batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
@@ -131,7 +103,7 @@ class NeuMF(DeepRecommender):
 
         print 'training... (NeuMF)'
         for iteration in range(self.maxIter/5):
-            for num, batch in enumerate(self.next_batch()):
+            for num, batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})

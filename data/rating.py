@@ -11,35 +11,29 @@ class RatingDAO(object):
     def __init__(self,config,trainingSet, testSet):
         self.config = config
         self.ratingConfig = LineConfig(config['ratings.setup'])
-        self.user = {} #used to store the order of users in the training set
-        self.item = {} #used to store the order of items in the training set
+        self.user = {} #map user names to identifiers (id)
+        self.item = {} #map item names to identifiers (id)
         self.id2user = {}
         self.id2item = {}
-        self.all_Item = {}
-        self.all_User = {}
-        self.userMeans = {} #used to store the mean values of users's ratings
-        self.itemMeans = {} #used to store the mean values of items's ratings
+        self.userMeans = {} #Store the mean values of users's ratings
+        self.itemMeans = {} #Store the mean values of items's ratings
         self.globalMean = 0
-        self.timestamp = {}
         self.trainSet_u = defaultdict(dict)
         self.trainSet_i = defaultdict(dict)
-        self.testSet_u = defaultdict(dict) # used to store the test set by hierarchy user:[item,rating]
-        self.testSet_i = defaultdict(dict) # used to store the test set by hierarchy item:[user,rating]
-        self.rScale = []
+        self.testSet_u = defaultdict(dict) # Store the test set in the form of [user][item]=rating
+        self.testSet_i = defaultdict(dict) # Store the test set in the form of [item][user]=rating]
+        self.rScale = [] #rating scale
 
         self.trainingData = trainingSet[:]
         self.testData = testSet[:]
 
         self.__generateSet()
-
         self.__computeItemMean()
         self.__computeUserMean()
         self.__globalAverage()
 
 
-
     def __generateSet(self):
-        triple = []
         scale = set()
         # find the maximum rating and minimum value
 
@@ -63,22 +57,10 @@ class RatingDAO(object):
         self.rScale = list(scale)
         self.rScale.sort()
 
-        self.all_User.update(self.user)
-        self.all_Item.update(self.item)
         for entry in self.testData:
             userName, itemName, rating = entry
-            # order the user
-            if userName not in self.user:
-                self.all_User[userName] = len(self.all_User)
-            # order the item
-            if itemName not in self.item:
-                self.all_Item[itemName] = len(self.all_Item)
-
             self.testSet_u[userName][itemName] = rating
             self.testSet_i[itemName][userName] = rating
-
-
-
 
     def __globalAverage(self):
         total = sum(self.userMeans.values())
@@ -89,17 +71,6 @@ class RatingDAO(object):
 
     def __computeUserMean(self):
         for u in self.user:
-            # n = self.row(u) > 0
-            # mean = 0
-            #
-            # if not self.containsUser(u):  # no data about current user in training set
-            #     pass
-            # else:
-            #     sum = float(self.row(u)[0].sum())
-            #     try:
-            #         mean =  sum/ n[0].sum()
-            #     except ZeroDivisionError:
-            #         mean = 0
             self.userMeans[u] = sum(self.trainSet_u[u].values())/float(len(self.trainSet_u[u]))
 
     def __computeItemMean(self):
@@ -126,7 +97,6 @@ class RatingDAO(object):
             return True
         else:
             return False
-
 
     def containsUser(self,u):
         'whether user is in training set'

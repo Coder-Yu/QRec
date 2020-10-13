@@ -37,19 +37,19 @@ class APR(DeepRecommender):
         self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.embed_size]),dtype=tf.float32, trainable=False)
 
         self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
-        self.V_neg_embed = tf.nn.embedding_lookup(self.V, self.neg_idx)
+        self.V_neg_embed = tf.nn.embedding_lookup(self.item_embeddings, self.neg_idx)
         #parameters
         self.eps = tf.constant(self.eps,dtype=tf.float32)
         self.regAdv = tf.constant(self.regAdv,dtype=tf.float32)
 
     def _create_inference(self):
-        result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_embed, self.V_embed), 1),
-                                  tf.reduce_sum(tf.multiply(self.U_embed, self.V_neg_embed), 1))
+        result = tf.subtract(tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1),
+                                  tf.reduce_sum(tf.multiply(self.u_embedding, self.V_neg_embed), 1))
         return result
 
     def _create_adv_inference(self):
-        self.U_plus_delta = tf.add(self.U_embed, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
-        self.V_plus_delta = tf.add(self.V_embed, tf.nn.embedding_lookup(self.adv_V, self.v_idx))
+        self.U_plus_delta = tf.add(self.u_embedding, tf.nn.embedding_lookup(self.adv_U, self.u_idx))
+        self.V_plus_delta = tf.add(self.v_embedding, tf.nn.embedding_lookup(self.adv_V, self.v_idx))
         self.V_neg_plus_delta = tf.add(self.V_neg_embed, tf.nn.embedding_lookup(self.adv_V, self.neg_idx))
         result = tf.subtract(tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_plus_delta), 1),
                              tf.reduce_sum(tf.multiply(self.U_plus_delta, self.V_neg_plus_delta), 1))
@@ -71,8 +71,8 @@ class APR(DeepRecommender):
     def _create_loss(self):
         self.reg_lambda = tf.constant(self.regU, dtype=tf.float32)
         self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
-        self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.U_embed)),
-                               tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.V_embed)))
+        self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.u_embedding)),
+                               tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.v_embedding)))
 
         self.total_loss = tf.add(self.loss, self.reg_loss)
         #loss of adversarial training
@@ -89,6 +89,8 @@ class APR(DeepRecommender):
 
     def initModel(self):
         super(APR, self).initModel()
+        self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx)
+        self.v_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.v_idx)
         self._create_variables()
         self._create_loss()
         self._create_adversarial()
@@ -131,8 +133,8 @@ class APR(DeepRecommender):
                 print 'iteration:', epoch, 'loss:',loss
 
 
-                self.P = sess.run(self.U)
-                self.Q = sess.run(self.V)
+                self.P = sess.run(self.user_embeddings)
+                self.Q = sess.run(self.item_embeddings)
                 if epoch%100==0 and epoch>0:
                     self.ranking_performance()
 
@@ -146,8 +148,8 @@ class APR(DeepRecommender):
 
                 print 'iteration:', epoch, 'loss:',loss
 
-                self.P = sess.run(self.U)
-                self.Q = sess.run(self.V)
+                self.P = sess.run(self.user_embeddings)
+                self.Q = sess.run(self.item_embeddings)
                 if epoch % 100 == 0 and epoch > 0:
                     self.ranking_performance()
 

@@ -4,7 +4,7 @@ from random import choice
 from tool.qmath import sigmoid
 from math import log
 from collections import defaultdict
-import tensorflow as tf
+#import tensorflow as tf
 class BPR(IterativeRecommender):
 
     # BPR：Bayesian Personalized Ranking from Implicit Feedback

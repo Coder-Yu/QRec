@@ -141,10 +141,10 @@ class SBPR(SocialRecommender):
         # self.social_item_bias = tf.nn.embedding_lookup(self.item_biases, self.social_idx)
 
         y_ik = (tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), 1)
-                -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1))/(self.weights+1)
+                -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1))#/(self.weights+1)
         y_kj = tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1)\
                -tf.reduce_sum(tf.multiply(self.user_embedding, self.neg_item_embedding), 1)
-        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ik))) - tf.reduce_sum(tf.log(tf.sigmoid(y_kj)))
+        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ik))+ tf.log(tf.sigmoid(y_kj)))
         + self.regU * (tf.nn.l2_loss(self.user_embedding) + tf.nn.l2_loss(self.item_embedding)
                        + tf.nn.l2_loss(self.neg_item_embedding)+tf.nn.l2_loss(self.social_item_embedding))
                        #+tf.nn.l2_loss(self.pos_item_bias)+tf.nn.l2_loss(self.social_item_bias)+tf.nn.l2_loss(self.neg_item_bias))

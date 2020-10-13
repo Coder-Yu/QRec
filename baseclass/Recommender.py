@@ -8,7 +8,6 @@
 # (at your option) any later version.
 from data.rating import RatingDAO
 from tool.file import FileIO
-import pandas as pd
 from tool.config import Config,LineConfig
 from os.path import abspath
 from time import strftime,localtime,time
