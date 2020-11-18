@@ -149,8 +149,8 @@ class IRGAN(DeepRecommender):
 
     def initModel(self):
         super(IRGAN, self).initModel()
-        self.generator = GEN(self.num_items, self.num_users, self.k, lamda=self.regU, learning_rate=self.lRate)
-        self.discriminator = DIS(self.num_items, self.num_users, self.k, lamda=self.regU, learning_rate=self.lRate)
+        self.generator = GEN(self.num_items, self.num_users, self.embed_size, lamda=self.regU, learning_rate=self.lRate)
+        self.discriminator = DIS(self.num_items, self.num_users, self.embed_size, lamda=self.regU, learning_rate=self.lRate)
 
 
 
