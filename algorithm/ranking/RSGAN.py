@@ -45,10 +45,8 @@ class RSGAN(SocialRecommender,DeepRecommender):
                 self.positive[user].append(item)
                 self.pItems[item].append(user)
 
-        print 'Kind Note: This method will probably take much time.'
         # build U-F-NET
         print 'Building weighted user-friend network...'
-        # filter isolated nodes and low ratings
         # Definition of Meta-Path
         p1 = 'UIU'
         p2 = 'UFU'
@@ -57,7 +55,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         p5 = 'UFUIU'
         mPaths = [p1, p2, p3, p4, p5]
 
-        self.walkLength=30
+        self.walkLength=20
         self.topK = 100
 
         self.G = np.random.rand(self.num_users, 50) * 0.1
@@ -271,7 +269,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.firend_item_set = defaultdict(list)
         for user in self.pTopKSim:
             trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
-            self.seededFriends[user] = trueFriends+self.pTopKSim[user][:50]
+            self.seededFriends[user] = trueFriends+self.pTopKSim[user][:30]
 
         for user in self.pTopKSim:
             for friend in self.seededFriends[user]:
@@ -447,7 +445,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         if self.data.containsUser(u):
             u = self.data.user[u]
             # In our experiments, discriminator performs better than generator
-            res = self.sess.run(self.d_output, {self.u_idx:u})
+            res = self.sess.run(self.d_output, {self.u_idx:[u]})
             return res
 
         else:

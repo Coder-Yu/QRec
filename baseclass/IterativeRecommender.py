@@ -125,6 +125,8 @@ class IterativeRecommender(Recommender):
         for user in self.data.testSet_u:
             if len(testSample) == 1000:
                 break
+            if user not in self.data.trainSet_u:
+                continue
             testSample[user] = self.data.testSet_u[user]
 
         for user in testSample:
@@ -190,6 +192,7 @@ class IterativeRecommender(Recommender):
                 k,v = m.strip().split(':')
                 performance[k]=float(v)
                 self.bestPerformance.append(performance)
+            self.saveModel()
         print '-'*120
         print 'Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)'
         measure = [m.strip() for m in measure[1:]]
