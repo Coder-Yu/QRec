@@ -16,7 +16,6 @@ class IF_BPR(SocialRecommender):
     def readConfiguration(self):
         super(IF_BPR, self).readConfiguration()
         options = config.LineConfig(self.config['IF_BPR'])
-        self.walkCount = int(options['-T'])
         self.walkLength = int(options['-L'])
         self.walkDim = int(options['-l'])
         self.winSize = int(options['-w'])
@@ -29,7 +28,6 @@ class IF_BPR(SocialRecommender):
     def printAlgorConfig(self):
         super(IF_BPR, self).printAlgorConfig()
         print 'Specified Arguments of', self.config['recommender'] + ':'
-        print 'Walks count per user', self.walkCount
         print 'Length of each walk', self.walkLength
         print 'Dimension of user embedding', self.walkDim
         print '=' * 80
@@ -41,11 +39,10 @@ class IF_BPR(SocialRecommender):
         with open(filename) as f:
             for line in f:
                 items = line.strip().split()
+                if items[0] not in self.data.user:
+                    continue
                 self.negative[items[0]].append(items[1])
                 self.nItems[items[1]].append(items[0])
-                if items[0] not in self.data.user:
-                    self.data.user[items[0]]=len(self.data.user)
-                    self.data.id2user[self.data.user[items[0]]] = items[0]
 
     def initModel(self):
         super(IF_BPR, self).initModel()
@@ -87,6 +84,8 @@ class IF_BPR(SocialRecommender):
         p4 = 'UFIU'
         p5 = 'UFUIU'
         mPaths = [p1, p2, p3, p4, p5]
+        mPathCnt = [10, 8, 8, 5, 5]
+        mPathSetting = zip(mPaths, mPathCnt)
 
         self.G = np.random.rand(self.data.trainingSize()[0], self.walkDim) * 0.1
         self.W = np.random.rand(self.data.trainingSize()[0], self.walkDim) * 0.1
@@ -117,18 +116,9 @@ class IF_BPR(SocialRecommender):
 
         # positive
         for user in self.data.user:
-            for mp in mPaths:
-                if mp == p1:
-                    self.walkCount = 10
-                if mp == p2:
-                    self.walkCount = 8
-                if mp == p3:
-                    self.walkCount = 8
-                if mp == p4:
-                    self.walkCount = 5
-                if mp == p5:
-                    self.walkCount = 5
-                for t in range(self.walkCount):
+            for mps in mPathSetting:
+                mp, walkCnt = mps
+                for t in range(walkCnt):
                     path = ['U' + user]
                     lastNode = user
                     nextNode = user
@@ -177,18 +167,9 @@ class IF_BPR(SocialRecommender):
 
         # negative
         for user in self.data.user:
-            for mp in mPaths:
-                if mp == p1:
-                    self.walkCount = 10
-                if mp == p2:
-                    self.walkCount = 8
-                if mp == p3:
-                    self.walkCount = 8
-                if mp == p4:
-                    self.walkCount = 5
-                if mp == p5:
-                    self.walkCount = 5
-                for t in range(self.walkCount):
+            for mps in mPathSetting:
+                mp, walkCnt = mps
+                for t in range(walkCnt):
                     path = ['U' + user]
                     lastNode = user
                     nextNode = user
@@ -233,6 +214,7 @@ class IF_BPR(SocialRecommender):
                         self.nWalks.append(path)
 
         shuffle(self.pWalks)
+        shuffle(self.nWalks)
         print 'pwalks:', len(self.pWalks)
         print 'nwalks:', len(self.nWalks)
 
@@ -260,10 +242,9 @@ class IF_BPR(SocialRecommender):
         print 'User embedding generated.'
 
         print 'Constructing similarity matrix...'
-        i = 0
-        for user1 in self.positive:
+
+        for i,user1 in enumerate(self.positive):
             uSim = []
-            i += 1
             if i % 200 == 0:
                 print i, '/', len(self.positive)
             vec1 = self.W[self.data.user[user1]]
@@ -279,10 +260,8 @@ class IF_BPR(SocialRecommender):
             self.pTopKSim[user1] = [item[0] for item in fList]
             self.avg_sim[user1] = sum([item[1] for item in fList][:self.topK / 2]) / (self.topK / 2)
 
-        i = 0
-        for user1 in self.negative:
+        for i,user1 in enumerate(self.negative):
             uSim = []
-            i += 1
             if i % 200 == 0:
                 print i, '/', len(self.negative)
             vec1 = self.G[self.data.user[user1]]
@@ -402,7 +381,7 @@ class IF_BPR(SocialRecommender):
             if self.isConverged(iteration):
                  break
             print self.foldInfo,'iteration:',iteration
-        self.ranking_performance()
+
 
 
     def optimization(self, u, i, j):
