@@ -20,7 +20,7 @@ class ESRF(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
-        self.n_layers_G = 3 #the number of layers of the alternative neigbhor generation module (generator)
+        self.n_layers_G = 2 #the number of layers of the alternative neigbhor generation module (generator)
 
     def readConfiguration(self):
         super(ESRF, self).readConfiguration()
@@ -92,6 +92,9 @@ class ESRF(SocialRecommender,DeepRecommender):
 
     def buildMotifGCN(self,adjacency):
         self.relation_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),name='U_r')
+        projection_head = tf.Variable(tf.truncated_normal(shape=[self.embed_size, self.embed_size], stddev=0.005),  name='p_h')
+        self.userSegment = tf.placeholder(tf.int32)
+
         #convert sparse matrix to sparse tensor
         adjacency = adjacency.tocoo()
         indices = np.mat([adjacency.row, adjacency.col]).transpose()
@@ -105,16 +108,18 @@ class ESRF(SocialRecommender,DeepRecommender):
             user_embeddings = tf.sparse_tensor_dense_matmul(self.A, user_embeddings)
             norm_embeddings = tf.math.l2_normalize(user_embeddings, axis=1)
             all_embeddings += [norm_embeddings]
-        user_embeddings = tf.reduce_sum(all_embeddings, 0)
+        user_embeddings = tf.nn.sigmoid(tf.matmul(tf.reduce_sum(all_embeddings, 0), projection_head))
         # construct concrete selector layer
         self.g_weights['c_selector'] = tf.Variable(initializer([self.K,self.num_users]), name='c_selector')
-        user_features = tf.matmul(user_embeddings,user_embeddings,transpose_b=True)
+        #to avoid oom, each time we just generate alternative negibhborhood for 100 users
+        user_features = tf.matmul(user_embeddings[self.userSegment:self.userSegment+100],user_embeddings,transpose_b=True)
         def getAlternativeNeighborhood(embedding):
             alphaEmbeddings = tf.multiply(embedding, self.g_weights['c_selector'])
             one_hot_vector = tf.reduce_sum(self.sampling(alphaEmbeddings), 0)
             return one_hot_vector
         self.alternativeNeighborhood = tf.vectorized_map(fn=lambda em:getAlternativeNeighborhood(em),elems=user_features)
-
+        paddings = tf.zeros(shape=(self.num_users,self.num_users))
+        self.alternativeNeighborhood = tf.concat([paddings[:self.userSegment],self.alternativeNeighborhood,paddings[self.userSegment+100:]],0)
         #decoder
         # reg_loss = 0
         # decoder_weight_sizes = [self.num_users,self.embed_size*4,self.num_users]
@@ -239,12 +244,12 @@ class ESRF(SocialRecommender,DeepRecommender):
         currentNeighbors = tf.gather(self.alternativeNeighborhood,self.u_idx)
         friendEmbeddings = tf.matmul(currentNeighbors, self.multi_user_embeddings) / self.K
         y_vi = tf.reduce_sum(tf.multiply(friendEmbeddings,self.v_embedding),1)
-        s_Regularization = 0.03*tf.nn.l2_loss(self.u_embedding - friendEmbeddings)
+        #s_Regularization = 0.03*tf.nn.l2_loss(self.u_embedding - friendEmbeddings)
         pairwise_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ui-y_uj)))
         reg_loss = self.regU * (tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.v_embedding) + tf.nn.l2_loss(self.neg_item_embedding))
         adversarial_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ui-y_vi)))
         self.d_loss = pairwise_loss + reg_loss
-        self.d_advloss = pairwise_loss + reg_loss + self.beta*adversarial_loss+s_Regularization
+        self.d_advloss = pairwise_loss + reg_loss + self.beta*adversarial_loss#+s_Regularization
         opt = tf.train.AdamOptimizer(self.lRate)
         self.d_train = opt.minimize(self.d_loss,var_list = [self.user_embeddings,self.item_embeddings])
         self.d_adv_train = opt.minimize(self.d_advloss, var_list=[self.user_embeddings, self.item_embeddings,self.d_weights])
@@ -293,22 +298,24 @@ class ESRF(SocialRecommender,DeepRecommender):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx= batch
+                u_i = np.random.randint(0, self.num_users)
                 self.sess.run([self.d_train,self.d_loss],
-                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,
+                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx, self.userSegment:u_i,
                                                 self.isSocial:0,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
 
         print 'normal training with social relations...'
         for iteration in range(self.maxIter / 2):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
+                u_i = np.random.randint(0, self.num_users)
                 user_idx, i_idx, j_idx = batch
                 self.sess.run([self.d_train, self.d_loss],
-                              feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,
-                                         self.isSocial: 1, self.isAttentive: self.attentiveTraining,
-                                         self.sampledItems: selectedItems})
+                              feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx, self.userSegment:u_i,
+                                         self.isSocial: 1, self.isAttentive: self.attentiveTraining,  self.sampledItems: selectedItems})
 
+            u_i = np.random.randint(0, self.num_users)
             self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
-                                           feed_dict={self.isSocial: 1, self.isAttentive: 0,
+                                           feed_dict={self.isSocial: 0, self.isAttentive: 0, self.userSegment:u_i,
                                                       self.sampledItems: selectedItems})
             self.isConverged(iteration + 1)
 
@@ -317,12 +324,13 @@ class ESRF(SocialRecommender,DeepRecommender):
         for iteration in range(self.maxIter/2):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
+                u_i = np.random.randint(0, self.num_users)
                 user_idx, i_idx, j_idx = batch
-                self.sess.run(self.minimax, feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,
+                self.sess.run(self.minimax, feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.userSegment:u_i,
                                                        self.isSocial:1,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
-
+            u_i = np.random.randint(0, self.num_users)
             self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
-                                           feed_dict={self.isSocial: 1,self.isAttentive:0,self.sampledItems:selectedItems})
+                                           feed_dict={self.userSegment:u_i,self.isSocial: 0,self.isAttentive:0,self.sampledItems:selectedItems})
             self.isConverged(iteration + 1+self.maxIter/2)
             #self.sess.run([self.r_train, self.r_loss])
         # self.attentiveTraining = 1
@@ -343,8 +351,9 @@ class ESRF(SocialRecommender,DeepRecommender):
 
     def saveModel(self):
         selectedItems = self.sampleItems()
+        u_i = np.random.randint(0, self.num_users)
         self.bestU, self.bestV = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
-                                       feed_dict={self.isSocial: 1, self.isAttentive:self.attentiveTraining,self.sampledItems: selectedItems})
+                                       feed_dict={self.userSegment:u_i,self.isSocial: 0, self.isAttentive:self.attentiveTraining,self.sampledItems: selectedItems})
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

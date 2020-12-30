@@ -12,7 +12,7 @@
 <p>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
-29/07/2020 - ESRF proposed in my TKDE manuscript (under review) has been added. </br>
+29/07/2020 - ESRF proposed in my TKDE paper has been added. </br>
 23/07/2020 - LightGCN proposed in SIGIR'20 has been added. </br>
 17/09/2019 - NGCF proposed in SIGIR'19 has been added. </br>
 13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
@@ -360,6 +360,11 @@ on Generative Adversarial Networks, CIKM 2018.
      <tr>
     <td scope="row">DHCF</td>
         <td>Ji et al. Dual Channel Hypergraph Collaborative Filtering, KDD 2020.
+         </td>
+      </tr>
+     <tr>
+    <td scope="row">ESRF</td>
+        <td>Yu et al. Enhancing Social Recommendation with Adversarial Graph Convlutional Networks, TKDE (To appear).
          </td>
       </tr>
   </table>
