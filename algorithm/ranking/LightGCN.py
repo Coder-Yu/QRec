@@ -21,7 +21,9 @@ class LightGCN(DeepRecommender):
         all_embeddings = [ego_embeddings]
         for k in range(self.n_layers):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
-            all_embeddings += [ego_embeddings]
+            # normalize the distribution of embeddings.
+            norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
+            all_embeddings += [norm_embeddings]
 
         all_embeddings = tf.reduce_sum(all_embeddings, axis=0)
 
