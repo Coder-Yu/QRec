@@ -8,7 +8,7 @@
  open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager.
  All of them make it a perfect tool for data science researcher. Besides, GPU based deep models are also available (TensorFlow is required).
 
-<h2>Latest News</h2>
+<h2>What's New</h2>
 <p>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
@@ -364,7 +364,7 @@ on Generative Adversarial Networks, CIKM 2018.
       </tr>
      <tr>
     <td scope="row">ESRF</td>
-        <td>Yu et al. Enhancing Social Recommendation with Adversarial Graph Convlutional Networks, TKDE (To appear).
+        <td>Yu et al. Enhancing Social Recommendation with Adversarial Graph Convlutional Networks, TKDE.
          </td>
       </tr>
   </table>
@@ -403,7 +403,7 @@ on Generative Adversarial Networks, CIKM 2018.
 </tr>
 <tr>
 <td>APR</td>     <td>CDAE</td>      <td>DMF</td>       <td>NeuMF</td>      <td>CFGAN</td>
-<td>IRGAN</td>     <td></td>   <td></td>     <td></td>  <td></td>
+<td>IRGAN</td>     <td>LightGCN</td>   <td>NGCF</td>     <td>MHCN</td>  <td>DHCF</td>
 </tr>
 <tr>
 <th colspan="10" align="left">Baselines</th>
