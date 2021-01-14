@@ -1,7 +1,7 @@
 from baseclass.DeepRecommender import DeepRecommender
 from baseclass.SocialRecommender import SocialRecommender
 import tensorflow as tf
-from scipy.sparse import coo_matrix,csr_matrix,spdiags
+from scipy.sparse import coo_matrix,csr_matrix
 import numpy as np
 import os
 from tool import config
@@ -94,9 +94,6 @@ class MHCN(SocialRecommender,DeepRecommender):
         H_p = H_p.T.multiply(1.0/H_p.sum(axis=1).reshape(1, -1))
         H_p = H_p.T
 
-        import pickle
-        f = open('matrix','wb')
-        pickle.dump([H_s,H_j,H_p],f)
         return [H_s,H_j,H_p]
 
     def adj_to_sparse_tensor(self,adj):
@@ -118,7 +115,6 @@ class MHCN(SocialRecommender,DeepRecommender):
             self.weights['gating_bias%d' %(i+1)] = tf.Variable(initializer([1, self.embed_size]), name='g_W_b_%d_1' % (i+1))
             self.weights['sgating%d' % (i + 1)] = tf.Variable(initializer([self.embed_size, self.embed_size]),name='sg_W_%d_1' % (i + 1))
             self.weights['sgating_bias%d' % (i + 1)] = tf.Variable(initializer([1, self.embed_size]),name='sg_W_b_%d_1' % (i + 1))
-            self.weights['bi_matrix%d' %(i+1)] = tf.Variable(initializer([self.embed_size, self.embed_size]), name='b_W_%d_1' % (i+1))
         self.weights['attention'] = tf.Variable(initializer([1, self.embed_size]), name='at')
         self.weights['attention_mat'] = tf.Variable(initializer([self.embed_size, self.embed_size]), name='atm')
         #define inline functions
@@ -126,8 +122,6 @@ class MHCN(SocialRecommender,DeepRecommender):
             return tf.multiply(em,tf.nn.sigmoid(tf.matmul(em,self.weights['gating%d' % channel])+self.weights['gating_bias%d' %channel]))
         def self_supervised_gating(em, channel):
             return tf.multiply(em,tf.nn.sigmoid(tf.matmul(em, self.weights['sgating%d' % channel])+self.weights['sgating_bias%d' % channel]))
-        def average_pooling(*em):
-            return tf.reduce_mean(em,0)
         def channel_attention(*channel_embeddings):
             weights = []
             for embedding in channel_embeddings:
@@ -173,7 +167,7 @@ class MHCN(SocialRecommender,DeepRecommender):
             norm_embeddings = tf.math.l2_normalize(user_embeddings_c3, axis=1)
             all_embeddings_c3 += [norm_embeddings]
             # item convolution
-            mixed_embedding = channel_attention(user_embeddings_c1,user_embeddings_c2, user_embeddings_c3)[0] + simple_user_embeddings / 2
+            mixed_embedding = channel_attention(user_embeddings_c1,user_embeddings_c2, user_embeddings_c3)[0] + simple_user_embeddings #for yelp and douban, 1/2 simple user embedding is better
             new_item_embeddings = tf.sparse_tensor_dense_matmul(tf.sparse.transpose(R), mixed_embedding)
             norm_embeddings = tf.math.l2_normalize(new_item_embeddings, axis=1)
             all_embeddings_i += [norm_embeddings]
@@ -236,29 +230,6 @@ class MHCN(SocialRecommender,DeepRecommender):
         total_loss = rec_loss+reg_loss + self.ss_rate*self.ss_loss
         opt = tf.train.AdamOptimizer(self.lRate)
         train_op = opt.minimize(total_loss)
-
-        # adjust auxiliary loss gradient with weighted cosine
-        # for k in range(len(shared_vars)):
-        #     need_clip = cosine(ss_gradients[k],rec_gradients[k])
-        #     replace = tf.multiply(cosine(ss_gradients[k],rec_gradients[k]),tf.transpose(ss_gradients[k]))
-        #     ss_gradients[k] = tf.where(need_clip>0,tf.transpose(replace),tf.zeros(shape=tf.shape(ss_gradients[k])))
-
-        #adjust auxiliary loss gradient with projection
-        # for k in range(len(rec_vars)):
-        #     need_clip = cosine(ss_gradients[k],rec_gradients[k])
-        #     projection = tf.reduce_sum(tf.multiply(ss_gradients[k],tf.math.l2_normalize(rec_gradients[k])),1)
-        #     projection = tf.math.minimum(tf.zeros(shape=tf.shape(projection)),projection)
-        #     replace = tf.multiply(tf.transpose(tf.math.l2_normalize(rec_gradients[k])),projection)
-        #     ss_gradients[k] = tf.where(need_clip>0,ss_gradients[k],ss_gradients[k]-tf.transpose(replace))
-
-        # rec_opt = tf.train.AdamOptimizer(self.lRate)
-        # ss_opt = tf.train.AdamOptimizer(self.lRate*0.2)
-        #
-        # rec_train = rec_opt.apply_gradients(zip(rec_gradients,shared_vars))
-        # ss_train = ss_opt.apply_gradients(zip(ss_gradients,ss_vars))
-        #
-        # train_op = tf.group(rec_train,ss_train)
-
         init = tf.global_variables_initializer()
         self.sess.run(init)
         # Maximum Iteration Setting: LastFM 100 Douban 30 Yelp 30
@@ -272,11 +243,7 @@ class MHCN(SocialRecommender,DeepRecommender):
             self.U, self.V = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
             if iteration>self.maxIter-50:
                 self.ranking_performance(iteration)
-        import pickle
         self.U,self.V = self.bestU,self.bestV
-        f = open('ue','wb')
-        pickle.dump(self.U,f)
-
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
