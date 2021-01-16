@@ -10,6 +10,7 @@
 
 <h2>What's New</h2>
 <p>
+16/01/2021 - MHCN proposed in our WWW'21 paper has been added. </br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
 29/07/2020 - ESRF proposed in my TKDE paper has been added. </br>
@@ -365,6 +366,11 @@ on Generative Adversarial Networks, CIKM 2018.
      <tr>
     <td scope="row">ESRF</td>
         <td>Yu et al. Enhancing Social Recommendation with Adversarial Graph Convlutional Networks, TKDE.
+         </td>
+      </tr>
+      <tr>
+    <td scope="row">MHCN</td>
+        <td>Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW 2021.
          </td>
       </tr>
   </table>
