@@ -486,11 +486,11 @@ on Generative Adversarial Networks, CIKM 2018.
 <h3>Reference</h3>
 <p>[1]. Tang, J., Gao, H., Liu, H.: mtrust:discerning multi-faceted trust in a connected world. In: International Conference on Web Search and Web Data Mining, WSDM 2012, Seattle, Wa, Usa, February. pp. 93–102 (2012)</p>
 <p>[2]. Massa, P., Avesani, P.: Trust-aware recommender systems. In: Proceedings of the 2007 ACM conference on Recommender systems. pp. 17–24. ACM (2007) </p>
-<p>[3].  G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
+<p>[3]. G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
 <p>[4] Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
 
 <h3>Thanks</h3>
-If you our project is helpful to you, please cite one of these papers.</br>
+If our project is helpful to you, please cite one of these papers.</br>
 @inproceedings{yu2018adaptive,</br>
   title={Adaptive implicit friends identification over heterogeneous network for social recommendation},</br>
   author={Yu, Junliang and Gao, Min and Li, Jundong and Yin, Hongzhi and Liu, Huan},</br>
@@ -504,6 +504,8 @@ If you our project is helpful to you, please cite one of these papers.</br>
 @article{yu2019generating,</br>
   title={Generating Reliable Friends via Adversarial Training to Improve Social Recommendation},</br>
   author={Yu, Junliang and Gao, Min and Yin, Hongzhi and Li, Jundong and Gao, Chongming and Wang, Qinyong},</br>
-  journal={arXiv preprint arXiv:1909.03529},</br>
-  year={2019}</br>
+  {2019 IEEE International Conference on Data Mining (ICDM)},</br>
+  pages={768--777},</br>
+  year={2019},</br>
+  organization={IEEE},</br>
 }
