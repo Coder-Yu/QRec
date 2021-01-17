@@ -11,7 +11,7 @@ bz2file==0.98
 certifi==2019.11.28
 cffi==1.13.2
 chardet==3.0.4
-cryptography==2.8
+cryptography==3.2
 cycler==0.10.0
 docutils==0.15.2
 enum34==1.1.6
