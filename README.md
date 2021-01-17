@@ -4,9 +4,7 @@
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 
-**RecQ** is a Python library for recommender systems (Python 2.7.x) in which a number of the state-of-the-art recommendation models are implemented. To run RecQ easily (no need to setup packages used in RecQ one by one), the leading
- open data science platform  [**Anaconda**](https://www.continuum.io/downloads) is strongly recommended. It integrates Python interpreter, common scientific computing libraries (such as Numpy, Pandas, and Matplotlib), and package manager.
- All of them make it a perfect tool for data science researcher. Besides, GPU based deep models are also available (TensorFlow is required).
+**RecQ** is a Python library for recommender systems (Supported by Python 2.7.x and Tensorflow) in which a number of influential and newly state-of-the-art recommendation models are implemented. To run RecQ easily, see requirements.txt to install all dependencies.
 
 <h2>What's New</h2>
 <p>
@@ -36,7 +34,6 @@
 <li><b>Fast execution</b>: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.</li>
 <li><b>Easy configuration</b>: RecQ configs recommenders using a configuration file.</li>
 <li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
-<li><b><font color="red">Data visualization</font></b>: RecQ can help visualize the input dataset without running any algorithm. </li>
 </ul>
 
 <h2>How to Run it</h2>
@@ -180,7 +177,7 @@
 <h2>Algorithms Implemented</h2>
 <p><b>Note: </b>We use SGD to obtain the local minimum. So, there have some differences between the original
 papers and the code in terms of fomula presentation. If you have problems in understanding the code, please open an issue to ask for help. We can guarantee that all the implementations are carefully reviewed and tested. </p>
-<p>Any suggestions and criticism are welcomed. We will make efforts to improve RecQ.</p>
+<p>Any suggestions are welcome. We will make efforts to improve RecQ.</p>
 <div>
 
  <table class="table table-hover table-bordered">
