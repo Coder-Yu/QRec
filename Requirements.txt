@@ -57,7 +57,7 @@ smart-open==1.9.0
 subprocess32==3.5.4
 TBB==0.1
 tensorboard==1.14.0
-tensorflow==1.14.0
+tensorflow==2.4.0
 tensorflow-estimator==1.14.0
 termcolor==1.1.0
 tornado==5.1.1
