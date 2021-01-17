@@ -10,7 +10,7 @@
 
 <h2>What's New</h2>
 <p>
-16/01/2021 - MHCN proposed in our WWW'21 paper has been added. </br>
+<b>16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</b> </br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
 29/07/2020 - ESRF proposed in my TKDE paper has been added. </br>
@@ -387,7 +387,7 @@ on Generative Adversarial Networks, CIKM 2018.
 <td>PMF</td>        <td>SVD++</td>      <td>EE</td>       <td>BPR</td>        <td>WRMF</td>
 </tr>
 <tr>
-<td>ExpoMF</td>     <td></td>     <td></td>   <td></td>     <td></td>
+<td>ExpoMF</td>     <td>NGCF</td>     <td>LightGCN</td>   <td>IRGAN</td>     <td>CFGAN</td>
 <td></td>     <td></td>   <td></td>     <td></td> <td></td>
 </tr>
 <tr>
@@ -398,11 +398,7 @@ on Generative Adversarial Networks, CIKM 2018.
 <td>SREE</td>    <td>LOCABAL</td>    <td>SocialFD</td>  <td>TBPR</td>       <td>SERec</td>
 </tr>
 <tr>
-<th colspan="10" align="left">Network Embedding based Recommenders</th>
-</tr>
-<tr>
-<td>CoFactor</td>     <td>CUNE-MF</td>      <td>CUNE-BPR</td>     <td>IF-BPR</td>  <td>  </td>
-<td></td>     <td></td>   <td></td>     <td></td>  <td></td>
+<td>RSGAN</td>    <td>IF-BPR</td>      <td>MHCN</td>  <td>CUNE</td>  <td>ESRF</td>  
 </tr>
 <tr>
 <th colspan="10" align="left">Deep Recommenders</th>
@@ -410,6 +406,9 @@ on Generative Adversarial Networks, CIKM 2018.
 <tr>
 <td>APR</td>     <td>CDAE</td>      <td>DMF</td>       <td>NeuMF</td>      <td>CFGAN</td>
 <td>IRGAN</td>     <td>LightGCN</td>   <td>NGCF</td>     <td>MHCN</td>  <td>DHCF</td>
+</tr>
+<tr>
+<td>Diffnet</td>     <td>ESRF</td> 
 </tr>
 <tr>
 <th colspan="10" align="left">Baselines</th>
@@ -487,7 +486,7 @@ on Generative Adversarial Networks, CIKM 2018.
 <p>[1]. Tang, J., Gao, H., Liu, H.: mtrust:discerning multi-faceted trust in a connected world. In: International Conference on Web Search and Web Data Mining, WSDM 2012, Seattle, Wa, Usa, February. pp. 93–102 (2012)</p>
 <p>[2]. Massa, P., Avesani, P.: Trust-aware recommender systems. In: Proceedings of the 2007 ACM conference on Recommender systems. pp. 17–24. ACM (2007) </p>
 <p>[3]. G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
-<p>[4] Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
+<p>[4]. Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
 
 <h3>Thanks</h3>
 If our project is helpful to you, please cite one of these papers.</br>
@@ -504,7 +503,7 @@ If our project is helpful to you, please cite one of these papers.</br>
 @article{yu2019generating,</br>
   title={Generating Reliable Friends via Adversarial Training to Improve Social Recommendation},</br>
   author={Yu, Junliang and Gao, Min and Yin, Hongzhi and Li, Jundong and Gao, Chongming and Wang, Qinyong},</br>
-  {2019 IEEE International Conference on Data Mining (ICDM)},</br>
+  booktitle={2019 IEEE International Conference on Data Mining (ICDM)},</br>
   pages={768--777},</br>
   year={2019},</br>
   organization={IEEE},</br>
