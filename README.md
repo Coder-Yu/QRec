@@ -351,7 +351,7 @@ on Generative Adversarial Networks, CIKM'18.
       </tr>
      <tr>
     <td scope="row">DHCF</td>
-        <td>Ji et al. Dual Channel Hypergraph Collaborative Filtering, KDD 2020.
+        <td>Ji et al. Dual Channel Hypergraph Collaborative Filtering, KDD'20.
          </td>
       </tr>
      <tr>

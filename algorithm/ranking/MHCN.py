@@ -194,12 +194,11 @@ class MHCN(SocialRecommender,DeepRecommender):
         self.v_embedding = tf.nn.embedding_lookup(self.final_item_embeddings, self.v_idx)
 
     def hierarchical_mutual_information_maximization(self,em,adj):
-        def row_column_shuffle(embedding):
-            corrupted_embedding = tf.gather(embedding, tf.random.shuffle(tf.range(tf.shape(embedding)[0])))
-            corrupted_embedding = tf.gather(tf.transpose(corrupted_embedding),tf.random.shuffle(tf.range(tf.shape(tf.transpose(corrupted_embedding))[0])))
-            return tf.transpose(corrupted_embedding)
         def row_shuffle(embedding):
-            corrupted_embedding = tf.gather(embedding, tf.random.shuffle(tf.range(tf.shape(embedding)[0])))
+            return tf.gather(embedding, tf.random.shuffle(tf.range(tf.shape(embedding)[0])))
+        def row_column_shuffle(embedding):
+            corrupted_embedding = tf.transpose(tf.gather(tf.transpose(embedding), tf.random.shuffle(tf.range(tf.shape(tf.transpose(embedding))[0]))))
+            corrupted_embedding = tf.gather(corrupted_embedding, tf.random.shuffle(tf.range(tf.shape(corrupted_embedding)[0])))
             return corrupted_embedding
         def score(x1,x2):
             return tf.reduce_sum(tf.multiply(x1,x2),1)
@@ -208,14 +207,14 @@ class MHCN(SocialRecommender,DeepRecommender):
         edge_embeddings = tf.sparse_tensor_dense_matmul(adj,user_embeddings)
         #Local MIM
         pos = score(user_embeddings,edge_embeddings)
-        neg1 = score(user_embeddings,row_shuffle(edge_embeddings))
-        neg2 = score(user_embeddings,row_column_shuffle(edge_embeddings))
+        neg1 = score(row_shuffle(user_embeddings),edge_embeddings)
+        neg2 = score(row_column_shuffle(edge_embeddings),user_embeddings)
         local_loss = tf.reduce_sum(-tf.log(tf.sigmoid(pos-neg1))-tf.log(tf.sigmoid(neg1-neg2)))
         #Global MIM
         graph = tf.reduce_mean(edge_embeddings,0)
         pos = score(edge_embeddings,graph)
-        neg = score(row_column_shuffle(edge_embeddings),graph)
-        global_loss = tf.reduce_sum(-tf.log(tf.sigmoid(pos-neg)))
+        neg1 = score(row_column_shuffle(edge_embeddings),graph)
+        global_loss = tf.reduce_sum(-tf.log(tf.sigmoid(pos-neg1)))
         return global_loss+local_loss
 
     def saveModel(self):
