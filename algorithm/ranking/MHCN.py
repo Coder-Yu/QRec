@@ -167,7 +167,7 @@ class MHCN(SocialRecommender,DeepRecommender):
             norm_embeddings = tf.math.l2_normalize(user_embeddings_c3, axis=1)
             all_embeddings_c3 += [norm_embeddings]
             # item convolution
-            mixed_embedding = channel_attention(user_embeddings_c1,user_embeddings_c2, user_embeddings_c3)[0] + simple_user_embeddings #for yelp and douban, 1/2 simple user embedding is better
+            mixed_embedding = channel_attention(user_embeddings_c1,user_embeddings_c2, user_embeddings_c3)[0] + simple_user_embeddings/2
             new_item_embeddings = tf.sparse_tensor_dense_matmul(tf.sparse.transpose(R), mixed_embedding)
             norm_embeddings = tf.math.l2_normalize(new_item_embeddings, axis=1)
             all_embeddings_i += [norm_embeddings]
@@ -180,7 +180,7 @@ class MHCN(SocialRecommender,DeepRecommender):
         user_embeddings_c3 = tf.reduce_sum(all_embeddings_c3, axis=0)
         simple_user_embeddings = tf.reduce_sum(all_embeddings_simple, axis=0)
         item_embeddings = tf.reduce_sum(all_embeddings_i, axis=0)
-        #aggregating channel=specific embeddings
+        #aggregating channel-specific embeddings
         self.final_item_embeddings = item_embeddings
         self.final_user_embeddings,self.attention_score = channel_attention(user_embeddings_c1,user_embeddings_c2,user_embeddings_c3)
         self.final_user_embeddings += simple_user_embeddings #for yelp and douban, 1/2 simple user embedding is better
@@ -223,7 +223,7 @@ class MHCN(SocialRecommender,DeepRecommender):
             - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
         reg_loss = 0
         for key in self.weights:
-            reg_loss += 0.02*tf.nn.l2_loss(self.weights[key])
+            reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
         rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (
                     tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.v_embedding) +
                     tf.nn.l2_loss(self.neg_item_embedding))
