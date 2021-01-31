@@ -227,9 +227,7 @@ class MHCN(SocialRecommender,DeepRecommender):
         reg_loss = 0
         for key in self.weights:
             reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
-        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (
-                    tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.v_embedding) +
-                    tf.nn.l2_loss(self.neg_item_embedding))
+        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
         total_loss = rec_loss+reg_loss + self.ss_rate*self.ss_loss
         opt = tf.train.AdamOptimizer(self.lRate)
         train_op = opt.minimize(total_loss)
