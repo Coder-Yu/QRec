@@ -39,7 +39,7 @@ mock==3.0.5
 numpy==1.15.4
 olefile==0.46
 pandas==0.24.2
-Pillow==6.2.1
+Pillow==8.1.1
 protobuf==3.11.2
 pycparser==2.20
 pyOpenSSL==19.1.0
