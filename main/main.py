@@ -28,7 +28,7 @@ if __name__ == '__main__':
     print 'Deep Recommenders:'
     print 'd1. APR           d2. CDAE          d3. DMF           d4. NeuMF           d5. CFGAN'
     print 'd6. IRGAN         d7. RSGAN         d8. NGCF          d9. LightGCN        d10. ESRF'
-    print 'd11. DHCF         d12. DiffNet'
+    print 'd11. DHCF         d12. DiffNet      d13. MHCN'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                  's7':'LOCABAL','s8':'SocialFD','s9':'TBPR','s10':'SEREC','a1':'CoFactor',
                  'a2':'CUNE_MF','a3':'CUNE_BPR','a4':'IF_BPR',
                  'd1':'APR','d2':'CDAE','d3':'DMF','d4':'NeuMF','d5':'CFGAN','d6':'IRGAN','d7':'RSGAN','d8':'NGCF',
-                 'd9':'LightGCN', 'd10':'ESRF', 'd11':'DHCF', 'd12':'DiffNet',
+                 'd9':'LightGCN', 'd10':'ESRF', 'd11':'DHCF', 'd12':'DiffNet','d13':'MHCN',
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
 
     try:
