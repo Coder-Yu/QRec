@@ -470,15 +470,27 @@ on Generative Adversarial Networks, CIKM'18.
     <td width="5%">25,434</td>
     <td>Trust</td>
     </tr> 
+    <tr>
+    <td><a href="https://www.dropbox.com/sh/h97ymblxt80txq5/AABfSLXcTu0Beib4r8P5I5sNa?dl=0" target="_blank"><b>Yelp</b></a> [5]</td>
+    <td>19,539</td>
+    <td>21,266</td>
+    <td width="6%">450,884</td>
+    <td width="10%">implicit</td>
+    <td>0.11%</td>
+    <td width="4%">19,539</td>
+    <td width="5%">864,157</td>
+    <td>Trust</td>
+    </tr> 
   </table>
 </div>
+
 
 <h3>Reference</h3>
 <p>[1]. Tang, J., Gao, H., Liu, H.: mtrust:discerning multi-faceted trust in a connected world. In: International Conference on Web Search and Web Data Mining, WSDM 2012, Seattle, Wa, Usa, February. pp. 93–102 (2012)</p>
 <p>[2]. Massa, P., Avesani, P.: Trust-aware recommender systems. In: Proceedings of the 2007 ACM conference on Recommender systems. pp. 17–24. ACM (2007) </p>
 <p>[3]. G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
 <p>[4]. Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
-
+<p>[5]. Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW'21.</p>
 <h3>Thanks</h3>
 If our project is helpful to you, please cite one of these papers.</br>
 @inproceedings{yu2018adaptive,</br>
