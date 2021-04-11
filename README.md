@@ -4,7 +4,7 @@
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 
-**RecQ** is a Python library for recommender systems (Supported by Python 2.7.x and Tensorflow) in which a number of influential and newly state-of-the-art recommendation models are implemented. To run RecQ easily, see requirements.txt to install all dependencies.
+**RecQ** is a Python library for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. I suggest that users run RecQ on Linux since python 2.7.x and tensorflow 1.x are incompatible on Windows. 
 
 <h2>What's New</h2>
 <p>
