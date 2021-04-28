@@ -1,4 +1,4 @@
-<h1>RecQ</h1>
+<img src="https://i.ibb.co/MS9xF3w/logo.png" alt="logo" border="0"><br>
 <p float="left"><img src="https://img.shields.io/badge/python-v2.7.8-green"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"></p>
 <h2>Introduction</h2>
 
