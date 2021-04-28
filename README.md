@@ -2,15 +2,16 @@
 <p float="left"><img src="https://img.shields.io/badge/python-v2.7.8-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/RecQ"></p>
 <h2>Introduction</h2>
 
+**RecQ** is a Python framework for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. RecQ has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
+<br>
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
-**Supporter**: [@AIhongzhi](https://github.com/AIhongzhi) <br>
+**Supporter**: [@AIhongzhi](https://github.com/AIhongzhi) (<a href="https://sites.google.com/view/hongzhi-yin/home">A/Prof. Hongzhi Yin</a>) <br> 
 
-**RecQ** is a Python framework for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. RecQ has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
 
 <h2>What's New</h2>
 <p>
-<b>16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</b> </br>
+16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
 29/07/2020 - ESRF proposed in my TKDE paper has been added. </br>
@@ -20,13 +21,9 @@
 09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>
 02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
 02/12/2019 - CFGAN proposed in CIKM'18 has been added.</br>
-02/04/2019 - NeuMF proposed in WWW'17 has been added.</br>
-10/09/2018 - An Adversarial training based Model: APR has been implemented.</br>
-10/02/2018 - Two deep models: DMF CDAE have been implemented.</br>
-07/12/2018 - Algorithms supported by TensorFlow: BasicMF, PMF, SVD, EE (Implementing...) </br>
 </p>
 
-<h2>Architecture of RecQ</h2>
+<h2>Architecture</h2>
 
 ![RecQ Architecture](http://ww3.sinaimg.cn/large/88b98592gw1f9fh8jpencj21d40ouwlf.jpg)
 
@@ -38,12 +35,12 @@
 <li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
 </ul>
 
-<h2>How to Run it</h2>
+<h2>Usage</h2>
 <ul>
 <li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
-<li>2.Run the **main.py** in the project, and then input following the prompt.</li>
+<li>2.Run **main.py** in the project.</li>
 </ul>
-<h2>How to Configure it</h2>
+<h2>Configuration</h2>
 <h3>Essential Options</h3>
 <div>
  <table class="table table-hover table-bordered">
@@ -163,7 +160,7 @@
   </table>
 </div>
 
-<h2>How to extend it</h2>
+<h2>Implement Your Model</h2>
 <ul>
 <li>1.Make your new algorithm generalize the proper base class.</li>
 <li>2.Rewrite some of the following functions as needed.</li>
@@ -176,10 +173,7 @@
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- loadModel()<br>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- predict()<br>
 
-<h2>Algorithms Implemented</h2>
-<p><b>Note: </b>We use SGD to obtain the local minimum. So, there have some differences between the original
-papers and the code in terms of fomula presentation. If you have problems in understanding the code, please open an issue to ask for help. We can guarantee that all the implementations are carefully reviewed and tested. </p>
-<p>Any suggestions are welcome. We will make efforts to improve RecQ.</p>
+<h2>Implemented Algorithms</h2>
 <div>
 
  <table class="table table-hover table-bordered">
@@ -369,7 +363,7 @@ on Generative Adversarial Networks, CIKM'18.
   </table>
 </div>
 
-<h3>Category</h3>
+<h3>Model Category</h3>
 
 <table>
 <tr>
@@ -493,7 +487,7 @@ on Generative Adversarial Networks, CIKM'18.
 <p>[3]. G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
 <p>[4]. Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
 <p>[5]. Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW'21.</p>
-<h3>Thanks</h3>
+<h2>Thanks</h2>
 If our project is helpful to you, please cite one of these papers.</br>
 @inproceedings{yu2018adaptive,</br>
   title={Adaptive implicit friends identification over heterogeneous network for social recommendation},</br>
