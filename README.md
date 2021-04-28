@@ -1,5 +1,5 @@
 <h1>RecQ</h1>
-<a style="float:left;"><img src="https://img.shields.io/badge/python-v2.7.8-green"></a> <a style="float:left;"><img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"></a>
+<img style="display:inline-block" src="https://img.shields.io/badge/python-v2.7.8-green"> <img style="display:inline-block" src="https://img.shields.io/badge/tensorflow-v1.14+-blue">
 <h2>Introduction</h2>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
