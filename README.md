@@ -1,10 +1,12 @@
 <h1>RecQ</h1>
+<img src="https://img.shields.io/badge/python-v2.7.8-green"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue">
 <h2>Introduction</h2>
 
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
+**Supporter**: [@AIhongzhi](https://github.com/AIhongzhi) <br>
 
-**RecQ** is a Python library for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. I suggest that users run RecQ on Linux since python 2.7.x and tensorflow 1.x are incompatible on Windows. 
+**RecQ** is a Python framework for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. RecQ has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
 
 <h2>What's New</h2>
 <p>
