@@ -24,9 +24,11 @@
 </p>
 
 <h2>Architecture</h2>
+
 ![RecQ Architecture](https://i.ibb.co/6tJ6C2j/architecture.png)
 
 <h2>Workflow</h2>
+
 ![RecQ Architecture](https://i.ibb.co/2YTXyYc/workflow.png)
 
 <h2>Features</h2>
