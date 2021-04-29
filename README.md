@@ -13,25 +13,27 @@
 <p>
 16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
-19/09/2020 - DHCF proposed in KDD'20 has been added for comparison, althought it doesn't work very well. </br>
+19/09/2020 - DHCF proposed in KDD'20 has been added. </br>
 29/07/2020 - ESRF proposed in my TKDE paper has been added. </br>
 23/07/2020 - LightGCN proposed in SIGIR'20 has been added. </br>
 17/09/2019 - NGCF proposed in SIGIR'19 has been added. </br>
 13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
 09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>
-02/20/2019 - IRGAN proposed in SIGIR'17 has been added (tuning...) </br>
+02/20/2019 - IRGAN proposed in SIGIR'17 has been added. </br>
 02/12/2019 - CFGAN proposed in CIKM'18 has been added.</br>
 </p>
 
 <h2>Architecture</h2>
+![RecQ Architecture](https://i.ibb.co/6tJ6C2j/architecture.png)
 
-![RecQ Architecture](https://i.ibb.co/Cm2Mhw6/architecture.png)
+<h2>Workflow</h2>
+![RecQ Architecture](https://i.ibb.co/2YTXyYc/workflow.png)
 
 <h2>Features</h2>
 <ul>
-<li><b>Cross-platform</b>: as a Python software, RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
-<li><b>Fast execution</b>: RecQ is based on the fast scientific computing libraries such as Numpy and some light common data structures, which make it run much faster than other libraries based on Python.</li>
-<li><b>Easy configuration</b>: RecQ configs recommenders using a configuration file.</li>
+<li><b>Cross-platform</b>: RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
+<li><b>Fast execution</b>: RecQ is based on Numpy, Tensorflow and some lightweight structures, which make it run fast.</li>
+<li><b>Easy configuration</b>: RecQ configs recommenders with a configuration file and provides multiple evaluation protocols.</li>
 <li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
 </ul>
 
