@@ -25,7 +25,7 @@
 
 <h2>Architecture</h2>
 
-![RecQ Architecture](http://ww3.sinaimg.cn/large/88b98592gw1f9fh8jpencj21d40ouwlf.jpg)
+![RecQ Architecture](https://i.ibb.co/Cm2Mhw6/architecture.png)
 
 <h2>Features</h2>
 <ul>
@@ -367,7 +367,7 @@ on Generative Adversarial Networks, CIKM'18.
 
 <table>
 <tr>
-<th colspan="10" align="left">Generic Recommenders</th>
+<th colspan="10" align="left">General Recommenders</th>
 </tr>
 <tr>
 <td>UserKNN</td>    <td>ItemKNN</td>    <td>BasicMF   <td>SlopeOne   <td>SVD</td>
@@ -487,7 +487,9 @@ on Generative Adversarial Networks, CIKM'18.
 <p>[3]. G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
 <p>[4]. Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
 <p>[5]. Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW'21.</p>
-<h2>Thanks</h2>
+<h2>Acknowledgment</h2>
+<p>This project is supported by the Responsible Big Data Intelligence Lab (RBDI) at the school of ITEE, University of Queensland, and Chongqing University.</p>
+
 If our project is helpful to you, please cite one of these papers.</br>
 @inproceedings{yu2018adaptive,</br>
   title={Adaptive implicit friends identification over heterogeneous network for social recommendation},</br>
