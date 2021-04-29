@@ -1,4 +1,4 @@
-<img src="https://i.ibb.co/0ZzjL51/logo.png" alt="logo" border="0"><br>
+<img src="https://i.ibb.co/cQjwhBC/logo.png" alt="logo" border="0"><br>
 <p float="left"><img src="https://img.shields.io/badge/python-v2.7.8-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/RecQ"></p>
 <h2>Introduction</h2>
 
@@ -25,11 +25,11 @@
 
 <h2>Architecture</h2>
 
-![RecQ Architecture](https://i.ibb.co/6tJ6C2j/architecture.png)
+![RecQ Architecture](https://i.ibb.co/zJwLXnb/architecture.png)
 
 <h2>Workflow</h2>
 
-![RecQ Architecture](https://i.ibb.co/jy8tRzj/workflow.png)
+![RecQ Architecture](https://i.ibb.co/G2f93BJ/workflow.png)
 
 <h2>Features</h2>
 <ul>
