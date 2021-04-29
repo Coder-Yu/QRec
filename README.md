@@ -29,7 +29,7 @@
 
 <h2>Workflow</h2>
 
-![RecQ Architecture](https://i.ibb.co/2YTXyYc/workflow.png)
+![RecQ Architecture](https://i.ibb.co/jy8tRzj/workflow.png)
 
 <h2>Features</h2>
 <ul>
