@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-from RecQ import RecQ
+from QRec import QRec
 from tool.config import Config
 #from visual.display import Display
 
@@ -9,7 +9,7 @@ from tool.config import Config
 if __name__ == '__main__':
 
     print '='*80
-    print '   RecQ: An effective python-based recommender algorithm library.   '
+    print '   QRec: An effective python-based recommender algorithm library.   '
     print '='*80
     print '0. Analyze the input data.(Configure the visual.conf in config/visual first.)'
     print '-' * 80
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     except KeyError:
         print 'Error num!'
         exit(-1)
-    recSys = RecQ(conf)
+    recSys = QRec(conf)
     recSys.execute()
     e = time.time()
     print "Run time: %f s" % (e - s)

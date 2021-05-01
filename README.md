@@ -1,13 +1,12 @@
-<img src="https://i.ibb.co/cQjwhBC/logo.png" alt="logo" border="0"><br>
-<p float="left"><img src="https://img.shields.io/badge/python-v2.7.8-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/RecQ"></p>
+<img src="https://i.ibb.co/Bsn8CM5/logo.png" alt="logo" border="0"><br>
+<p float="left"><img src="https://img.shields.io/badge/python-v2.7.8-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
 <h2>Introduction</h2>
 
-**RecQ** is a Python framework for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. RecQ has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
+**QRec** is a Python framework for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. QRec has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
 <br>
 **Founder**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Main Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
-**Supporter**: [@AIhongzhi](https://github.com/AIhongzhi) (<a href="https://sites.google.com/view/hongzhi-yin/home">A/Prof. Hongzhi Yin</a>) <br> 
-
+**Supporter**: [@AIhongzhi](https://github.com/AIhongzhi) (<a href="https://sites.google.com/view/hongzhi-yin/home">A/Prof. Hongzhi Yin</a>, UQ), [@mingaoo](https://github.com/mingaoo) (<a href="http://www.cse.cqu.edu.cn/info/2096/3497.htm">A/Prof. Min Gao</a>, CQU) <br> 
 
 <h2>What's New</h2>
 <p>
@@ -25,18 +24,18 @@
 
 <h2>Architecture</h2>
 
-![RecQ Architecture](https://i.ibb.co/zJwLXnb/architecture.png)
+![QRec Architecture](https://i.ibb.co/zJwLXnb/architecture.png)
 
 <h2>Workflow</h2>
 
-![RecQ Architecture](https://i.ibb.co/G2f93BJ/workflow.png)
+![QRec Architecture](https://i.ibb.co/7W9xTfd/workflow.png)
 
 <h2>Features</h2>
 <ul>
-<li><b>Cross-platform</b>: RecQ can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
-<li><b>Fast execution</b>: RecQ is based on Numpy, Tensorflow and some lightweight structures, which make it run fast.</li>
-<li><b>Easy configuration</b>: RecQ configs recommenders with a configuration file and provides multiple evaluation protocols.</li>
-<li><b>Easy expansion</b>: RecQ provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
+<li><b>Cross-platform</b>: QRec can be easily deployed and executed in any platforms, including MS Windows, Linux and Mac OS.</li>
+<li><b>Fast execution</b>: QRec is based on Numpy, Tensorflow and some lightweight structures, which make it run fast.</li>
+<li><b>Easy configuration</b>: QRec configs recommenders with a configuration file and provides multiple evaluation protocols.</li>
+<li><b>Easy expansion</b>: QRec provides a set of well-designed recommendation interfaces by which new algorithms can be easily implemented.</li>
 </ul>
 
 <h2>Usage</h2>
@@ -101,7 +100,7 @@
     <td scope="row">item.ranking</td>
     <td>off -topN -1 </td>
     <td>Main option: whether to do item ranking<br>
-      -topN N1,N2,N3...: the length of the recommendation list. *RecQ can generate multiple evaluation results for different N at the same time</br>
+      -topN N1,N2,N3...: the length of the recommendation list. *QRec can generate multiple evaluation results for different N at the same time</br>
     </td>
   </tr>
   <tr>
