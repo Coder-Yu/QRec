@@ -30,6 +30,9 @@ if __name__ == '__main__':
     print 'd6. IRGAN         d7. RSGAN         d8. NGCF          d9. LightGCN        d10. ESRF'
     print 'd11. DHCF         d12. DiffNet      d13. MHCN'
 
+    print 'Self-Supervised Recommenders:'
+    print 'q1. SGL'
+
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
 
