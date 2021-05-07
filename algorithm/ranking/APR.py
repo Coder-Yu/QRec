@@ -135,8 +135,7 @@ class APR(DeepRecommender):
 
                 self.P = sess.run(self.user_embeddings)
                 self.Q = sess.run(self.item_embeddings)
-                if epoch%100==0 and epoch>0:
-                    self.ranking_performance()
+
 
             # start adversarial training
             for epoch in range(self.advEpoch):
@@ -150,8 +149,7 @@ class APR(DeepRecommender):
 
                 self.P = sess.run(self.user_embeddings)
                 self.Q = sess.run(self.item_embeddings)
-                if epoch % 100 == 0 and epoch > 0:
-                    self.ranking_performance()
+
 
 
     def predictForRanking(self, u):
