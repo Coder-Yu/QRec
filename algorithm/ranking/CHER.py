@@ -5,6 +5,9 @@ from scipy.sparse import coo_matrix,csr_matrix
 from tool import config
 import numpy as np
 import random
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 class CHER(DeepRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(CHER, self).__init__(conf,trainingSet,testSet,fold)
@@ -13,23 +16,35 @@ class CHER(DeepRecommender):
         super(CHER, self).readConfiguration()
         args = config.LineConfig(self.config['CHER'])
         self.reg_lambda = float(args['-lambda'])
-        self.droprate = float(args['-droprate'])
-
-    def buildSparseRatingMatrix(self):
-        row, col, entries = [], [], []
-        for pair in self.data.trainingData:
-            # symmetric matrix
-            row += [self.data.user[pair[0]],self.num_users+self.data.item[pair[1]]]
-            col += [self.num_users+self.data.item[pair[1]],self.data.user[pair[0]]]
-            entries += [1.0,1.0]
-        ratingMatrix = coo_matrix((entries, (row, col)), shape=(self.num_users+self.num_items,self.num_users+self.num_items),dtype=np.float32)
-
-        return ratingMatrix
+        self.eps = float(args['-eps'])
 
     def generate_adv_examples(self):
+        pass
+
+    def _create_adv_inference(self):
+        self.perturbed_user_embeddings = self.main_user_embeddings+self.adv_U
+        self.perturbed_item_embeddings = self.main_item_embeddings+self.adv_V
+        self.adv_ssl_loss = self.mutual_information_maximization(self.main_user_embeddings,self.perturbed_user_embeddings)
+        self.adv_ssl_loss += self.mutual_information_maximization(self.main_item_embeddings,self.perturbed_item_embeddings)
+
+        # get gradients of Delta
+        self.grad_U, self.grad_V = tf.gradients(self.adv_ssl_loss, [self.adv_U, self.adv_V])
+
+        # convert the IndexedSlice Data to Dense Tensor
+        self.grad_U_dense = tf.stop_gradient(self.grad_U)
+        self.grad_V_dense = tf.stop_gradient(self.grad_V)
+
+        # normalization: new_grad = (grad / |grad|) * eps
+        self.update_U = self.adv_U.assign(tf.nn.l2_normalize(self.grad_U_dense, 1) * self.eps)
+        self.update_V = self.adv_V.assign(tf.nn.l2_normalize(self.grad_V_dense, 1) * self.eps)
+
 
     def initModel(self):
         super(CHER, self).initModel()
+        initializer = tf.contrib.layers.xavier_initializer()
+        self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.embed_size]), dtype=tf.float32, trainable=False)
+        self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.embed_size]), dtype=tf.float32, trainable=False)
+        self.bi_matrix = tf.Variable(initializer([self.embed_size, self.embed_size]), name='bilinear')
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
         self.n_layers = 2
 
@@ -39,7 +54,7 @@ class CHER(DeepRecommender):
         values = [float(item[2])/sqrt(len(self.data.trainSet_u[item[0]]))/sqrt(len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData]*2
         norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
 
-        all_embeddings = []
+        all_embeddings = [ego_embeddings]
         for k in range(self.n_layers):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
             # normalize the distribution of embeddings.
@@ -55,63 +70,46 @@ class CHER(DeepRecommender):
         self.v_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
         self.test = tf.reduce_sum(tf.multiply(self.u_embedding,self.main_item_embeddings),1)
 
-    def edge_dropout(self):
-        augmentation = [interaction for interaction in self.data.trainingData if random.random()>self.droprate]
-        row = []
-        col = []
-        entries = []
-        for pair in augmentation:
-            # symmetric matrix
-            row += [self.data.user[pair[0]], self.num_users + self.data.item[pair[1]]]
-            col += [self.num_users + self.data.item[pair[1]], self.data.user[pair[0]]]
-            entries += [1.0, 1.0]
-        adjacency = coo_matrix((entries, (row, col)), shape=(self.num_users + self.num_items, self.num_users + self.num_items), dtype=np.float32)
-        norm_adj = adjacency.multiply(1.0 / np.sqrt(adjacency.sum(axis=1)).reshape(-1, 1))
-        norm_adj = norm_adj.multiply(1.0 / np.sqrt(adjacency.sum(axis=0)).reshape(1, -1))
-        return np.mat(zip(np.array(row,dtype=np.int32), np.array(col,dtype=np.int32))),norm_adj.data.astype(np.float32)
+
 
     def mutual_information_maximization(self,em1,em2):
-        # def row_shuffle(embedding):
-        #     return tf.gather(embedding, tf.random.shuffle(tf.range(tf.shape(embedding)[0])))
-        def row_column_shuffle(embedding):
-            corrupted_embedding = tf.transpose(tf.gather(tf.transpose(embedding), tf.random.shuffle(tf.range(tf.shape(tf.transpose(embedding))[0]))))
-            corrupted_embedding = tf.gather(corrupted_embedding, tf.random.shuffle(tf.range(tf.shape(corrupted_embedding)[0])))
-            return corrupted_embedding
+        def row_shuffle(embedding):
+            return tf.gather(embedding, tf.random.shuffle(tf.range(tf.shape(embedding)[0])))
+        # def row_column_shuffle(embedding):
+        #     corrupted_embedding = tf.transpose(tf.gather(tf.transpose(embedding), tf.random.shuffle(tf.range(tf.shape(tf.transpose(embedding))[0]))))
+        #     corrupted_embedding = tf.gather(corrupted_embedding, tf.random.shuffle(tf.range(tf.shape(corrupted_embedding)[0])))
+        #     return corrupted_embedding
         def cosine(x1,x2):
-            normalize_x1 = tf.nn.l2_normalize(x1, 1)
-            normalize_x2 = tf.nn.l2_normalize(x2, 1)
-            return tf.reduce_sum(tf.multiply(normalize_x1,normalize_x2),1)
+            #normalize_x1 = tf.nn.l2_normalize(x1, 1)
+            #normalize_x2 = tf.nn.l2_normalize(x2, 1)
+            return tf.reduce_sum(tf.multiply(tf.matmul(x1,self.bi_matrix),x2),1)
         pos = cosine(em1,em2)
-        neg = cosine(em1,row_column_shuffle(em2))
+        neg = cosine(em1,row_shuffle(em2))
         loss = tf.reduce_sum(-tf.log(tf.sigmoid(pos/0.2)+1e-6)-tf.log(1-tf.sigmoid(neg/0.2)+1e-6))
         return loss
 
     def buildModel(self):
+        self._create_adv_inference()
         #main task: recommendation
         y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
             - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
-        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.u_embedding) +
+        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.u_embedding) +
                                                                     tf.nn.l2_loss(self.v_embedding) +
                                                                     tf.nn.l2_loss(self.neg_item_embedding))
         #SSL task: contrastive learning
-        ssl_loss = self.reg_lambda*self.mutual_information_maximization(self.s1_user_embeddings,self.s2_user_embeddings)
-        ssl_loss += self.reg_lambda*self.mutual_information_maximization(self.s1_item_embeddings, self.s2_item_embeddings)
-
-        loss+=ssl_loss
+        loss = rec_loss+ self.reg_lambda*self.adv_ssl_loss
         opt = tf.train.AdamOptimizer(self.lRate)
         train = opt.minimize(loss)
 
         init = tf.global_variables_initializer()
         self.sess.run(init)
         for iteration in range(self.maxIter):
-            s1 = self.edge_dropout()
-            s2 = self.edge_dropout()
             for n, batch in enumerate(self.next_batch_pairwise()):
+                self.sess.run([self.update_U, self.update_V])
                 user_idx, i_idx, j_idx = batch
-                _, l,ssl_l = self.sess.run([train, loss, ssl_loss],
-                                feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,
-                                           self.s1_view:s1[0],self.s1_values:s1[1],self.s2_view:s2[0],self.s2_values:s2[1]})
-                print 'training:', iteration + 1, 'batch', n, 'loss:', l, 'ssl_loss',ssl_l
+                _, l,rec_l,ssl_l = self.sess.run([train, loss, rec_loss, self.adv_ssl_loss],
+                                feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,})
+                print 'training:', iteration + 1, 'batch', n, 'total_loss:',l, 'rec_loss:', rec_l,'ssl_loss',self.reg_lambda*ssl_l
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

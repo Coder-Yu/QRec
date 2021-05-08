@@ -65,7 +65,7 @@ class SGL(DeepRecommender):
         values = [float(item[2])/sqrt(len(self.data.trainSet_u[item[0]]))/sqrt(len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData]*2
         norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
 
-        all_embeddings = []
+        all_embeddings = [ego_embeddings]
         for k in range(self.n_layers):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
             # normalize the distribution of embeddings.
