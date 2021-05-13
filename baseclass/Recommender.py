@@ -1,14 +1,11 @@
-# Copyright (C) 2016 School of Software Engineering, Chongqing University
-#
-# This file is part of RecQ.
-#
-# RecQ is a free software: you can redistribute it and/or modify
+# QRec is a free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 from data.rating import RatingDAO
 from tool.file import FileIO
-from tool.config import Config,LineConfig
+from tool.config import LineConfig
+from tool.log import Log
 from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
@@ -45,6 +42,13 @@ class Recommender(object):
 
         self.num_users, self.num_items, self.train_size = self.data.trainingSize()
 
+    def initializing_log(self):
+        currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        self.log = Log(self.algorName,self.algorName+self.foldInfo+' '+currentTime)
+        #save configuration
+        self.log.logger.info('### model configuration ###')
+        for k in self.config.config:
+            self.log.logger.info(k+'='+self.config[k])
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
@@ -123,6 +127,8 @@ class Recommender(object):
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
         self.measure = Measure.ratingMeasure(self.data.testData)
         FileIO.writeFile(outDir, fileName, self.measure)
+        self.log.logger.info('###Evaluation Results###')
+        self.log.logger.info(self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
     def evalRanking(self):
@@ -144,7 +150,6 @@ class Recommender(object):
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
         # predict
         recList = {}
-        userN = {}
         userCount = len(self.data.testSet_u)
         #rawRes = {}
         for i, user in enumerate(self.data.testSet_u):
@@ -160,29 +165,23 @@ class Recommender(object):
                 # add prediction in order to measure
 
                 itemSet[self.data.id2item[id]] = rating
-
             ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
                 del itemSet[item]
-
             Nrecommendations = []
             for item in itemSet:
                 if len(Nrecommendations) < N:
                     Nrecommendations.append((item, itemSet[item]))
                 else:
                     break
-
             Nrecommendations.sort(key=lambda d: d[1], reverse=True)
             recommendations = [item[1] for item in Nrecommendations]
             resNames = [item[0] for item in Nrecommendations]
-
-
             # find the N biggest scores
             for item in itemSet:
                 ind = N
                 l = 0
                 r = N - 1
-
                 if recommendations[r] < itemSet[item]:
                     while r>=l:
                         mid = (r-l) / 2 + l
@@ -190,7 +189,6 @@ class Recommender(object):
                             l = mid + 1
                         elif recommendations[mid] < itemSet[item]:
                             r = mid - 1
-
                         if r < l:
                             ind = r
                             break
@@ -201,23 +199,18 @@ class Recommender(object):
                 if ind < N - 1:
                     recommendations[ind+1] = itemSet[item]
                     resNames[ind+1] = item
-
             recList[user] = zip(resNames, recommendations)
-
-
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
             for item in recList[user]:
                 line += ' (' + item[0] + ',' + str(item[1]) + ')'
                 if self.data.testSet_u[user].has_key(item[0]):
                     line += '*'
-
             line += '\n'
             res.append(line)
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
-            fileName = ''
             outDir = self.output['-dir']
             fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
             N) + 'items' + self.foldInfo + '.txt'
@@ -227,11 +220,14 @@ class Recommender(object):
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         self.measure = Measure.rankingMeasure(self.data.testSet_u, recList, top)
+        self.log.logger.info('###Evaluation Results###')
+        self.log.logger.info(self.measure)
         FileIO.writeFile(outDir, fileName, self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
     def execute(self):
         self.readConfiguration()
+        self.initializing_log()
         if self.foldInfo == '[1]':
             self.printAlgorConfig()
         #load model from disk or build model
