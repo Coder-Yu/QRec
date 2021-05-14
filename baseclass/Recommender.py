@@ -46,9 +46,9 @@ class Recommender(object):
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         self.log = Log(self.algorName,self.algorName+self.foldInfo+' '+currentTime)
         #save configuration
-        self.log.logger.info('### model configuration ###')
+        self.log.add('### model configuration ###')
         for k in self.config.config:
-            self.log.logger.info(k+'='+self.config[k])
+            self.log.add(k+'='+self.config[k])
 
     def readConfiguration(self):
         self.algorName = self.config['recommender']
@@ -127,8 +127,8 @@ class Recommender(object):
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
         self.measure = Measure.ratingMeasure(self.data.testData)
         FileIO.writeFile(outDir, fileName, self.measure)
-        self.log.logger.info('###Evaluation Results###')
-        self.log.logger.info(self.measure)
+        self.log.add('###Evaluation Results###')
+        self.log.add(self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 
     def evalRanking(self):
@@ -220,8 +220,8 @@ class Recommender(object):
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         self.measure = Measure.rankingMeasure(self.data.testSet_u, recList, top)
-        self.log.logger.info('###Evaluation Results###')
-        self.log.logger.info(self.measure)
+        self.log.add('###Evaluation Results###')
+        self.log.add(self.measure)
         FileIO.writeFile(outDir, fileName, self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
 

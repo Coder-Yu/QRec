@@ -11,3 +11,5 @@ class Log(object):
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
+    def add(self,text):
+        self.logger.info(text)
