@@ -1,11 +1,10 @@
 from baseclass.DeepRecommender import DeepRecommender
 import tensorflow as tf
-from math import sqrt
-from scipy.sparse import coo_matrix,csr_matrix
 from tool import config
 import numpy as np
 import scipy.sparse as sp
 import random
+
 class SGL(DeepRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(SGL, self).__init__(conf,trainingSet,testSet,fold)
@@ -14,59 +13,61 @@ class SGL(DeepRecommender):
         super(SGL, self).readConfiguration()
         args = config.LineConfig(self.config['SGL'])
         self.reg_lambda = float(args['-lambda'])
-        self.droprate = float(args['-droprate'])
-
-    def buildSparseRatingMatrix(self):
-        row, col, entries = [], [], []
-        for pair in self.data.trainingData:
-            # symmetric matrix
-            row += [self.data.user[pair[0]],self.num_users+self.data.item[pair[1]]]
-            col += [self.num_users+self.data.item[pair[1]],self.data.user[pair[0]]]
-            entries += [1.0,1.0]
-        ratingMatrix = coo_matrix((entries, (row, col)), shape=(self.num_users+self.num_items,self.num_users+self.num_items),dtype=np.float32)
-
-        return ratingMatrix
+        self.drop_rate = float(args['-droprate'])
+        self.aug_type = int(args['-augtype'])
 
     def initModel(self):
         super(SGL, self).initModel()
+        norm_adj = self._create_adj_mat(is_subgraph=False)
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
+        s1_embeddings = ego_embeddings
+        s2_embeddings = ego_embeddings
+        all_s1_embeddings = [s1_embeddings]
+        all_s2_embeddings = [s2_embeddings]
+        all_embeddings = [ego_embeddings]
         self.n_layers = 2
+        #variable initialization
+        self._create_variable()
+        for k in range(0, self.n_layers):
+            if self.aug_type in [0, 1]:
+                self.sub_mat['sub_mat_1%d' % k] = tf.SparseTensor(
+                    self.sub_mat['adj_indices_sub1'],
+                    self.sub_mat['adj_values_sub1'],
+                    self.sub_mat['adj_shape_sub1'])
+                self.sub_mat['sub_mat_2%d' % k] = tf.SparseTensor(
+                    self.sub_mat['adj_indices_sub2'],
+                    self.sub_mat['adj_values_sub2'],
+                    self.sub_mat['adj_shape_sub2'])
+            else:
+                self.sub_mat['sub_mat_1%d' % k] = tf.SparseTensor(
+                    self.sub_mat['adj_indices_sub1%d' % k],
+                    self.sub_mat['adj_values_sub1%d' % k],
+                    self.sub_mat['adj_shape_sub1%d' % k])
+                self.sub_mat['sub_mat_2%d' % k] = tf.SparseTensor(
+                    self.sub_mat['adj_indices_sub2%d' % k],
+                    self.sub_mat['adj_values_sub2%d' % k],
+                    self.sub_mat['adj_shape_sub2%d' % k])
+        norm_adj = self._convert_sp_mat_to_sp_tensor(norm_adj)
 
         #s1 - view
-        view_embeddings = ego_embeddings
-        s1_embeddings = [view_embeddings]
-        self.s1_view = tf.placeholder(tf.int64)
-        self.s1_values = tf.placeholder(tf.float32)
-        s1_ajacency = tf.SparseTensor(indices=self.s1_view, values=self.s1_values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
         for k in range(self.n_layers):
-            view_embeddings = tf.sparse_tensor_dense_matmul(s1_ajacency,view_embeddings)
+            view_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat_1%d' % k],s1_embeddings)
             # normalize the distribution of embeddings.
             norm_embeddings = tf.math.l2_normalize(view_embeddings, axis=1)
-            s1_embeddings += [norm_embeddings]
-        s1_embeddings = tf.reduce_sum(s1_embeddings, axis=0)
-        self.s1_user_embeddings, self.s1_item_embeddings = tf.split(s1_embeddings, [self.num_users, self.num_items], 0)
+            all_s1_embeddings += [norm_embeddings]
+        all_s1_embeddings = tf.reduce_sum(s1_embeddings, axis=0)
+        self.s1_user_embeddings, self.s1_item_embeddings = tf.split(all_s1_embeddings, [self.num_users, self.num_items], 0)
 
         #s2 - view
-        view_embeddings = ego_embeddings
-        s2_embeddings = [view_embeddings]
-        self.s2_view = tf.placeholder(tf.int64)
-        self.s2_values = tf.placeholder(tf.float32)
-        s2_ajacency = tf.SparseTensor(indices=self.s2_view, values=self.s2_values, dense_shape=[self.num_users + self.num_items, self.num_users + self.num_items])
         for k in range(self.n_layers):
-            view_embeddings = tf.sparse_tensor_dense_matmul(s2_ajacency,view_embeddings)
+            view_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat_2%d' % k],s2_embeddings)
             # normalize the distribution of embeddings.
             norm_embeddings = tf.math.l2_normalize(view_embeddings, axis=1)
-            s2_embeddings += [norm_embeddings]
-        s2_embeddings = tf.reduce_sum(s2_embeddings, axis=0)
-        self.s2_user_embeddings, self.s2_item_embeddings = tf.split(s2_embeddings, [self.num_users, self.num_items], 0)
+            all_s2_embeddings += [norm_embeddings]
+        all_s2_embeddings = tf.reduce_sum(s2_embeddings, axis=0)
+        self.s2_user_embeddings, self.s2_item_embeddings = tf.split(all_s2_embeddings, [self.num_users, self.num_items], 0)
 
-        #main view
-        indices = [[self.data.user[item[0]],self.num_users+self.data.item[item[1]]] for item in self.data.trainingData]
-        indices += [[self.num_users+self.data.item[item[1]],self.data.user[item[0]]] for item in self.data.trainingData]
-        values = [float(item[2])/sqrt(len(self.data.trainSet_u[item[0]]))/sqrt(len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData]*2
-        norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
-
-        all_embeddings = [ego_embeddings]
+        #recommendation view
         for k in range(self.n_layers):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
             # normalize the distribution of embeddings.
@@ -82,13 +83,41 @@ class SGL(DeepRecommender):
         self.v_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
         self.test = tf.reduce_sum(tf.multiply(self.u_embedding,self.main_item_embeddings),1)
 
-    def create_adj_mat(self, is_subgraph=False, aug_type=0):
+    def _convert_sp_mat_to_sp_tensor(self, X):
+        coo = X.tocoo().astype(np.float32)
+        indices = np.mat([coo.row, coo.col]).transpose()
+        return tf.SparseTensor(indices, coo.data, coo.shape)
+
+    def _create_variable(self):
+        self.sub_mat = {}
+        if self.aug_type in [0, 1]:
+            self.sub_mat['adj_values_sub1'] = tf.placeholder(tf.float32)
+            self.sub_mat['adj_indices_sub1'] = tf.placeholder(tf.int64)
+            self.sub_mat['adj_shape_sub1'] = tf.placeholder(tf.int64)
+
+            self.sub_mat['adj_values_sub2'] = tf.placeholder(tf.float32)
+            self.sub_mat['adj_indices_sub2'] = tf.placeholder(tf.int64)
+            self.sub_mat['adj_shape_sub2'] = tf.placeholder(tf.int64)
+        else:
+            for k in range(self.n_layers):
+                self.sub_mat['adj_values_sub1%d' % k] = tf.placeholder(tf.float32, name='adj_values_sub1%d' % k)
+                self.sub_mat['adj_indices_sub1%d' % k] = tf.placeholder(tf.int64, name='adj_indices_sub1%d' % k)
+                self.sub_mat['adj_shape_sub1%d' % k] = tf.placeholder(tf.int64, name='adj_shape_sub1%d' % k)
+
+                self.sub_mat['adj_values_sub2%d' % k] = tf.placeholder(tf.float32, name='adj_values_sub2%d' % k)
+                self.sub_mat['adj_indices_sub2%d' % k] = tf.placeholder(tf.int64, name='adj_indices_sub2%d' % k)
+                self.sub_mat['adj_shape_sub2%d' % k] = tf.placeholder(tf.int64, name='adj_shape_sub2%d' % k)
+
+    def _create_adj_mat(self, is_subgraph=False, aug_type=0):
         n_nodes = self.num_users + self.num_items
-        if is_subgraph and aug_type in [0, 1, 2] and self.droprate > 0:
+        row_idx = [self.data.user[pair[0]] for pair in self.data.trainingData]
+        col_idx = [self.data.user[pair[0]] for pair in self.data.trainingData]
+        if is_subgraph and aug_type in [0, 1, 2] and self.drop_rate > 0:
             # data augmentation type --- 0: Node Dropout; 1: Edge Dropout; 2: Random Walk
+
             if aug_type == 0:
-                drop_user_idx = random.sample(self.num_users, size=int(self.num_users * self.droprate))
-                drop_item_idx = random.sample(self.num_items, size=int(self.num_items * self.droprate))
+                drop_user_idx = random.sample(range(self.num_users), size=int(self.num_users * self.drop_rate))
+                drop_item_idx = random.sample(range(self.num_items), size=int(self.num_items * self.drop_rate))
                 indicator_user = np.ones(self.num_users, dtype=np.float32)
                 indicator_item = np.ones(self.num_items, dtype=np.float32)
                 indicator_user[drop_user_idx] = 0.
@@ -96,23 +125,23 @@ class SGL(DeepRecommender):
                 diag_indicator_user = sp.diags(indicator_user)
                 diag_indicator_item = sp.diags(indicator_item)
                 R = sp.csr_matrix(
-                    (np.ones_like(self.training_user, dtype=np.float32), (self.training_user, self.training_item)),
+                    (np.ones_like(row_idx, dtype=np.float32), (row_idx, col_idx)),
                     shape=(self.num_users, self.num_items))
                 R_prime = diag_indicator_user.dot(R).dot(diag_indicator_item)
                 (user_np_keep, item_np_keep) = R_prime.nonzero()
                 ratings_keep = R_prime.data
                 tmp_adj = sp.csr_matrix((ratings_keep, (user_np_keep, item_np_keep+self.num_users)), shape=(n_nodes, n_nodes))
             if aug_type in [1, 2]:
-                keep_idx = randint_choice(len(self.training_user), size=int(len(self.training_user) * (1 - self.ssl_ratio)), replace=False)
-                user_np = np.array(self.training_user)[keep_idx]
-                item_np = np.array(self.training_item)[keep_idx]
+                keep_idx = random.sample(range(self.data.elemCount()), size=int(len(self.data.elemCount()) * (1 - self.drop_rate)))
+                user_np = np.array(row_idx)[keep_idx]
+                item_np = np.array(col_idx)[keep_idx]
                 ratings = np.ones_like(user_np, dtype=np.float32)
-                tmp_adj = sp.csr_matrix((ratings, (user_np, item_np+self.n_users)), shape=(n_nodes, n_nodes))
+                tmp_adj = sp.csr_matrix((ratings, (user_np, item_np+self.num_users)), shape=(n_nodes, n_nodes))
         else:
-            user_np = np.array(self.training_user)
-            item_np = np.array(self.training_item)
+            user_np = np.array(row_idx)
+            item_np = np.array(col_idx)
             ratings = np.ones_like(user_np, dtype=np.float32)
-            tmp_adj = sp.csr_matrix((ratings, (user_np, item_np+self.n_users)), shape=(n_nodes, n_nodes))
+            tmp_adj = sp.csr_matrix((ratings, (user_np, item_np+self.num_users)), shape=(n_nodes, n_nodes))
         adj_mat = tmp_adj + tmp_adj.T
 
         # pre adjcency matrix
@@ -122,24 +151,7 @@ class SGL(DeepRecommender):
         d_mat_inv = sp.diags(d_inv)
         norm_adj_tmp = d_mat_inv.dot(adj_mat)
         adj_matrix = norm_adj_tmp.dot(d_mat_inv)
-        # print('use the pre adjcency matrix')
-
         return adj_matrix
-
-    def edge_dropout(self):
-        augmentation = [interaction for interaction in self.data.trainingData if random.random()>self.droprate]
-        row = []
-        col = []
-        entries = []
-        for pair in augmentation:
-            # symmetric matrix
-            row += [self.data.user[pair[0]], self.num_users + self.data.item[pair[1]]]
-            col += [self.num_users + self.data.item[pair[1]], self.data.user[pair[0]]]
-            entries += [1.0, 1.0]
-        adjacency = coo_matrix((entries, (row, col)), shape=(self.num_users + self.num_items, self.num_users + self.num_items), dtype=np.float32)
-        norm_adj = adjacency.multiply(1.0 / np.sqrt(adjacency.sum(axis=1)).reshape(-1, 1))
-        norm_adj = norm_adj.multiply(1.0 / np.sqrt(adjacency.sum(axis=0)).reshape(1, -1))
-        return np.mat(zip(np.array(row,dtype=np.int32), np.array(col,dtype=np.int32))),norm_adj.data.astype(np.float32)
 
     def mutual_information_maximization(self,em1,em2):
         # def row_shuffle(embedding):
