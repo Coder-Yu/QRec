@@ -4,6 +4,7 @@ from math import sqrt
 from scipy.sparse import coo_matrix,csr_matrix
 from tool import config
 import numpy as np
+import scipy.sparse as sp
 import random
 class SGL(DeepRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -81,6 +82,50 @@ class SGL(DeepRecommender):
         self.v_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
         self.test = tf.reduce_sum(tf.multiply(self.u_embedding,self.main_item_embeddings),1)
 
+    def create_adj_mat(self, is_subgraph=False, aug_type=0):
+        n_nodes = self.num_users + self.num_items
+        if is_subgraph and aug_type in [0, 1, 2] and self.droprate > 0:
+            # data augmentation type --- 0: Node Dropout; 1: Edge Dropout; 2: Random Walk
+            if aug_type == 0:
+                drop_user_idx = random.sample(self.num_users, size=int(self.num_users * self.droprate))
+                drop_item_idx = random.sample(self.num_items, size=int(self.num_items * self.droprate))
+                indicator_user = np.ones(self.num_users, dtype=np.float32)
+                indicator_item = np.ones(self.num_items, dtype=np.float32)
+                indicator_user[drop_user_idx] = 0.
+                indicator_item[drop_item_idx] = 0.
+                diag_indicator_user = sp.diags(indicator_user)
+                diag_indicator_item = sp.diags(indicator_item)
+                R = sp.csr_matrix(
+                    (np.ones_like(self.training_user, dtype=np.float32), (self.training_user, self.training_item)),
+                    shape=(self.num_users, self.num_items))
+                R_prime = diag_indicator_user.dot(R).dot(diag_indicator_item)
+                (user_np_keep, item_np_keep) = R_prime.nonzero()
+                ratings_keep = R_prime.data
+                tmp_adj = sp.csr_matrix((ratings_keep, (user_np_keep, item_np_keep+self.num_users)), shape=(n_nodes, n_nodes))
+            if aug_type in [1, 2]:
+                keep_idx = randint_choice(len(self.training_user), size=int(len(self.training_user) * (1 - self.ssl_ratio)), replace=False)
+                user_np = np.array(self.training_user)[keep_idx]
+                item_np = np.array(self.training_item)[keep_idx]
+                ratings = np.ones_like(user_np, dtype=np.float32)
+                tmp_adj = sp.csr_matrix((ratings, (user_np, item_np+self.n_users)), shape=(n_nodes, n_nodes))
+        else:
+            user_np = np.array(self.training_user)
+            item_np = np.array(self.training_item)
+            ratings = np.ones_like(user_np, dtype=np.float32)
+            tmp_adj = sp.csr_matrix((ratings, (user_np, item_np+self.n_users)), shape=(n_nodes, n_nodes))
+        adj_mat = tmp_adj + tmp_adj.T
+
+        # pre adjcency matrix
+        rowsum = np.array(adj_mat.sum(1))
+        d_inv = np.power(rowsum, -0.5).flatten()
+        d_inv[np.isinf(d_inv)] = 0.
+        d_mat_inv = sp.diags(d_inv)
+        norm_adj_tmp = d_mat_inv.dot(adj_mat)
+        adj_matrix = norm_adj_tmp.dot(d_mat_inv)
+        # print('use the pre adjcency matrix')
+
+        return adj_matrix
+
     def edge_dropout(self):
         augmentation = [interaction for interaction in self.data.trainingData if random.random()>self.droprate]
         row = []
@@ -120,8 +165,10 @@ class SGL(DeepRecommender):
                                                                     tf.nn.l2_loss(self.v_embedding) +
                                                                     tf.nn.l2_loss(self.neg_item_embedding))
         #SSL task: contrastive learning
-        ssl_loss = self.reg_lambda*self.mutual_information_maximization(self.s1_user_embeddings,self.s2_user_embeddings)
-        ssl_loss += self.reg_lambda*self.mutual_information_maximization(self.s1_item_embeddings, self.s2_item_embeddings)
+        ssl_loss = self.reg_lambda*self.mutual_information_maximization(tf.nn.embedding_lookup(self.s1_user_embeddings,tf.unique(self.u_idx)[0]),
+                                                                 tf.nn.embedding_lookup(self.s2_user_embeddings,tf.unique(self.u_idx)[0]))
+        ssl_loss += self.reg_lambda*self.mutual_information_maximization(tf.nn.embedding_lookup(self.s1_item_embeddings,tf.unique(self.v_idx)[0]),
+                                                                 tf.nn.embedding_lookup(self.s2_item_embeddings,tf.unique(self.v_idx)[0]))
 
         loss+=ssl_loss
         opt = tf.train.AdamOptimizer(self.lRate)
