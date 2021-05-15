@@ -10,6 +10,7 @@
 
 <h2>What's New</h2>
 <p>
+16/05/2021 - SGL proposed in SIGIR'19 paper has been added. </br>
 16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added. </br>
@@ -18,8 +19,8 @@
 17/09/2019 - NGCF proposed in SIGIR'19 has been added. </br>
 13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
 09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>
-02/20/2019 - IRGAN proposed in SIGIR'17 has been added. </br>
-02/12/2019 - CFGAN proposed in CIKM'18 has been added.</br>
+20/02/2019 - IRGAN proposed in SIGIR'17 has been added. </br>
+12/02/2019 - CFGAN proposed in CIKM'18 has been added.</br>
 </p>
 
 <h2>Architecture</h2>
@@ -361,6 +362,11 @@ on Generative Adversarial Networks, CIKM'18.
       <tr>
     <td scope="row">MHCN</td>
         <td>Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW'21.
+         </td>
+      </tr>
+     <tr>
+    <td scope="row">SGL</td>
+        <td>Wu et al. Self-supervised Graph Learning for Recommendation, SIGIR'21.
          </td>
       </tr>
   </table>
