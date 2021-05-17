@@ -10,7 +10,7 @@
 
 <h2>What's New</h2>
 <p>
-16/05/2021 - SGL proposed in SIGIR'19 paper has been added. </br>
+16/05/2021 - SGL proposed in SIGIR'21 paper has been added. </br>
 16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
 19/09/2020 - DHCF proposed in KDD'20 has been added. </br>
