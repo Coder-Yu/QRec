@@ -8,6 +8,13 @@ from tool import config
 from math import sqrt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+#####Note#############################
+#Constructing H_p will require a large amount of memory when there are a large number of users in the dataset.
+#So I recommend to close parallel option (-p in evaluation.setup in MHCN.conf in the directory ./config)
+#When running cross-validation, you can run k-fold validation one-by-one automatically (refer to README for more usage details).
+#The problem is caused due to the high density of H_p, and we will propose a more memory-saving variant in our journal extension.
+######################################
+
 class MHCN(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
@@ -69,30 +76,15 @@ class MHCN(SocialRecommender,DeepRecommender):
         A9 = (Y.dot(Y.T)).multiply(U)
         A9 = A9+A9.T
         A10  = Y.dot(Y.T)-A8-A9
-        A10 = csr_matrix(A10)
+        H_p = A10
+
         H_s = sum([A1,A2,A3,A4,A5,A6,A7])
-
-        H_s = H_s.T.multiply(1.0/H_s.sum(axis=1).reshape(1, -1))
-        H_s = H_s.T
-
+        H_s = H_s.multiply(1.0/H_s.sum(axis=1).reshape(-1, 1))
         H_j = sum([A8,A9])
+        H_j = H_j.multiply(1.0/H_j.sum(axis=1).reshape(-1, 1))
 
-        H_j = H_j.T.multiply(1.0/H_j.sum(axis=1).reshape(1, -1))
-        H_j = H_j.T
-
-        H_p = A10.tocoo()
-        r,c = H_p.row,H_p.col
-        data = H_p.data
-        ind = []
-        for i in range(data.shape[0]): #remove pairs appearing only 1 time.
-            if data[i]>1:
-                ind.append(i)
-        data = [data[i] for i in ind]
-        row = [r[i] for i in ind]
-        col = [c[i] for i in ind]
-        H_p = coo_matrix((data,(row,col)),shape=(self.num_users,self.num_users))
-        H_p = H_p.T.multiply(1.0/H_p.sum(axis=1).reshape(1, -1))
-        H_p = H_p.T
+        H_p = H_p.multiply(H_p>1)
+        H_p = H_p.multiply(1.0/H_p.sum(axis=1).reshape(-1, 1))
 
         return [H_s,H_j,H_p]
 
@@ -227,7 +219,8 @@ class MHCN(SocialRecommender,DeepRecommender):
         reg_loss = 0
         for key in self.weights:
             reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
-        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
+        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + \
+                   self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
         total_loss = rec_loss+reg_loss + self.ss_rate*self.ss_loss
         opt = tf.train.AdamOptimizer(self.lRate)
         train_op = opt.minimize(total_loss)
