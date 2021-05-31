@@ -8,12 +8,7 @@ from tool import config
 from math import sqrt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-#####Note#############################
-#Constructing H_p will require a large amount of memory when there are a large number of users in the dataset.
-#So I recommend to close parallel option (-p in evaluation.setup in MHCN.conf in the directory ./config)
-#When running cross-validation, you can run k-fold validation one-by-one automatically (refer to README for more usage details).
-#The problem is caused due to the high density of H_p, and we will propose a more memory-saving variant in our journal extension.
-######################################
+# Maximum Iteration Setting: LastFM 100 Douban 30 Yelp 30
 
 class MHCN(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
@@ -76,13 +71,12 @@ class MHCN(SocialRecommender,DeepRecommender):
         A9 = (Y.dot(Y.T)).multiply(U)
         A9 = A9+A9.T
         A10  = Y.dot(Y.T)-A8-A9
-        H_p = A10
-
+        #addition and row-normalization
         H_s = sum([A1,A2,A3,A4,A5,A6,A7])
         H_s = H_s.multiply(1.0/H_s.sum(axis=1).reshape(-1, 1))
         H_j = sum([A8,A9])
         H_j = H_j.multiply(1.0/H_j.sum(axis=1).reshape(-1, 1))
-
+        H_p = A10
         H_p = H_p.multiply(H_p>1)
         H_p = H_p.multiply(1.0/H_p.sum(axis=1).reshape(-1, 1))
 
@@ -177,15 +171,15 @@ class MHCN(SocialRecommender,DeepRecommender):
         self.final_user_embeddings,self.attention_score = channel_attention(user_embeddings_c1,user_embeddings_c2,user_embeddings_c3)
         self.final_user_embeddings += simple_user_embeddings #for yelp and douban, 1/2 simple user embedding is better
         #create self-supervised loss
-        self.ss_loss += self.hierarchical_mutual_information_maximization(self_supervised_gating(self.final_user_embeddings,1), H_s)
-        self.ss_loss += self.hierarchical_mutual_information_maximization(self_supervised_gating(self.final_user_embeddings,2), H_j)
-        self.ss_loss += self.hierarchical_mutual_information_maximization(self_supervised_gating(self.final_user_embeddings,3), H_p)
+        self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,1), H_s)
+        self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,2), H_j)
+        self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,3), H_p)
         #embedding look-up
         self.neg_item_embedding = tf.nn.embedding_lookup(self.final_item_embeddings, self.neg_idx)
         self.u_embedding = tf.nn.embedding_lookup(self.final_user_embeddings, self.u_idx)
         self.v_embedding = tf.nn.embedding_lookup(self.final_item_embeddings, self.v_idx)
 
-    def hierarchical_mutual_information_maximization(self,em,adj):
+    def hierarchical_self_supervision(self,em,adj):
         def row_shuffle(embedding):
             return tf.gather(embedding, tf.random.shuffle(tf.range(tf.shape(embedding)[0])))
         def row_column_shuffle(embedding):
