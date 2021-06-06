@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print 'd11. DHCF         d12. DiffNet      d13. MHCN'
 
     print 'Self-Supervised Recommenders:'
-    print 'q1. SGL           q2. CHER'
+    print 'q1. SGL           q2. CHER          q3. STSR'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                  'a2':'CUNE_MF','a3':'CUNE_BPR','a4':'IF_BPR',
                  'd1':'APR','d2':'CDAE','d3':'DMF','d4':'NeuMF','d5':'CFGAN','d6':'IRGAN','d7':'RSGAN','d8':'NGCF',
                  'd9':'LightGCN', 'd10':'ESRF', 'd11':'DHCF', 'd12':'DiffNet','d13':'MHCN',
-                 'q1':'SGL', 'q2':'CHER',
+                 'q1':'SGL', 'q2':'CHER', 'q3':'SEPT',
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
 
     try:

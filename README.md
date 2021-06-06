@@ -10,6 +10,7 @@
 
 <h2>What's New</h2>
 <p>
+07/06/2021 - SEPT proposed in our KDD'21 paper has been added. </br>
 16/05/2021 - SGL proposed in SIGIR'21 paper has been added. </br>
 16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>
 22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
@@ -367,6 +368,11 @@ on Generative Adversarial Networks, CIKM'18.
      <tr>
     <td scope="row">SGL</td>
         <td>Wu et al. Self-supervised Graph Learning for Recommendation, SIGIR'21.
+         </td>
+      </tr>
+    <tr>
+    <td scope="row">SEPT</td>
+        <td>Yu et al. Socially-Aware Self-supervised Tri-Training for Recommendation, KDD'21.
          </td>
       </tr>
   </table>
