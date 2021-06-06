@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print 'd11. DHCF         d12. DiffNet      d13. MHCN'
 
     print 'Self-Supervised Recommenders:'
-    print 'q1. SGL           q2. CHER          q3. STSR'
+    print 'q1. SGL           q2. CHER          q3. SEPT'
 
     print 'Baselines:'
     print 'b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand'
