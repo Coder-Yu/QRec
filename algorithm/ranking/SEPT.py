@@ -230,23 +230,21 @@ class SEPT(SocialRecommender, DeepRecommender):
         self.f_pos = self.generate_pesudo_labels(sharing_prediction, rec_prediction, self.friend_view_embeddings)
         self.sh_pos = self.generate_pesudo_labels(social_prediction, rec_prediction, self.sharing_view_embeddings)
         self.r_pos = self.generate_pesudo_labels(social_prediction, sharing_prediction, self.rec_user_embeddings)
-
-        # contrastive learning
+        # neighbor-discrimination based contrastive learning
         self.neighbor_dis_loss = self.neighbor_discrimination(self.f_pos, self.friend_view_embeddings)
         self.neighbor_dis_loss += self.neighbor_discrimination(self.sh_pos, self.sharing_view_embeddings)
         self.neighbor_dis_loss += self.neighbor_discrimination(self.r_pos, self.rec_user_embeddings)
-        # self-discriminaton
+        # optimizer setting
         loss = rec_loss
         loss = loss + self.ss_rate*self.neighbor_dis_loss
         v1_opt = tf.train.AdamOptimizer(self.lRate)
         v1_op = v1_opt.minimize(rec_loss)
         v2_opt = tf.train.AdamOptimizer(self.lRate)
         v2_op = v2_opt.minimize(loss)
-
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        # pretraining the social encoders
         for iteration in range(self.maxIter):
+            #joint learning
             if iteration > self.maxIter / 3:
                 sub_mat = {}
                 sub_mat['adj_indices_sub1'], sub_mat['adj_values_sub1'], sub_mat[
@@ -267,6 +265,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                                                   feed_dict=feed_dict)
                     print '[', self.foldInfo, ']', 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'neighbor_loss:', self.ss_rate*l3
             else:
+                #initialization with only recommendation task
                 for n, batch in enumerate(self.next_batch_pairwise()):
                     user_idx, i_idx, j_idx = batch
                     feed_dict = {self.u_idx: user_idx,
