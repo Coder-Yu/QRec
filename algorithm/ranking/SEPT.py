@@ -210,8 +210,7 @@ class SEPT(SocialRecommender, DeepRecommender):
         emb2 = tf.tile(emb2, [1, self.instance_cnt, 1])
         pos = score(emb2, positive)
         ttl_score = tf.matmul(emb, aug_emb, transpose_a=False, transpose_b=True)
-        self_score = tf.reduce_sum(tf.multiply(emb, aug_emb), axis=1)
-        pos_score = tf.reduce_sum(tf.exp(pos / 0.1), axis=1) + tf.exp(self_score/0.1)
+        pos_score = tf.reduce_sum(tf.exp(pos / 0.1), axis=1)
         ttl_score = tf.reduce_sum(tf.exp(ttl_score / 0.1), axis=1)
         ssl_loss = -tf.reduce_sum(tf.log(pos_score / ttl_score))
         return ssl_loss
