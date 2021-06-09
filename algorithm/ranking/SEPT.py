@@ -194,21 +194,19 @@ class SEPT(SocialRecommender, DeepRecommender):
     def generate_pesudo_labels(self, prob1, prob2, emb):
         positive = (prob1 + prob2) / 2
         pos_examples = self.sampling(positive)
-        aug_emb = tf.nn.embedding_lookup(self.aug_user_embeddings, tf.unique(self.u_idx)[0])
-        aug_emb = tf.nn.l2_normalize(aug_emb, axis=1)
-        pos_embeddings = tf.nn.embedding_lookup(aug_emb,pos_examples)
-        return pos_embeddings
+        return pos_examples
 
     def neighbor_discrimination(self, positive, emb):
         def score(x1, x2):
             return tf.reduce_sum(tf.multiply(x1, x2), axis=2)
         emb = tf.nn.embedding_lookup(emb, tf.unique(self.u_idx)[0])
         emb = tf.nn.l2_normalize(emb, axis=1)
-        aug_emb = tf.nn.embedding_lookup(self.aug_user_embeddings,tf.unique(self.u_idx)[0])
-        aug_emb = tf.nn.l2_normalize(aug_emb,axis=1)
+        aug_emb = tf.nn.embedding_lookup(self.aug_user_embeddings, tf.unique(self.u_idx)[0])
+        aug_emb = tf.nn.l2_normalize(aug_emb, axis=1)
+        pos_emb = tf.nn.embedding_lookup(aug_emb, positive)
         emb2 = tf.reshape(emb, [-1, 1, self.embed_size])
         emb2 = tf.tile(emb2, [1, self.instance_cnt, 1])
-        pos = score(emb2, positive)
+        pos = score(emb2, pos_emb)
         ttl_score = tf.matmul(emb, aug_emb, transpose_a=False, transpose_b=True)
         pos_score = tf.reduce_sum(tf.exp(pos / 0.1), axis=1)
         ttl_score = tf.reduce_sum(tf.exp(ttl_score / 0.1), axis=1)
