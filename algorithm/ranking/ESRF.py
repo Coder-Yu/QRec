@@ -73,17 +73,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         for i in range(self.num_users):
             A10[i,i]=0
         #user pairs which share less than 5 common purchases are ignored
-        A10 = A10.tocoo()
-        r,c = A10.row,A10.col
-        data = A10.data
-        ind = []
-        for i in range(data.shape[0]):
-            if data[i]>=5:
-                ind.append(i)
-        data = [data[i] for i in ind]
-        row = [r[i] for i in ind]
-        col = [c[i] for i in ind]
-        A10 = coo_matrix((data,(row,col)),shape=(self.num_users,self.num_users))
+        A10 = A10.multiply(A10>5)
         #obtain the normalized high-order adjacency
         A = S + A1 + A2 + A3 + A4 + A5 + A6 + A7 + self.A8 + A9 + A10
         A = A.transpose().multiply(1.0/A.sum(axis=1).reshape(1, -1))
