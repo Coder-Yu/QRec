@@ -516,11 +516,10 @@ If our project is helpful to you, please cite one of these papers.</br>
 }
 </br>
 </br>
-@article{yu2019generating,</br>
-  title={Generating Reliable Friends via Adversarial Training to Improve Social Recommendation},</br>
-  author={Yu, Junliang and Gao, Min and Yin, Hongzhi and Li, Jundong and Gao, Chongming and Wang, Qinyong},</br>
-  booktitle={2019 IEEE International Conference on Data Mining (ICDM)},</br>
-  pages={768--777},</br>
-  year={2019},</br>
-  organization={IEEE},</br>
+@inproceedings{yu2021self,</br>
+  title={Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation},</br>
+  author={Yu, Junliang and Yin, Hongzhi and Li, Jundong and Wang, Qinyong and Hung, Nguyen Quoc Viet and Zhang, Xiangliang},</br>
+  booktitle={Proceedings of the Web Conference 2021},</br>
+  pages={413--424},</br>
+  year={2021}</br>
 }
