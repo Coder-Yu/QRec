@@ -140,6 +140,7 @@ class MHCN(SocialRecommender,DeepRecommender):
         self.ss_loss = 0
         #multi-channel convolution
         for k in range(self.n_layers):
+            mixed_embedding = channel_attention(user_embeddings_c1, user_embeddings_c2, user_embeddings_c3)[0] + simple_user_embeddings / 2
             #Channel S
             user_embeddings_c1 = tf.sparse_tensor_dense_matmul(H_s,user_embeddings_c1)
             norm_embeddings = tf.math.l2_normalize(user_embeddings_c1, axis=1)
@@ -153,7 +154,6 @@ class MHCN(SocialRecommender,DeepRecommender):
             norm_embeddings = tf.math.l2_normalize(user_embeddings_c3, axis=1)
             all_embeddings_c3 += [norm_embeddings]
             # item convolution
-            mixed_embedding = channel_attention(user_embeddings_c1,user_embeddings_c2, user_embeddings_c3)[0] + simple_user_embeddings/2
             new_item_embeddings = tf.sparse_tensor_dense_matmul(tf.sparse.transpose(R), mixed_embedding)
             norm_embeddings = tf.math.l2_normalize(new_item_embeddings, axis=1)
             all_embeddings_i += [norm_embeddings]
