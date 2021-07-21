@@ -32,6 +32,7 @@ class DeepRecommender(IterativeRecommender):
         self.sess = tf.Session(config=config)
 
     def next_batch_pairwise(self):
+        shuffle(self.data.trainingData)
         batch_id = 0
         while batch_id < self.train_size:
             if batch_id + self.batch_size <= self.train_size:

@@ -9,6 +9,9 @@ from tool.log import Log
 from os.path import abspath
 from time import strftime,localtime,time
 from evaluation.measure import Measure
+from tool.qmath import find_k_largest
+
+
 class Recommender(object):
     def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         self.config = conf
@@ -105,7 +108,6 @@ class Recommender(object):
         #predict
         for ind,entry in enumerate(self.data.testData):
             user,item,rating = entry
-
             #predict
             prediction = self.predict(user,item)
             #denormalize
@@ -130,6 +132,8 @@ class Recommender(object):
         self.log.add('###Evaluation Results###')
         self.log.add(self.measure)
         print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
+
+
 
     def evalRanking(self):
         res = []  # used to contain the text of the result
@@ -162,44 +166,11 @@ class Recommender(object):
                 # prediction = self.checkRatingBoundary(prediction)
                 # pred = self.checkRatingBoundary(prediction)
                 #####################################
-                # add prediction in order to measure
-
                 itemSet[self.data.id2item[id]] = rating
             ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
                 del itemSet[item]
-            Nrecommendations = []
-            for item in itemSet:
-                if len(Nrecommendations) < N:
-                    Nrecommendations.append((item, itemSet[item]))
-                else:
-                    break
-            Nrecommendations.sort(key=lambda d: d[1], reverse=True)
-            recommendations = [item[1] for item in Nrecommendations]
-            resNames = [item[0] for item in Nrecommendations]
-            # find the N biggest scores
-            for item in itemSet:
-                ind = N
-                l = 0
-                r = N - 1
-                if recommendations[r] < itemSet[item]:
-                    while r>=l:
-                        mid = (r-l) / 2 + l
-                        if recommendations[mid] >= itemSet[item]:
-                            l = mid + 1
-                        elif recommendations[mid] < itemSet[item]:
-                            r = mid - 1
-                        if r < l:
-                            ind = r
-                            break
-                #move the items backwards
-                if ind < N - 2:
-                    recommendations[ind+2:]=recommendations[ind+1:-1]
-                    resNames[ind+2:]=resNames[ind+1:-1]
-                if ind < N - 1:
-                    recommendations[ind+1] = itemSet[item]
-                    resNames[ind+1] = item
-            recList[user] = zip(resNames, recommendations)
+            recList[user] = find_k_largest(N,itemSet)
             if i % 100 == 0:
                 print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
             for item in recList[user]:

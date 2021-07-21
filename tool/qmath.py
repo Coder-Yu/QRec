@@ -128,3 +128,37 @@ def sigmoid(val):
 
 def denormalize(vec,maxVal,minVal):
     return minVal+(vec-0.01)*(maxVal-minVal)
+
+def find_k_largest(K,itemSet):
+    Nrecommendations = []
+    for item in itemSet:
+        if len(Nrecommendations) < K:
+            Nrecommendations.append((item, itemSet[item]))
+        else:
+            break
+    Nrecommendations.sort(key=lambda d: d[1], reverse=True)
+    recommendations = [item[1] for item in Nrecommendations]
+    resNames = [item[0] for item in Nrecommendations]
+    # find the N biggest scores
+    for item in itemSet:
+        ind = K
+        l = 0
+        r = K - 1
+        if recommendations[r] < itemSet[item]:
+            while r >= l:
+                mid = (r - l) / 2 + l
+                if recommendations[mid] >= itemSet[item]:
+                    l = mid + 1
+                elif recommendations[mid] < itemSet[item]:
+                    r = mid - 1
+                if r < l:
+                    ind = r
+                    break
+        # move the items backwards
+        if ind < K - 2:
+            recommendations[ind + 2:] = recommendations[ind + 1:-1]
+            resNames[ind + 2:] = resNames[ind + 1:-1]
+        if ind < K - 1:
+            recommendations[ind + 1] = itemSet[item]
+            resNames[ind + 1] = item
+    return zip(resNames, recommendations)
