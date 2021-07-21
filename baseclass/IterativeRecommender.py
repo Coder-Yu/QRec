@@ -3,7 +3,7 @@ from tool import config
 import numpy as np
 from random import shuffle
 from evaluation.measure import Measure
-
+from tool.qmath import find_k_largest
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         super(IterativeRecommender, self).__init__(conf,trainingSet,testSet,fold)
@@ -138,37 +138,7 @@ class IterativeRecommender(Recommender):
             for item in ratedList:
                 if item in itemSet:
                     del itemSet[item]
-            Nrecommendations = []
-            for item in itemSet:
-                if len(Nrecommendations) < N:
-                    Nrecommendations.append((item, itemSet[item]))
-                else:
-                    break
-            Nrecommendations.sort(key=lambda d: d[1], reverse=True)
-            recommendations = [item[1] for item in Nrecommendations]
-            resNames = [item[0] for item in Nrecommendations]
-            # find the K biggest scores
-            for item in itemSet:
-                ind = N
-                l = 0
-                r = N - 1
-                if recommendations[r] < itemSet[item]:
-                    while True:
-                        mid = (l + r) / 2
-                        if recommendations[mid] >= itemSet[item]:
-                            l = mid + 1
-                        elif recommendations[mid] < itemSet[item]:
-                            r = mid - 1
-                        if r < l:
-                            ind = r
-                            break
-                if ind < N - 2:
-                    recommendations[ind + 2:] = recommendations[ind + 1:-1]
-                    resNames[ind + 2:] = resNames[ind + 1:-1]
-                if ind < N - 1:
-                    recommendations[ind + 1] = itemSet[item]
-                    resNames[ind + 1] = item
-            recList[user] = zip(resNames, recommendations)
+            recList[user] = find_k_largest(N,itemSet)
         measure = Measure.rankingMeasure(testSample, recList, [10])
         if len(self.bestPerformance)>0:
             count = 0
