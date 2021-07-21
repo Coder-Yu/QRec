@@ -66,19 +66,14 @@ class FileIO(object):
             except ValueError:
                 print 'Error! Have you added the option -header to the rating.setup?'
                 exit(-1)
-            if not bTest:
-                trainingData.append([userId, itemId, float(rating)])
-            else:
-                if binarized:
-                    if rating==1:
-                        testData.append([userId, itemId, float(rating)])
-                    else:
-                        continue
+            if bTest:
                 testData.append([userId, itemId, float(rating)])
-        if not bTest:
-            return trainingData
-        else:
+            else:
+                trainingData.append([userId, itemId, float(rating)])
+        if bTest:
             return testData
+        else:
+            return trainingData
 
     @staticmethod
     def loadRelationship(conf, filePath):
