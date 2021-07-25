@@ -47,10 +47,8 @@ class DeepRecommender(IterativeRecommender):
             u_idx, i_idx, j_idx = [], [], []
             item_list = self.data.item.keys()
             for i, user in enumerate(users):
-
                 i_idx.append(self.data.item[items[i]])
                 u_idx.append(self.data.user[user])
-
                 neg_item = choice(item_list)
                 while neg_item in self.data.trainSet_u[user]:
                     neg_item = choice(item_list)
@@ -87,26 +85,4 @@ class DeepRecommender(IterativeRecommender):
         'used to rank all the items for the user'
         pass
 
-    # def isConverged(self,iter):
-    #     from math import isnan
-    #     if isnan(self.loss):
-    #         print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
-    #         exit(-1)
-    #     deltaLoss = (self.lastLoss-self.loss)
-    #     if self.ranking.isMainOn():
-    #         measure = self.ranking_performance(iter)
-    #         print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %s %s (Top-10 On 300 users)' \
-    #               %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate, measure[-3].strip()[:11], measure[-2].strip()[:12])
-    #     else:
-    #         measure = self.rating_performance()
-    #         print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
-    #               % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12])
-    #     #check if converged
-    #     cond = abs(deltaLoss) < 1e-6
-    #     converged = cond
-    #     if not converged:
-    #         self.updateLearningRate(iter)
-    #     self.lastLoss = self.loss
-    #     shuffle(self.data.trainingData)
-    #     return converged
 
