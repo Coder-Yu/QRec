@@ -203,10 +203,6 @@ class MHCN(SocialRecommender,DeepRecommender):
         global_loss = tf.reduce_sum(-tf.log(tf.sigmoid(pos-neg1)))
         return global_loss+local_loss
 
-    def saveModel(self):
-        #store the best parameters
-        self.bestU, self.bestV = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
-
     def buildModel(self):
         y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
             - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
@@ -220,7 +216,7 @@ class MHCN(SocialRecommender,DeepRecommender):
         train_op = opt.minimize(total_loss)
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        # Maximum Iteration Setting: LastFM 100 Douban 30 Yelp 30
+        # Suggested Maximum Iteration Setting: LastFM 120 Douban 30 Yelp 30
         for iteration in range(self.maxIter):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
@@ -229,9 +225,6 @@ class MHCN(SocialRecommender,DeepRecommender):
                 print '[',self.foldInfo,']','training:', iteration + 1, 'batch', n, 'rec loss:', l1#,'ss_loss',l2
 
             self.U, self.V = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
-            if iteration>self.maxIter-50:
-                self.ranking_performance(iteration)
-        self.U,self.V = self.bestU,self.bestV
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

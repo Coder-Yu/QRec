@@ -9,7 +9,7 @@ from tool import config
 import random
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-#Suggested Iteration LastFM: 120, Douban-Book: 40, Yelp: 40.
+#Suggested Maxium Iteration LastFM: 120, Douban-Book: 30, Yelp: 30.
 #Read the paper for the values of other parameters.
 
 class SEPT(SocialRecommender, DeepRecommender):
@@ -127,8 +127,8 @@ class SEPT(SocialRecommender, DeepRecommender):
         social_mat, sharing_mat = self.get_social_related_views(self.bs_matrix, self.rating_mat)
         social_mat = self._convert_sp_mat_to_sp_tensor(social_mat)
         sharing_mat = self._convert_sp_mat_to_sp_tensor(sharing_mat)
-        self.user_embeddings/=2 # trick
-        self.item_embeddings/=2 # trick
+        self.user_embeddings/=2 # trick, equivalent to using lower-variance Gauss distribution
+        self.item_embeddings/=2 # trick, equivalent to using lower-variance Gauss distribution
         # initialize adjacency matrices
         R = self.get_adj_mat()
         R = self._convert_sp_mat_to_sp_tensor(R)
@@ -186,10 +186,6 @@ class SEPT(SocialRecommender, DeepRecommender):
 
     def sampling(self, logits):
         return tf.math.top_k(logits, self.instance_cnt)[1]
-
-    def saveModel(self):
-        # store the best parameters
-        self.bestU, self.bestV = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
 
     def generate_pesudo_labels(self, prob1, prob2, emb):
         positive = (prob1 + prob2) / 2
@@ -273,9 +269,6 @@ class SEPT(SocialRecommender, DeepRecommender):
                     print '[', self.foldInfo, ']', 'training:', iteration + 1, 'batch', n, 'rec loss:', l1
 
             self.U, self.V = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
-            if iteration > self.maxIter - 50:
-                self.ranking_performance(iteration)
-        self.U, self.V = self.bestU, self.bestV
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
