@@ -91,7 +91,7 @@ class IterativeRecommender(Recommender):
         if self.ranking.isMainOn():
             print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
                   %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
-            measure = self.ranking_performance(iter)
+            measure = self.quick_validation(iter)
         else:
             measure = self.rating_performance()
             print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
@@ -116,7 +116,7 @@ class IterativeRecommender(Recommender):
         self.measure = Measure.ratingMeasure(res)
         return self.measure
 
-    def ranking_performance(self,iteration):
+    def quick_validation(self,iteration):
         #for quick evaluation, we only rank 2000 items
         #results of 1000 users would be evaluated
         N = 10

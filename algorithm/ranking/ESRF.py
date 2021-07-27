@@ -321,7 +321,7 @@ class ESRF(SocialRecommender,DeepRecommender):
             u_i = np.random.randint(0, self.num_users)
             self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
                                            feed_dict={self.userSegment:u_i,self.isSocial: 0,self.isAttentive:0,self.sampledItems:selectedItems})
-            self.isConverged(iteration + 1+self.maxIter/2)
+
             #self.sess.run([self.r_train, self.r_loss])
         # self.attentiveTraining = 1
         # #adversarial learning with attention
@@ -337,7 +337,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         #                                               self.v_idx: [0], self.isSocial: 1,self.isAttentive:1,self.sampledItems:selectedItems})
         #     self.isConverged(iteration + 1+self.maxIter)
             #self.sess.run([self.r_train, self.r_loss])
-        self.U,self.V = self.bestU,self.bestV
+
 
     def saveModel(self):
         selectedItems = self.sampleItems()

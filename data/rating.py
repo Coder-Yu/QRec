@@ -1,16 +1,12 @@
 import numpy as np
-from structure import sparseMatrix,new_sparseMatrix
 from tool.config import Config,LineConfig
-from tool.qmath import normalize
-from evaluation.dataSplit import DataSplit
-import os.path
-from re import split
+import random
 from collections import defaultdict
 class RatingDAO(object):
     'data access control'
     def __init__(self,config,trainingSet, testSet):
         self.config = config
-        self.ratingConfig = LineConfig(config['ratings.setup'])
+        self.evalSettings = LineConfig(self.config['evaluation.setup'])
         self.user = {} #map user names to identifiers (id)
         self.item = {} #map item names to identifiers (id)
         self.id2user = {}
@@ -21,7 +17,7 @@ class RatingDAO(object):
         self.trainSet_u = defaultdict(dict)
         self.trainSet_i = defaultdict(dict)
         self.testSet_u = defaultdict(dict) # Store the test set in the form of [user][item]=rating
-        self.testSet_i = defaultdict(dict) # Store the test set in the form of [item][user]=rating]
+        self.testSet_i = defaultdict(dict) # Store the test set in the form of [item][user]=rating
         self.rScale = [] #rating scale
 
         self.trainingData = trainingSet[:]
@@ -35,8 +31,13 @@ class RatingDAO(object):
 
     def __generateSet(self):
         scale = set()
-        # find the maximum rating and minimum value
-
+        #if validation is conducted, we sample the training data at a given probability to form the validation set,
+        #and then replacing the test data with the validation data to tune parameters.
+        if self.evalSettings.contains('-val'):
+            random.shuffle(self.trainingData)
+            separation = int(self.elemCount()*float(self.evalSettings['-val']))
+            self.testData = self.trainingData[:separation]
+            self.trainingData = self.trainingData[separation:]
         for i,entry in enumerate(self.trainingData):
             userName,itemName,rating = entry
             # makes the rating within the range [0, 1].
@@ -56,7 +57,6 @@ class RatingDAO(object):
             scale.add(float(rating))
         self.rScale = list(scale)
         self.rScale.sort()
-
         for entry in self.testData:
             userName, itemName, rating = entry
             self.testSet_u[userName][itemName] = rating
