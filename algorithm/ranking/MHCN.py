@@ -8,7 +8,7 @@ from tool import config
 from math import sqrt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-# Maximum Iteration Setting: LastFM 100 Douban 30 Yelp 30
+# Maximum Iteration Setting: LastFM 120 Douban 30 Yelp 30
 
 class MHCN(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
@@ -169,7 +169,7 @@ class MHCN(SocialRecommender,DeepRecommender):
         #aggregating channel-specific embeddings
         self.final_item_embeddings = item_embeddings
         self.final_user_embeddings,self.attention_score = channel_attention(user_embeddings_c1,user_embeddings_c2,user_embeddings_c3)
-        self.final_user_embeddings += simple_user_embeddings #for yelp and douban, 1/2 simple user embedding is better
+        self.final_user_embeddings += simple_user_embeddings/2
         #create self-supervised loss
         self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,1), H_s)
         self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,2), H_j)
