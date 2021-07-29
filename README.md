@@ -379,48 +379,6 @@ on Generative Adversarial Networks, CIKM'18.
   </table>
 </div>
 
-<h3>Model Category</h3>
-
-<table>
-<tr>
-<th colspan="10" align="left">General Recommenders</th>
-</tr>
-<tr>
-<td>UserKNN</td>    <td>ItemKNN</td>    <td>BasicMF   <td>SlopeOne   <td>SVD</td>
-<td>PMF</td>        <td>SVD++</td>      <td>EE</td>       <td>BPR</td>        <td>WRMF</td>
-</tr>
-<tr>
-<td>ExpoMF</td>     <td>NGCF</td>     <td>LightGCN</td>   <td>IRGAN</td>     <td>CFGAN</td>
-<td></td>     <td></td>   <td></td>     <td></td> <td></td>
-</tr>
-<tr>
-<th colspan="10" align="left">Social Recommenders</th>
-</tr>
-<tr>
-<td>RSTE</td>    <td>SoRec</td>      <td>SoReg</td>     <td>SocialMF</td>   <td>SBPR</td>
-<td>SREE</td>    <td>LOCABAL</td>    <td>SocialFD</td>  <td>TBPR</td>       <td>SERec</td>
-</tr>
-<tr>
-<td>RSGAN</td>    <td>IF-BPR</td>      <td>MHCN</td>  <td>CUNE</td>  <td>ESRF</td>  
-</tr>
-<tr>
-<th colspan="10" align="left">Deep Recommenders</th>
-</tr>
-<tr>
-<td>APR</td>     <td>CDAE</td>      <td>DMF</td>       <td>NeuMF</td>      <td>CFGAN</td>
-<td>IRGAN</td>     <td>LightGCN</td>   <td>NGCF</td>     <td>MHCN</td>  <td>DHCF</td>
-</tr>
-<tr>
-<td>Diffnet</td>     <td>ESRF</td> 
-</tr>
-<tr>
-<th colspan="10" align="left">Baselines</th>
-</tr>
-<tr>
-<td>UserMean</td>      <td>ItemMean</td>     <td>MostPopular</td>     <td>Rand</td> <td>  </td>
-<td></td>     <td></td>   <td></td>     <td></td>  <td></td>
-</tr>
-</table>
 
 <h2>Related Datasets</h2>
 <div>

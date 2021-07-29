@@ -256,7 +256,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                     })
                     _, l1, l3, = self.sess.run([v2_op, rec_loss, self.neighbor_dis_loss],
                                                   feed_dict=feed_dict)
-                    print '[', self.foldInfo, ']', 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'neighbor_loss:', self.ss_rate*l3
+                    print self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3
             else:
                 #initialization with only recommendation task
                 for n, batch in enumerate(self.next_batch_pairwise()):
@@ -266,7 +266,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                                  self.neg_idx: j_idx}
                     _, l1 = self.sess.run([v1_op, rec_loss],
                                           feed_dict=feed_dict)
-                    print '[', self.foldInfo, ']', 'training:', iteration + 1, 'batch', n, 'rec loss:', l1
+                    print self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1
 
             self.U, self.V = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
 
