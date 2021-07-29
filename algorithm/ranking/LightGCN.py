@@ -8,8 +8,6 @@ class LightGCN(DeepRecommender):
 
     def initModel(self):
         super(LightGCN, self).initModel()
-        self.user_embeddings = self.user_embeddings/2
-        self.item_embeddings = self.item_embeddings/2
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
         indices = [[self.data.user[item[0]],self.num_users+self.data.item[item[1]]] for item in self.data.trainingData]
         indices += [[self.num_users+self.data.item[item[1]],self.data.user[item[0]]] for item in self.data.trainingData]
