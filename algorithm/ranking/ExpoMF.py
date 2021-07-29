@@ -45,11 +45,11 @@ class ExpoMF(IterativeRecommender):
         self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.num_users,self.num_items))
 
     def buildModel(self):
-        print 'training...'
+        print('training...')
         n_users = self.X.shape[0]
         XT = self.X.T.tocsr()  # pre-compute this
-        for i in xrange(self.maxIter):
-            print 'ITERATION #%d' % i
+        for i in range(self.maxIter):
+            print('ITERATION #%d' % i)
             self._update_factors(self.X, XT)
             self._update_expo(self.X, n_users)
 
@@ -73,16 +73,16 @@ class ExpoMF(IterativeRecommender):
 
     def _update_expo(self, X, n_users):
         '''Update exposure prior'''
-        print '\tUpdating exposure prior...'
+        print('\tUpdating exposure prior...')
 
-        start_idx = range(0, n_users, self.batch_size)
+        start_idx = list(range(0, n_users, self.batch_size))
         end_idx = start_idx[1:] + [n_users]
 
         A_sum = np.zeros_like(self.mu)
         for lo, hi in zip(start_idx, end_idx):
             A_sum += a_row_batch(X[lo:hi], self.theta[lo:hi], self.beta,
                                  self.lam_y, self.mu).sum(axis=0)
-        print self.mu
+        print(self.mu)
         self.mu = (self.a + A_sum - 1) / (self.a + self.b + n_users - 2)
 
 
@@ -132,7 +132,7 @@ def _solve_batch(lo, hi, X, X_old_batch, Y, m, f, lam, lam_y, mu):
                                                                np.newaxis])
 
     X_batch = np.empty_like(X_old_batch, dtype=X_old_batch.dtype)
-    for ib, k in enumerate(xrange(lo, hi)):
+    for ib, k in enumerate(range(lo, hi)):
         X_batch[ib] = _solve(k, A_batch[ib], X, Y, f, lam, lam_y, mu)
     return X_batch
 
@@ -145,7 +145,7 @@ def recompute_factors(X, X_old, Y, lam, lam_y, mu, n_jobs, batch_size=1000):
     assert X_old.shape[0] == m
     f = X.shape[1]  # f = number of factors
 
-    start_idx = range(0, m, batch_size)
+    start_idx = list(range(0, m, batch_size))
     end_idx = start_idx[1:] + [m]
 
     res = Parallel(n_jobs=n_jobs)(delayed(_solve_batch)(

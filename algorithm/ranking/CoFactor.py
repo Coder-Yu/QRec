@@ -21,25 +21,25 @@ class CoFactor(IterativeRecommender):
 
     def printAlgorConfig(self):
         super(CoFactor, self).printAlgorConfig()
-        print 'Specified Arguments of', self.config['recommender'] + ':'
-        print 'k: %d' % self.negCount
-        print 'regR: %.5f' %self.regR
-        print 'filter: %d' %self.filter
-        print '=' * 80
+        print('Specified Arguments of', self.config['recommender'] + ':')
+        print('k: %d' % self.negCount)
+        print('regR: %.5f' %self.regR)
+        print('filter: %d' %self.filter)
+        print('=' * 80)
 
     def initModel(self):
         super(CoFactor, self).initModel()
 
         #constructing SPPMI matrix
         self.SPPMI = defaultdict(dict)
-        print 'Constructing SPPMI matrix...'
+        print('Constructing SPPMI matrix...')
         #for larger data set has many items, the process will be time consuming
         occurrence = defaultdict(dict)
         i=0
         for item1 in self.data.item:
             i += 1
             if i % 100 == 0:
-                print str(i) + '/' + str(self.num_items)
+                print(str(i) + '/' + str(self.num_items))
             uList1, rList1 = self.data.itemRated(item1)
 
             if len(uList1) < self.filter:
@@ -68,8 +68,8 @@ class CoFactor(IterativeRecommender):
                     val = max([log(occurrence[item1][item2] * D / (frequency[item1] * frequency[item2])) - log(
                         self.negCount), 0])
                 except ValueError:
-                    print self.SPPMI[item1][item2]
-                    print self.SPPMI[item1][item2] * D / (frequency[item1] * frequency[item2])
+                    print(self.SPPMI[item1][item2])
+                    print(self.SPPMI[item1][item2] * D / (frequency[item1] * frequency[item2]))
 
                 if val > 0:
                     if maxVal < val:
@@ -93,7 +93,7 @@ class CoFactor(IterativeRecommender):
         self.c = np.random.rand(self.num_items) / 10  # bias value of context
         self.G = np.random.rand(self.num_items, self.embed_size) / 10  # context embedding
 
-        print 'training...'
+        print('training...')
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
@@ -165,7 +165,7 @@ class CoFactor(IterativeRecommender):
 
             # self.loss += (self.X * self.X).sum() + (self.Y * self.Y).sum()
             iteration += 1
-            print 'iteration:', iteration, 'loss:', self.loss
+            print('iteration:', iteration, 'loss:', self.loss)
             # if self.isConverged(iteration):
             #     break
 

@@ -16,7 +16,7 @@ class DMF(DeepRecommender):
     def next_batch(self,i):
         rows = np.zeros(((self.negative_sp+1)*self.batch_size,self.num_items))
         cols = np.zeros(((self.negative_sp+1)*self.batch_size,self.num_users))
-        batch_idx = range(self.batch_size*i,self.batch_size*(i+1))
+        batch_idx = list(range(self.batch_size*i,self.batch_size*(i+1)))
 
         users = [self.data.trainingData[idx][0] for idx in batch_idx]
         items = [self.data.trainingData[idx][1] for idx in batch_idx]
@@ -29,8 +29,8 @@ class DMF(DeepRecommender):
         for i,item in enumerate(items):
             cols[i] = self.data.col(item)
 
-        userList = self.data.user.keys()
-        itemList = self.data.item.keys()
+        userList = list(self.data.user.keys())
+        itemList = list(self.data.item.keys())
         #negative sample
         for i in range(self.negative_sp*self.batch_size):
             u = choice(userList)
@@ -111,7 +111,7 @@ class DMF(DeepRecommender):
             for i in range(total_batch):
                 users,items,ratings,u_idx,v_idx = self.next_batch(i)
 
-                shuffle_idx=np.random.permutation(range(len(users)))
+                shuffle_idx=np.random.permutation(list(range(len(users))))
                 users = users[shuffle_idx]
                 items = items[shuffle_idx]
                 ratings = ratings[shuffle_idx]
@@ -119,7 +119,7 @@ class DMF(DeepRecommender):
                 v_idx = v_idx[shuffle_idx]
 
                 _,loss= self.sess.run([optimizer, self.loss], feed_dict={self.input_u: users,self.input_i:items,self.r:ratings})
-                print self.foldInfo, "Epoch:", '%04d' % (epoch + 1), "Batch:", '%03d' % (i + 1), "loss=", "{:.9f}".format(loss)
+                print(self.foldInfo, "Epoch:", '%04d' % (epoch + 1), "Batch:", '%03d' % (i + 1), "loss=", "{:.9f}".format(loss))
             #save the output layer
 
                 U_embedding, V_embedding = self.sess.run([self.user_out, self.item_out], feed_dict={self.input_u: users,self.input_i:items})

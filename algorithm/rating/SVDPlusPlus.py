@@ -14,9 +14,9 @@ class SVDPlusPlus(IterativeRecommender):
 
     def printAlgorConfig(self):
         super(SVDPlusPlus, self).printAlgorConfig()
-        print 'Specified Arguments of', self.config['recommender'] + ':'
-        print 'regY: %.3f' % self.regY
-        print '=' * 80
+        print('Specified Arguments of', self.config['recommender'] + ':')
+        print('regY: %.3f' % self.regY)
+        print('=' * 80)
 
     def initModel(self):
         super(SVDPlusPlus, self).initModel()

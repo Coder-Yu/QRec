@@ -167,7 +167,7 @@ class IRGAN(DeepRecommender):
 
         for epoch in range(self.maxIter):
 
-            print 'Update discriminator...'
+            print('Update discriminator...')
             for d_epoch in range(1):
                 user_set,item_set,labels = self.get_data(self.generator)
                 data = [user_set,item_set,labels]
@@ -184,10 +184,10 @@ class IRGAN(DeepRecommender):
                                  feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
                                             self.discriminator.label: input_label})
 
-                print 'epoch:',epoch+1,'d_epoch:', d_epoch+1
+                print('epoch:',epoch+1,'d_epoch:', d_epoch+1)
 
             # Train G
-            print 'Update generator...'
+            print('Update generator...')
             for g_epoch in range(5):
 
                 for user in self.data.trainSet_u:
@@ -220,7 +220,7 @@ class IRGAN(DeepRecommender):
                                       {self.generator.u: u, self.generator.i: sample,
                                        self.generator.reward: reward})
 
-                print 'epoch:', epoch+1, 'g_epoch:', g_epoch+1
+                print('epoch:', epoch+1, 'g_epoch:', g_epoch+1)
 
             self.ranking_performance(epoch)
 

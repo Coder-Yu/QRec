@@ -255,7 +255,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         self.listed_data = []
         for i in range(self.num_users):
             user = self.data.id2user[i]
-            items = self.data.trainSet_u[user].keys()
+            items = list(self.data.trainSet_u[user].keys())
             items = [self.data.item[item] for item in items]
             self.listed_data.append(items)
 
@@ -283,7 +283,7 @@ class ESRF(SocialRecommender,DeepRecommender):
         #     print 'training:', iteration + 1, 'loss:', l
 
         #conventional training
-        print 'pretraining...'
+        print('pretraining...')
         for iteration in range(self.maxIter/2):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
@@ -293,7 +293,7 @@ class ESRF(SocialRecommender,DeepRecommender):
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx, self.userSegment:u_i,
                                                 self.isSocial:0,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
 
-        print 'normal training with social relations...'
+        print('normal training with social relations...')
         for iteration in range(self.maxIter / 2):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
@@ -310,7 +310,7 @@ class ESRF(SocialRecommender,DeepRecommender):
             self.isConverged(iteration + 1)
 
         #adversarial learning without attention
-        print 'adversarial training with social relations...'
+        print('adversarial training with social relations...')
         for iteration in range(self.maxIter/2):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):

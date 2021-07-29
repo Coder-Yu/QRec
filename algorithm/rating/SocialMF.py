@@ -37,7 +37,7 @@ class SocialMF(SocialRecommender):
                             uf = self.data.user[followee]
                             fPred += weight * self.P[uf]
                             denom += weight
-                    if denom <> 0:
+                    if denom != 0:
                         relationLoss = self.P[u] - fPred / denom
 
                     self.loss +=  self.regS *  relationLoss.dot(relationLoss)
@@ -98,7 +98,7 @@ class SocialMF(SocialRecommender):
                     user_idx, i_idx,ratings = batch
                     _, l = sess.run([train, loss],
                                     feed_dict={self.u_idx: user_idx, self.v_idx: i_idx,self.r:ratings})
-                    print 'iteration:', iteration, 'loss:', l
+                    print('iteration:', iteration, 'loss:', l)
             self.P, self.Q = sess.run([self.U, self.V])
             import pickle
             f = open('user_embeddings', 'wb')

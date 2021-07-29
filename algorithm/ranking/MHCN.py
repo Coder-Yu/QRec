@@ -84,7 +84,7 @@ class MHCN(SocialRecommender,DeepRecommender):
 
     def adj_to_sparse_tensor(self,adj):
         adj = adj.tocoo()
-        indices = np.mat(zip(adj.row, adj.col))
+        indices = np.mat(list(zip(adj.row, adj.col)))
         adj = tf.SparseTensor(indices, adj.data.astype(np.float32), adj.shape)
         return adj
 
@@ -222,7 +222,7 @@ class MHCN(SocialRecommender,DeepRecommender):
                 user_idx, i_idx, j_idx = batch
                 _, l1 = self.sess.run([train_op, rec_loss],
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
-                print '[',self.foldInfo,']','training:', iteration + 1, 'batch', n, 'rec loss:', l1#,'ss_loss',l2
+                print('[',self.foldInfo,']','training:', iteration + 1, 'batch', n, 'rec loss:', l1)#,'ss_loss',l2
 
             self.U, self.V = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
 

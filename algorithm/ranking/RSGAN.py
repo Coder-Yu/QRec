@@ -42,7 +42,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
                 self.pItems[item].append(user)
 
         # build U-F-NET
-        print 'Building weighted user-friend network...'
+        print('Building weighted user-friend network...')
         # Definition of Meta-Path
         p1 = 'UIU'
         p2 = 'UFU'
@@ -51,7 +51,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         p5 = 'UFUIU'
         mPaths = [p1, p2, p3, p4, p5]
         mPathCnt = [10,8,8,5,5]
-        mPathSetting = zip(mPaths,mPathCnt)
+        mPathSetting = list(zip(mPaths,mPathCnt))
         walkLen=20        
 
         self.G = np.random.rand(self.num_users, 50) * 0.1
@@ -78,7 +78,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
                         self.UTNet[u] += [v] * (weight + 1)
         
         # positive
-        print 'Generating random meta-path random walks... (Positive)'
+        print('Generating random meta-path random walks... (Positive)')
         self.pWalks = []
         for user in self.data.user:
             for mps in mPathSetting:
@@ -179,12 +179,12 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
         shuffle(self.pWalks)
         shuffle(self.nWalks)
-        print 'pwalks:', len(self.pWalks)
-        print 'nwalks:', len(self.nWalks)
+        print('pwalks:', len(self.pWalks))
+        print('nwalks:', len(self.nWalks))
 
     def computeSimilarity(self):
         # Training get top-k friends
-        print 'Generating user embedding...'
+        print('Generating user embedding...')
         topK = 100
         self.pTopKSim = {}
         self.nTopKSim = {}
@@ -203,17 +203,17 @@ class RSGAN(SocialRecommender,DeepRecommender):
                 self.G[uid] = neg_model.wv['U' + user]
             except KeyError:
                 continue
-        print 'User embedding generated.'
+        print('User embedding generated.')
 
-        print 'Constructing similarity matrix...'
+        print('Constructing similarity matrix...')
 
         for i,user1 in enumerate(self.positive):
             uSim = []
             if i % 200 == 0:
-                print i, '/', len(self.positive)
+                print(i, '/', len(self.positive))
             vec1 = self.W[self.data.user[user1]]
             for user2 in self.positive:
-                if user1 <> user2:
+                if user1 != user2:
                     vec2 = self.W[self.data.user[user2]]
                     sim = cosine(vec1, vec2)
                     uSim.append((user2, sim))
@@ -223,10 +223,10 @@ class RSGAN(SocialRecommender,DeepRecommender):
         for i,user1 in enumerate(self.negative):
             uSim = []
             if i % 200 == 0:
-                print i, '/', len(self.negative)
+                print(i, '/', len(self.negative))
             vec1 = self.G[self.data.user[user1]]
             for user2 in self.negative:
-                if user1 <> user2:
+                if user1 != user2:
                     vec2 = self.G[self.data.user[user2]]
                     sim = cosine(vec1, vec2)
                     uSim.append((user2, sim))
@@ -338,7 +338,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.g_update = g_opt.minimize(self.g_loss,var_list=self.g_params)
 
     def next_batch_g(self):
-        userList = self.data.user.keys()
+        userList = list(self.data.user.keys())
         batch_id=0
         while batch_id<self.num_users:
             if batch_id + self.batch_size <= self.num_users:
@@ -376,15 +376,15 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.sess.run(init)
         # pretraining
 
-        print 'pretraining for generator...'
+        print('pretraining for generator...')
         for i in range(30):
             for num,batch in enumerate(self.next_batch_g()):
                 profiles,uid = batch
                 _,loss = self.sess.run([self.g_pretrain,self.reconstruction],feed_dict={self.X:profiles,self.u_idx:uid})
-                print 'pretraining:', i + 1, 'batch',num,'generator loss:', loss
+                print('pretraining:', i + 1, 'batch',num,'generator loss:', loss)
 
 
-        print 'Training GAN...'
+        print('Training GAN...')
         for i in range(self.maxIter):
             for num,batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
@@ -401,7 +401,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
                 _, loss = self.sess.run([self.d_update, self.d_loss],
                                         feed_dict={self.u_idx: user_idx,self.neg:j_idx,self.pos: i_idx,self.X:profiles})
 
-                print 'training:', i + 1, 'batch_id', num, 'discriminator loss:', loss
+                print('training:', i + 1, 'batch_id', num, 'discriminator loss:', loss)
 
 
     def predictForRanking(self, u):

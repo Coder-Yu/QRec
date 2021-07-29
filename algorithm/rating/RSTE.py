@@ -12,9 +12,9 @@ class RSTE(SocialRecommender):
 
     def printAlgorConfig(self):
         super(RSTE, self).printAlgorConfig()
-        print 'Specified Arguments of',self.config['recommender']+':'
-        print 'alpha: %.3f' %self.alpha
-        print '='*80
+        print('Specified Arguments of',self.config['recommender']+':')
+        print('alpha: %.3f' %self.alpha)
+        print('='*80)
 
     def initModel(self):
         super(RSTE, self).initModel()
@@ -56,7 +56,7 @@ class RSTE(SocialRecommender):
             indexes = np.array(indexes)
             denom = weights.sum()
             u = self.data.user[u]
-            if denom <> 0:
+            if denom != 0:
                 fPred += weights.dot((self.P[indexes].dot(self.Q[i])))
 
                 return self.alpha * self.P[u].dot(self.Q[i])+(1-self.alpha)*fPred / denom
@@ -78,7 +78,7 @@ class RSTE(SocialRecommender):
                     fPred += weight * self.Q.dot(self.P[uf])
                     denom += weight
             u = self.data.user[u]
-            if denom <> 0:
+            if denom != 0:
                 return self.alpha * self.Q.dot(self.P[u]) + (1 - self.alpha) * fPred / denom
             else:
                 return self.Q.dot(self.P[u])

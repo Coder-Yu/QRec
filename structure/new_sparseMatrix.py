@@ -36,8 +36,8 @@ class SparseMatrix():
             return np.zeros((1,self.size[1]))
         else:
             array = np.zeros((1,self.size[1]))
-            ind = self.matrix_User[r].keys()
-            val = self.matrix_User[r].values()
+            ind = list(self.matrix_User[r].keys())
+            val = list(self.matrix_User[r].values())
             array[0][ind] = val
             return array
 
@@ -46,8 +46,8 @@ class SparseMatrix():
             return np.zeros((1,self.size[0]))
         else:
             array = np.zeros((1,self.size[0]))
-            ind = self.matrix_Item[c].keys()
-            val = self.matrix_Item[c].values()
+            ind = list(self.matrix_Item[c].keys())
+            val = list(self.matrix_Item[c].values())
             array[0][ind] = val
             return array
     def elem(self,r,c):

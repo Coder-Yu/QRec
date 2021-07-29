@@ -87,7 +87,7 @@ class SocialFD(SocialRecommender):
                 x = self.P[u]
                 for followee in relations:
                     uf = self.data.getUserId(followee)
-                    if uf <> -1 and self.data.containsUser(followee):  # followee is in rating set
+                    if uf != -1 and self.data.containsUser(followee):  # followee is in rating set
                         self.loss += (x - self.P[uf]).dot(self.H).dot(self.H.T).dot((x - self.P[uf]).T)
                         R = (self.H.dot(self.H.T) + self.H.T.dot(self.H))
                         derivative_s = self.H.dot((x - self.P[uf]).T.dot(x - self.P[uf]))

@@ -45,7 +45,7 @@ class DeepRecommender(IterativeRecommender):
                 batch_id = self.train_size
 
             u_idx, i_idx, j_idx = [], [], []
-            item_list = self.data.item.keys()
+            item_list = list(self.data.item.keys())
             for i, user in enumerate(users):
                 i_idx.append(self.data.item[items[i]])
                 u_idx.append(self.data.user[user])

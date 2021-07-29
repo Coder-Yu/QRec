@@ -9,7 +9,7 @@ def l2(x):
 
 def common(x1,x2):
     # find common ratings
-    common = (x1<>0)&(x2<>0)
+    common = (x1!=0)&(x2!=0)
     new_x1 = x1[common]
     new_x2 = x2[common]
     return new_x1,new_x2
@@ -25,7 +25,7 @@ def cosine_sp(x1,x2):
                 total+=x1[k]*x2[k]
                 denom1+=x1[k]**2
                 denom2+=x2[k]**2
-        return (total + 0.0) / (sqrt(denom1) * sqrt(denom2))
+        return total/(sqrt(denom1) * sqrt(denom2))
     except ZeroDivisionError:
         return 0
 
@@ -47,7 +47,7 @@ def cosine(x1,x2):
     sum = x1.dot(x2)
     denom = sqrt(x1.dot(x1)*x2.dot(x2))
     try:
-        return float(sum)/denom
+        return sum/denom
     except ZeroDivisionError:
         return 0
 
@@ -59,15 +59,15 @@ def pearson_sp(x1,x2):
     denom2 = 0
     overlapped=False
     try:
-        mean1 = sum(x1.values())/(len(x1)+0.0)
-        mean2 = sum(x2.values()) / (len(x2) + 0.0)
+        mean1 = sum(x1.values())/len(x1)
+        mean2 = sum(x2.values()) /len(x2)
         for k in x1:
             if k in x2:
                 total += (x1[k]-mean1) * (x2[k]-mean2)
                 denom1 += (x1[k]-mean1) ** 2
                 denom2 += (x2[k]-mean2) ** 2
                 overlapped=True
-        return (total + 0.0) / (sqrt(denom1) * sqrt(denom2))
+        return total/ (sqrt(denom1) * sqrt(denom2))
     except ZeroDivisionError:
         if overlapped:
             return 1
@@ -92,13 +92,13 @@ def pearson(x1,x2):
     #ind1 = new_x1 > 0
     #ind2 = new_x2 > 0
     try:
-        mean_x1 = float(x1.sum())/len(x1)
-        mean_x2 = float(x2.sum())/len(x2)
+        mean_x1 = x1.sum()/len(x1)
+        mean_x2 = x2.sum()/len(x2)
         new_x1 = x1 - mean_x1
         new_x2 = x2 - mean_x2
         sum = new_x1.dot(new_x2)
         denom = sqrt((new_x1.dot(new_x1))*(new_x2.dot(new_x2)))
-        return float(sum) / denom
+        return sum/denom
     except ZeroDivisionError:
         return 0
 
@@ -115,11 +115,11 @@ def similarity(x1,x2,sim):
 def normalize(vec,maxVal,minVal):
     'get the normalized value using min-max normalization'
     if maxVal > minVal:
-        return float(vec-minVal)/(maxVal-minVal)+0.01
+        return (vec-minVal)/(maxVal-minVal)
     elif maxVal==minVal:
         return vec/maxVal
     else:
-        print 'error... maximum value is less than minimum value.'
+        print('error... maximum value is less than minimum value.')
         raise ArithmeticError
 
 def sigmoid(val):
@@ -146,7 +146,7 @@ def find_k_largest(K,itemSet):
         r = K - 1
         if recommendations[r] < itemSet[item]:
             while r >= l:
-                mid = (r - l) / 2 + l
+                mid = int((r - l) / 2) + l
                 if recommendations[mid] >= itemSet[item]:
                     l = mid + 1
                 elif recommendations[mid] < itemSet[item]:
@@ -161,4 +161,4 @@ def find_k_largest(K,itemSet):
         if ind < K - 1:
             recommendations[ind + 1] = itemSet[item]
             resNames[ind + 1] = item
-    return zip(resNames, recommendations)
+    return list(zip(resNames, recommendations))

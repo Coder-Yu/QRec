@@ -61,14 +61,14 @@ class Recommender(object):
 
     def printAlgorConfig(self):
         "show algorithm's configuration"
-        print 'Algorithm:',self.config['recommender']
-        print 'Ratings dataset:',abspath(self.config['ratings'])
+        print('Algorithm:',self.config['recommender'])
+        print('Ratings dataset:',abspath(self.config['ratings']))
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
-            print 'Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet'))
+            print('Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet')))
         #print 'Count of the users in training set: ',len()
-        print 'Training set size: (user count: %d, item count %d, record count: %d)' %(self.data.trainingSize())
-        print 'Test set size: (user count: %d, item count %d, record count: %d)' %(self.data.testSize())
-        print '='*80
+        print('Training set size: (user count: %d, item count %d, record count: %d)' %(self.data.trainingSize()))
+        print('Test set size: (user count: %d, item count %d, record count: %d)' %(self.data.testSize()))
+        print('='*80)
 
     def initModel(self):
         pass
@@ -123,7 +123,7 @@ class Recommender(object):
             outDir = self.output['-dir']
             fileName = self.config['recommender']+'@'+currentTime+'-rating-predictions'+self.foldInfo+'.txt'
             FileIO.writeFile(outDir,fileName,res)
-            print 'The result has been output to ',abspath(outDir),'.'
+            print('The result has been output to ',abspath(outDir),'.')
         #output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@'+currentTime +'-measure'+ self.foldInfo + '.txt'
@@ -131,7 +131,7 @@ class Recommender(object):
         FileIO.writeFile(outDir, fileName, self.measure)
         self.log.add('###Evaluation Results###')
         self.log.add(self.measure)
-        print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
+        print('The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure)))
 
 
 
@@ -143,12 +143,12 @@ class Recommender(object):
             top = [int(num) for num in top]
             N = int(top[-1])
             if N > 100 or N < 0:
-                print 'N can not be larger than 100! It has been reassigned with 10'
+                print('N can not be larger than 100! It has been reassigned with 10')
                 N = 10
             if N > len(self.data.item):
                 N = len(self.data.item)
         else:
-            print 'No correct evaluation metric is specified!'
+            print('No correct evaluation metric is specified!')
             exit(-1)
 
         res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
@@ -172,7 +172,7 @@ class Recommender(object):
                 del itemSet[item]
             recList[user] = find_k_largest(N,itemSet)
             if i % 100 == 0:
-                print self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount)
+                print(self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount))
             for item in recList[user]:
                 line += ' (' + item[0] + ',' + str(item[1]) + ')'
                 if item[0] not in self.data.testSet_u[user]:
@@ -186,7 +186,7 @@ class Recommender(object):
             fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
             N) + 'items' + self.foldInfo + '.txt'
             FileIO.writeFile(outDir, fileName, res)
-            print 'The result has been output to ', abspath(outDir), '.'
+            print('The result has been output to ', abspath(outDir), '.')
         # output evaluation result
         outDir = self.output['-dir']
         fileName = self.config['recommender'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
@@ -194,7 +194,7 @@ class Recommender(object):
         self.log.add('###Evaluation Results###')
         self.log.add(self.measure)
         FileIO.writeFile(outDir, fileName, self.measure)
-        print 'The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure))
+        print('The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure)))
 
     def execute(self):
         self.readConfiguration()
@@ -203,15 +203,15 @@ class Recommender(object):
             self.printAlgorConfig()
         #load model from disk or build model
         if self.isLoadModel:
-            print 'Loading model %s...' %self.foldInfo
+            print('Loading model %s...' %self.foldInfo)
             self.loadModel()
         else:
-            print 'Initializing model %s...' %self.foldInfo
+            print('Initializing model %s...' %self.foldInfo)
             self.initModel()
-            print 'Building Model %s...' %self.foldInfo
+            print('Building Model %s...' %self.foldInfo)
             try:
-                import tensorflow
                 if self.evalSettings.contains('-tf'):
+                    import tensorflow
                     self.buildModel_tf()
                 else:
                     self.buildModel()
@@ -219,7 +219,7 @@ class Recommender(object):
                 self.buildModel()
 
         #preict the ratings or item ranking
-        print 'Predicting %s...' %self.foldInfo
+        print('Predicting %s...' %self.foldInfo)
         if self.ranking.isMainOn():
             self.evalRanking()
         else:
@@ -227,7 +227,7 @@ class Recommender(object):
 
         #save model
         if self.isSaveModel:
-            print 'Saving model %s...' %self.foldInfo
+            print('Saving model %s...' %self.foldInfo)
             self.saveModel()
         # with open(self.foldInfo+'measure.txt','w') as f:
         #     f.writelines(self.record)

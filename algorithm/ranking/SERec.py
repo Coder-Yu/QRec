@@ -54,7 +54,7 @@ class SERec(SocialRecommender):
 
 
     def buildModel(self):
-        print 'training...'
+        print('training...')
         iteration = 0
 
         self._update(self.X)
@@ -64,11 +64,11 @@ class SERec(SocialRecommender):
         n_users = X.shape[0]
         XT = X.T.tocsr()  # pre-compute this
         self.vad_ndcg = -np.inf
-        for i in xrange(self.maxIter):
+        for i in range(self.maxIter):
 
-            print 'ITERATION #%d' % i
+            print('ITERATION #%d' % i)
             self._update_factors(X, XT)
-            print self.mu
+            print(self.mu)
             self._update_expo(X, n_users)
             self.ranking_performance()
 
@@ -92,9 +92,9 @@ class SERec(SocialRecommender):
 
     def _update_expo(self, X, n_users):
         '''Update exposure prior'''
-        print '\tUpdating exposure prior...'
+        print('\tUpdating exposure prior...')
 
-        start_idx = range(0, n_users, self.batch_size)
+        start_idx = list(range(0, n_users, self.batch_size))
         end_idx = start_idx[1:] + [n_users]
 
         A_sum = np.zeros(self.num_items)
@@ -152,7 +152,7 @@ def _solve_batch(lo, hi, X, X_old_batch, Y, m, f, lam, lam_y, mu):
         A_batch = a_row_batch(Y[lo:hi], X_old_batch, X, lam_y, mu.T[lo:hi])
 
     X_batch = np.empty_like(X_old_batch, dtype=X_old_batch.dtype)
-    for ib, k in enumerate(xrange(lo, hi)):
+    for ib, k in enumerate(range(lo, hi)):
         X_batch[ib] = _solve(k, A_batch[ib], X, Y, f, lam, lam_y, mu)
     return X_batch
 
@@ -165,7 +165,7 @@ def recompute_factors(X, X_old, Y, lam, lam_y, mu, n_jobs, batch_size=1000):
     assert X_old.shape[0] == m
     f = X.shape[1]  # f = number of factors
 
-    start_idx = range(0, m, batch_size)
+    start_idx = list(range(0, m, batch_size))
     end_idx = start_idx[1:] + [m]
     res = Parallel(n_jobs=n_jobs)(delayed(_solve_batch)(
         lo, hi, X, X_old[lo:hi], Y, m, f, lam, lam_y, mu)

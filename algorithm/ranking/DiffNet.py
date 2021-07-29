@@ -85,7 +85,7 @@ class DiffNet(SocialRecommender,DeepRecommender):
                 user_idx, i_idx, j_idx = batch
                 _, l = self.sess.run([train, loss],
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
-                print 'training:', iteration + 1, 'batch', n, 'loss:', l
+                print('training:', iteration + 1, 'batch', n, 'loss:', l)
 
 
     def predictForRanking(self, u):

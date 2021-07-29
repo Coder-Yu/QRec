@@ -148,16 +148,16 @@ class CUNE_BPR(IterativeRecommender):
 
     def printAlgorConfig(self):
         super(CUNE_BPR, self).printAlgorConfig()
-        print 'Specified Arguments of', self.config['recommender'] + ':'
-        print 'Walks count per user', self.walkCount
-        print 'Length of each walk', self.walkLength
-        print 'Dimension of user embedding', self.walkDim
-        print '='*80
+        print('Specified Arguments of', self.config['recommender'] + ':')
+        print('Walks count per user', self.walkCount)
+        print('Length of each walk', self.walkLength)
+        print('Dimension of user embedding', self.walkDim)
+        print('='*80)
 
     def buildModel(self):
-        print 'Kind Note: This method will probably take much time.'
+        print('Kind Note: This method will probably take much time.')
         #build C-U-NET
-        print 'Building collaborative user network...'
+        print('Building collaborative user network...')
         #filter isolated nodes
         self.itemNet = {}
         for item in self.data.trainSet_i:
@@ -175,7 +175,7 @@ class CUNE_BPR(IterativeRecommender):
         for user1 in self.filteredRatings:
             s1 = set(self.filteredRatings[user1])
             for user2 in self.filteredRatings:
-                if user1 <> user2:
+                if user1 != user2:
                     s2 = set(self.filteredRatings[user2])
                     weight = len(s1.intersection(s2))
                     if weight > 0:
@@ -205,7 +205,7 @@ class CUNE_BPR(IterativeRecommender):
         # self.HTree.coding(self.HTree.root,'',0)
 
 
-        print 'Generating random deep walks...'
+        print('Generating random deep walks...')
         self.walks = []
         self.visited = defaultdict(dict)
         for user in self.CUNet:
@@ -229,7 +229,7 @@ class CUNE_BPR(IterativeRecommender):
         shuffle(self.walks)
 
         #Training get top-k friends
-        print 'Generating user embedding...'
+        print('Generating user embedding...')
         # iteration = 1
         # while iteration <= self.epoch:
         #     loss = 0
@@ -256,9 +256,9 @@ class CUNE_BPR(IterativeRecommender):
         #     print 'iteration:', iteration, 'loss:', loss
         #     iteration+=1
         model = w2v.Word2Vec(self.walks, size=self.walkDim, window=5, min_count=0, iter=3)
-        print 'User embedding generated.'
+        print('User embedding generated.')
 
-        print 'Constructing similarity matrix...'
+        print('Constructing similarity matrix...')
         self.W = np.random.rand(self.data.trainingSize()[0], self.walkDim) / 10
         self.topKSim = {}
         i = 0
@@ -269,19 +269,19 @@ class CUNE_BPR(IterativeRecommender):
             u1 = self.data.user[user1]
             self.W[u1] = model.wv[user1]
             for user2 in self.CUNet:
-                if user1 <> user2:
+                if user1 != user2:
                     u2 = self.data.user[user2]
                     self.W[u2] = model.wv[user2]
                     sims.append((user2,cosine(self.W[u1],self.W[u2])))
             self.topKSim[user1] = sorted(sims, key=lambda d: d[1], reverse=True)[:self.topK]
             i += 1
             if i % 200 == 0:
-                print 'progress:', i, '/', len(self.CUNet)
-        print 'Similarity matrix finished.'
+                print('progress:', i, '/', len(self.CUNet))
+        print('Similarity matrix finished.')
         #print self.topKSim
 
         #prepare Pu set, IPu set, and Nu set
-        print 'Preparing item sets...'
+        print('Preparing item sets...')
         self.PositiveSet = defaultdict(dict)
         self.IPositiveSet = defaultdict(dict)
         #self.NegativeSet = defaultdict(list)
@@ -298,14 +298,14 @@ class CUNE_BPR(IterativeRecommender):
                         self.IPositiveSet[user][item]=1
 
 
-        print 'Training...'
+        print('Training...')
         iteration = 0
         while iteration < self.maxIter:
             self.loss = 0
-            itemList = self.data.item.keys()
+            itemList = list(self.data.item.keys())
             for user in self.PositiveSet:
                 u = self.data.user[user]
-                kItems = self.IPositiveSet[user].keys()
+                kItems = list(self.IPositiveSet[user].keys())
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
                     for n in range(3): #negative sampling for 3 times

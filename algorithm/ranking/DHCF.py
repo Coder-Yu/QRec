@@ -50,7 +50,7 @@ class DHCF(DeepRecommender):
         indices = np.mat([A_i.row, A_i.col]).transpose()
         H_i = tf.SparseTensor(indices, A_i.data.astype(np.float32), A_i.shape)
 
-        print 'Runing on GPU...'
+        print('Runing on GPU...')
         #Build network
         self.isTraining = tf.placeholder(tf.int32)
         self.isTraining = tf.cast(self.isTraining, tf.bool)
@@ -119,7 +119,7 @@ class DHCF(DeepRecommender):
                 user_idx, i_idx, j_idx = batch
                 _, l = self.sess.run([train, loss],
                                 feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isTraining:1})
-                print 'training:', iteration + 1, 'batch', n, 'loss:', l
+                print('training:', iteration + 1, 'batch', n, 'loss:', l)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

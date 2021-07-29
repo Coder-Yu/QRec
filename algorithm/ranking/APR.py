@@ -8,7 +8,7 @@ from tool import config
 try:
     import tensorflow as tf
 except ImportError:
-    print 'This method can only run on tensorflow!'
+    print('This method can only run on tensorflow!')
     exit(-1)
 from tensorflow import set_random_seed
 set_random_seed(2)
@@ -119,7 +119,7 @@ class APR(DeepRecommender):
 
 
     def buildModel(self):
-        print 'training...'
+        print('training...')
         iteration = 0
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
@@ -130,7 +130,7 @@ class APR(DeepRecommender):
 
                 user_idx,item_idx,neg_item_idx = self.next_batch()
                 _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
-                print 'iteration:', epoch, 'loss:',loss
+                print('iteration:', epoch, 'loss:',loss)
 
 
                 self.P = sess.run(self.user_embeddings)
@@ -145,7 +145,7 @@ class APR(DeepRecommender):
                          feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
                 _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
 
-                print 'iteration:', epoch, 'loss:',loss
+                print('iteration:', epoch, 'loss:',loss)
 
                 self.P = sess.run(self.user_embeddings)
                 self.Q = sess.run(self.item_embeddings)

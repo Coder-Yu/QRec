@@ -21,8 +21,8 @@ class CFGAN(DeepRecommender):
 
         mask = np.zeros((self.batch_size,self.num_items)) #e_u + k_u
 
-        userList = self.data.user.keys()
-        itemList = self.data.item.keys()
+        userList = list(self.data.user.keys())
+        itemList = list(self.data.item.keys())
 
         for n in range(self.batch_size):
             user = choice(userList)
@@ -131,10 +131,10 @@ class CFGAN(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
-        print 'pretraining...'
+        print('pretraining...')
 
 
-        print 'training...'
+        print('training...')
         for epoch in range(self.maxIter):
             G_loss = 0
 
@@ -145,7 +145,7 @@ class CFGAN(DeepRecommender):
                 _, G_loss = self.sess.run([self.G_solver, self.G_loss], feed_dict={self.C: C_u,self.mask:mask,self.N_zr:N_zr})
 
             #C_u, mask, N_u = self.next_batch()
-            print 'iteration:', epoch, 'D_loss:', D_loss, 'G_loss', G_loss
+            print('iteration:', epoch, 'D_loss:', D_loss, 'G_loss', G_loss)
 
 
 

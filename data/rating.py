@@ -71,11 +71,11 @@ class RatingDAO(object):
 
     def __computeUserMean(self):
         for u in self.user:
-            self.userMeans[u] = sum(self.trainSet_u[u].values())/float(len(self.trainSet_u[u]))
+            self.userMeans[u] = sum(self.trainSet_u[u].values())/len(self.trainSet_u[u])
 
     def __computeItemMean(self):
         for c in self.item:
-            self.itemMeans[c] = sum(self.trainSet_i[c].values()) / float(len(self.trainSet_i[c]))
+            self.itemMeans[c] = sum(self.trainSet_i[c].values())/len(self.trainSet_i[c])
 
     def getUserId(self,u):
         if u in self.user:
@@ -113,10 +113,10 @@ class RatingDAO(object):
             return False
 
     def userRated(self,u):
-        return self.trainSet_u[u].keys(),self.trainSet_u[u].values()
+        return list(self.trainSet_u[u].keys()),list(self.trainSet_u[u].values())
 
     def itemRated(self,i):
-        return self.trainSet_i[i].keys(),self.trainSet_i[i].values()
+        return list(self.trainSet_i[i].keys()),list(self.trainSet_i[i].values())
 
     def row(self,u):
         k,v = self.userRated(u)

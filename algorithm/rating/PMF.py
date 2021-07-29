@@ -57,7 +57,7 @@ class PMF(IterativeRecommender):
                 item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
                 rating = [self.data.trainingData[idx][2] for idx in batch_idx]
                 sess.run(self.train, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx})
-                print 'iteration:', step, 'loss:', sess.run(self.total_loss, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx})
+                print('iteration:', step, 'loss:', sess.run(self.total_loss, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx}))
 
             # 输出训练完毕的矩阵
             self.P = sess.run(self.U)

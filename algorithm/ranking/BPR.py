@@ -23,7 +23,7 @@ class BPR(IterativeRecommender):
 
     def buildModel(self):
 
-        print 'Preparing item sets...'
+        print('Preparing item sets...')
         self.PositiveSet = defaultdict(dict)
         #self.NegativeSet = defaultdict(list)
 
@@ -33,9 +33,9 @@ class BPR(IterativeRecommender):
                     self.PositiveSet[user][item] = 1
                 # else:
                 #     self.NegativeSet[user].append(item)
-        print 'training...'
+        print('training...')
         iteration = 0
-        itemList = self.data.item.keys()
+        itemList = list(self.data.item.keys())
         while iteration < self.maxIter:
             self.loss = 0
             for user in self.PositiveSet:
@@ -89,7 +89,7 @@ class BPR(IterativeRecommender):
                 batch_id = self.train_size
 
             u_idx, i_idx, j_idx = [], [], []
-            item_list = self.data.item.keys()
+            item_list = list(self.data.item.keys())
             for i, user in enumerate(users):
 
                 i_idx.append(self.data.item[items[i]])
@@ -120,7 +120,7 @@ class BPR(IterativeRecommender):
                 for n,batch in enumerate(self.next_batch()):
                     user_idx, i_idx, j_idx = batch
                     _, l = sess.run([train, loss], feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx,self.v_idx: i_idx})
-                    print 'training:', iteration + 1, 'batch', n, 'loss:', l
+                    print('training:', iteration + 1, 'batch', n, 'loss:', l)
             self.P,self.Q = sess.run([self.U,self.V])
 
     def predictForRanking(self, u):

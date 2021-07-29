@@ -16,9 +16,9 @@ class LOCABAL(SocialRecommender):
 
     def printAlgorConfig(self):
         super(LOCABAL, self).printAlgorConfig()
-        print 'Specified Arguments of',self.config['recommender']+':'
-        print 'alpha: %.3f' %self.alpha
-        print '='*80
+        print('Specified Arguments of',self.config['recommender']+':')
+        print('alpha: %.3f' %self.alpha)
+        print('='*80)
 
     def initModel(self):
         super(LOCABAL, self).initModel()
@@ -27,7 +27,7 @@ class LOCABAL(SocialRecommender):
         for re in self.social.relation:
             G.add_edge(re[0], re[1])
         pr = nx.pagerank(G, alpha=0.85)
-        pr = sorted(pr.iteritems(),key=lambda d:d[1],reverse=True)
+        pr = sorted(iter(pr.items()),key=lambda d:d[1],reverse=True)
         pr = [(u[0],ind+1) for ind,u in enumerate(pr)]
         self.W = {}
         for user in pr:

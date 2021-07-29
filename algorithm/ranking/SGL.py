@@ -127,8 +127,8 @@ class SGL(DeepRecommender):
             # data augmentation type --- 0: Node Dropout; 1: Edge Dropout; 2: Random Walk
 
             if aug_type == 0:
-                drop_user_idx = random.sample(range(self.num_users), int(self.num_users * self.drop_rate))
-                drop_item_idx = random.sample(range(self.num_items), int(self.num_items * self.drop_rate))
+                drop_user_idx = random.sample(list(range(self.num_users)), int(self.num_users * self.drop_rate))
+                drop_item_idx = random.sample(list(range(self.num_items)), int(self.num_items * self.drop_rate))
                 indicator_user = np.ones(self.num_users, dtype=np.float32)
                 indicator_item = np.ones(self.num_items, dtype=np.float32)
                 indicator_user[drop_user_idx] = 0.
@@ -143,7 +143,7 @@ class SGL(DeepRecommender):
                 ratings_keep = R_prime.data
                 tmp_adj = sp.csr_matrix((ratings_keep, (user_np_keep, item_np_keep+self.num_users)), shape=(n_nodes, n_nodes))
             if aug_type in [1, 2]:
-                keep_idx = random.sample(range(self.data.elemCount()), int(self.data.elemCount() * (1 - self.drop_rate)))
+                keep_idx = random.sample(list(range(self.data.elemCount())), int(self.data.elemCount() * (1 - self.drop_rate)))
                 user_np = np.array(row_idx)[keep_idx]
                 item_np = np.array(col_idx)[keep_idx]
                 ratings = np.ones_like(user_np, dtype=np.float32)
@@ -290,7 +290,7 @@ class SGL(DeepRecommender):
 
                 _, l,rec_l,ssl_l = self.sess.run([train, total_loss, rec_loss, ssl_loss],feed_dict=feed_dict)
 
-                print 'training:', iteration + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l
+                print('training:', iteration + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

@@ -29,7 +29,7 @@ class SlopeOne(Recommender,):
                 else:
                     diffAverage_sub.setdefault(item2,diff/commonItem)
                 freq_sub.setdefault(item2,commonItem)
-            print 'item '+ item +" finished."
+            print('item '+ item +" finished.")
             self.diffAverage[item] = diffAverage_sub
             self.freq[item] = freq_sub
 

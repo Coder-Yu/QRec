@@ -27,10 +27,10 @@ class IterativeRecommender(Recommender):
 
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
-        print 'Reduced Dimension:',self.embed_size
-        print 'Maximum Iteration:',self.maxIter
-        print 'Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB)
-        print '='*80
+        print('Reduced Dimension:',self.embed_size)
+        print('Maximum Iteration:',self.maxIter)
+        print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
+        print('='*80)
 
     def initModel(self):
         self.P = np.random.rand(len(self.data.user), self.embed_size)/3 # latent user matrix
@@ -85,17 +85,17 @@ class IterativeRecommender(Recommender):
     def isConverged(self,iter):
         from math import isnan
         if isnan(self.loss):
-            print 'Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!'
+            print('Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!')
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
-            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
-                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate)
+            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
+                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate))
             measure = self.quick_validation(iter)
         else:
             measure = self.rating_performance()
-            print '%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
-                  % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12])
+            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
+                  % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
@@ -163,11 +163,11 @@ class IterativeRecommender(Recommender):
                 performance[k]=float(v)
                 self.bestPerformance.append(performance)
             self.saveModel()
-        print '-'*120
-        print 'Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)'
+        print('-'*120)
+        print('Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)')
         measure = [m.strip() for m in measure[1:]]
-        print '*Current Performance*'
-        print 'iteration:',iteration,' | '.join(measure)
+        print('*Current Performance*')
+        print('iteration:',iteration,' | '.join(measure))
         bp = ''
         # for k in self.bestPerformance[1]:
         #     bp+=k+':'+str(self.bestPerformance[1][k])+' | '
@@ -176,8 +176,8 @@ class IterativeRecommender(Recommender):
         bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
         bp += 'MAP' + ':' + str(self.bestPerformance[1]['MAP']) + ' | '
         bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
-        print '*Best Performance* '
-        print 'iteration:',self.bestPerformance[0],bp
-        print '-'*120
+        print('*Best Performance* ')
+        print('iteration:',self.bestPerformance[0],bp)
+        print('-'*120)
         return measure
 

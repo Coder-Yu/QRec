@@ -1,7 +1,7 @@
 import os.path
 from os import makedirs,remove
 from re import compile,findall,split
-from config import LineConfig
+from .config import LineConfig
 class FileIO(object):
     def __init__(self):
         pass
@@ -33,9 +33,9 @@ class FileIO(object):
         testData = []
         ratingConfig = LineConfig(conf['ratings.setup'])
         if not bTest:
-            print 'loading training data...'
+            print('loading training data...')
         else:
-            print 'loading test data...'
+            print('loading test data...')
         with open(file) as f:
             ratings = f.readlines()
         # ignore the headline
@@ -49,7 +49,7 @@ class FileIO(object):
         for lineNo, line in enumerate(ratings):
             items = split(delim,line.strip())
             if not bTest and len(order) < 2:
-                print 'The rating file is not in a correct format. Error: Line num %d' % lineNo
+                print('The rating file is not in a correct format. Error: Line num %d' % lineNo)
                 exit(-1)
             try:
                 userId = items[int(order[0])]
@@ -64,7 +64,7 @@ class FileIO(object):
                     else:
                         rating = 1
             except ValueError:
-                print 'Error! Have you added the option -header to the rating.setup?'
+                print('Error! Have you added the option -header to the rating.setup?')
                 exit(-1)
             if bTest:
                 testData.append([userId, itemId, float(rating)])
@@ -79,7 +79,7 @@ class FileIO(object):
     def loadRelationship(conf, filePath):
         socialConfig = LineConfig(conf['social.setup'])
         relation = []
-        print 'loading social data...'
+        print('loading social data...')
         with open(filePath) as f:
             relations = f.readlines()
             # ignore the headline
@@ -88,11 +88,11 @@ class FileIO(object):
         # order of the columns
         order = socialConfig['-columns'].strip().split()
         if len(order) <= 2:
-            print 'The social file is not in a correct format.'
+            print('The social file is not in a correct format.')
         for lineNo, line in enumerate(relations):
             items = split(' |,|\t', line.strip())
             if len(order) < 2:
-                print 'The social file is not in a correct format. Error: Line num %d' % lineNo
+                print('The social file is not in a correct format. Error: Line num %d' % lineNo)
                 exit(-1)
             userId1 = items[int(order[0])]
             userId2 = items[int(order[1])]

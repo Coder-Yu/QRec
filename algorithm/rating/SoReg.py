@@ -14,16 +14,16 @@ class SoReg(SocialRecommender):
 
     def printAlgorConfig(self):
         super(SoReg, self).printAlgorConfig()
-        print 'Specified Arguments of',self.config['recommender']+':'
-        print 'alpha: %.3f' %self.alpha
-        print '='*80
+        print('Specified Arguments of',self.config['recommender']+':')
+        print('alpha: %.3f' %self.alpha)
+        print('='*80)
 
     def initModel(self):
         super(SoReg, self).initModel()
         # compute similarity
         from collections import defaultdict
         self.Sim = defaultdict(dict)
-        print 'constructing similarity matrix...'
+        print('constructing similarity matrix...')
         for user in self.data.user:
             for f in self.social.getFollowees(user):
                 if user in self.Sim and f in self.Sim[user]:

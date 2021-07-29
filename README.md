@@ -1,8 +1,8 @@
 <img src="https://i.ibb.co/Bsn8CM5/logo.png" alt="logo" border="0"><br>
-<p float="left"><img src="https://img.shields.io/badge/python-v2.7.8-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
+<p float="left"><img src="https://img.shields.io/badge/python-v3.7-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
 <h2>Introduction</h2>
 
-**QRec** is a Python framework for recommender systems (Supported by Python 2.7.x and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. QRec has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
+**QRec** is a Python framework for recommender systems (Supported by Python 3.7 and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. QRec has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
 <br>
 **Founder and principal contributor**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Other Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
@@ -10,6 +10,7 @@
 
 <h2>What's New</h2>
 <p>
+30/07/2021 - We have transplanted QRec from py2 to py3. </br>
 07/06/2021 - SEPT proposed in our KDD'21 paper has been added. </br>
 16/05/2021 - SGL proposed in SIGIR'21 paper has been added. </br>
 16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>

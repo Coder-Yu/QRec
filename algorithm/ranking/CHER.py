@@ -128,7 +128,7 @@ class CHER(DeepRecommender):
                 #self.sess.run([self.update_U, self.update_V],feed_dict={self.u_idx: user_idx,  self.v_idx: i_idx})
                 _, l,rec_l,ssl_l = self.sess.run([train, loss, rec_loss, self.adv_ssl_loss],
                                 feed_dict={self.random_noises_U:noise_u,self.random_noises_V:noise_i,self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.ssl_rate:self.ssl_reg})
-                print 'training:', iteration + 1, 'batch', n, 'total_loss:',l, 'rec_loss:', rec_l,'ssl_loss',ssl_l
+                print('training:', iteration + 1, 'batch', n, 'total_loss:',l, 'rec_loss:', rec_l,'ssl_loss',ssl_l)
             if iteration > 0:
                 self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
                 self.ranking_performance(iteration)

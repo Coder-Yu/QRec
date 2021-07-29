@@ -15,10 +15,10 @@ class ItemKNN(Recommender):
     def printAlgorConfig(self):
         "show algorithm's configuration"
         super(ItemKNN, self).printAlgorConfig()
-        print 'Specified Arguments of',self.config['recommender']+':'
-        print 'num.neighbors:',self.config['num.neighbors']
-        print 'similarity:', self.config['similarity']
-        print '='*80
+        print('Specified Arguments of',self.config['recommender']+':')
+        print('num.neighbors:',self.config['num.neighbors'])
+        print('similarity:', self.config['similarity'])
+        print('='*80)
 
     def initModel(self):
         self.topItems = {}
@@ -52,21 +52,21 @@ class ItemKNN(Recommender):
 
     def computeSimilarities(self):
         'compute correlation among items'
-        print 'Computing item similarities...'
+        print('Computing item similarities...')
         for idx,i1 in enumerate(self.data.testSet_i):
 
             for i2 in self.data.item:
-                if i1 <> i2:
+                if i1 != i2:
                     if self.itemSim.contains(i1,i2):
                         continue
                     sim = qmath.similarity(self.data.sCol(i1),self.data.sCol(i2),self.sim)
                     self.itemSim.set(i1,i2,sim)
-            self.topItems[i1] = sorted(self.itemSim[i1].iteritems(),key = lambda d:d[1],reverse=True)
+            self.topItems[i1] = sorted(iter(self.itemSim[i1].items()),key = lambda d:d[1],reverse=True)
             if idx%100==0:
-                print 'progress:',idx,'/',len(self.data.testSet_i)
-        print 'The item similarities have been calculated.'
+                print('progress:',idx,'/',len(self.data.testSet_i))
+        print('The item similarities have been calculated.')
 
 
     def predictForRanking(self,u):
-        print 'Using Memory based algorithms to rank items is extremely time-consuming. So ranking for all items in ItemKNN is not available.'
+        print('Using Memory based algorithms to rank items is extremely time-consuming. So ranking for all items in ItemKNN is not available.')
         exit(0)

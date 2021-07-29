@@ -94,8 +94,8 @@ class EE(IterativeRecommender):
                 sess.run(train_U, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
                 sess.run(train_V, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx, global_mean: g_mean})
 
-                print 'iteration:', step, 'loss:', sess.run(self.total_loss,
-                                                            feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
+                print('iteration:', step, 'loss:', sess.run(self.total_loss,
+                                                            feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean}))
 
 
             self.P = sess.run(self.U)

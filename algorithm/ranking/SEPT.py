@@ -80,13 +80,13 @@ class SEPT(SocialRecommender, DeepRecommender):
         s_row_idx = [self.data.user[pair[0]] for pair in self.social.relation]
         s_col_idx = [self.data.user[pair[1]] for pair in self.social.relation]
         if is_subgraph and self.drop_rate > 0:
-            keep_idx = random.sample(range(self.data.elemCount()), int(self.data.elemCount() * (1 - self.drop_rate)))
+            keep_idx = random.sample(list(range(self.data.elemCount())), int(self.data.elemCount() * (1 - self.drop_rate)))
             user_np = np.array(row_idx)[keep_idx]
             item_np = np.array(col_idx)[keep_idx]
             ratings = np.ones_like(user_np, dtype=np.float32)
             tmp_adj = sp.csr_matrix((ratings, (user_np, self.num_users + item_np)), shape=(n_nodes, n_nodes))
             adj_mat = tmp_adj + tmp_adj.T
-            skeep_idx = random.sample(range(len(s_row_idx)), int(len(s_row_idx) * (1 - self.drop_rate)))
+            skeep_idx = random.sample(list(range(len(s_row_idx))), int(len(s_row_idx) * (1 - self.drop_rate)))
             follower_np = np.array(s_row_idx)[skeep_idx]
             followee_np = np.array(s_col_idx)[skeep_idx]
             relations = np.ones_like(follower_np, dtype=np.float32)
@@ -256,7 +256,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                     })
                     _, l1, l3, = self.sess.run([v2_op, rec_loss, self.neighbor_dis_loss],
                                                   feed_dict=feed_dict)
-                    print self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3
+                    print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3)
             else:
                 #initialization with only recommendation task
                 for n, batch in enumerate(self.next_batch_pairwise()):
@@ -266,7 +266,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                                  self.neg_idx: j_idx}
                     _, l1 = self.sess.run([v1_op, rec_loss],
                                           feed_dict=feed_dict)
-                    print self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1
+                    print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1)
 
             self.U, self.V = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
 

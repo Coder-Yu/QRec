@@ -23,8 +23,8 @@ class CDAE(DeepRecommender):
         uids = []
         positive = np.zeros((self.batch_size, self.num_items))
         negative = np.zeros((self.batch_size, self.num_items))
-        userList = self.data.user.keys()
-        itemList = self.data.item.keys()
+        userList = list(self.data.user.keys())
+        itemList = list(self.data.item.keys())
         for n in range(self.batch_size):
             user = choice(userList)
             uids.append(self.data.user[user])
@@ -108,7 +108,7 @@ class CDAE(DeepRecommender):
             _, loss= self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,
                                                                                      self.u_idx:users,self.positive:positive,self.negative:negative})
 
-            print self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"loss=", "{:.9f}".format(loss)
+            print(self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"loss=", "{:.9f}".format(loss))
             #print y
             #self.ranking_performance()
         print("Optimization Finished!")

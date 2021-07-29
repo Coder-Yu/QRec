@@ -19,9 +19,9 @@ class SoRec(SocialRecommender ):
 
     def printAlgorConfig(self):
         super(SoRec, self).printAlgorConfig()
-        print 'Specified Arguments of', self.config['recommender'] + ':'
-        print 'regZ: %.3f' % self.regZ
-        print '=' * 80
+        print('Specified Arguments of', self.config['recommender'] + ':')
+        print('regZ: %.3f' % self.regZ)
+        print('=' * 80)
 
 
     def buildModel(self):
