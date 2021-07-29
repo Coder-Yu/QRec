@@ -32,22 +32,15 @@ class BasicMF(IterativeRecommender):
         super(BasicMF, self).buildModel_tf()
 
         import tensorflow as tf
-        # 构造损失函数 设置优化器
-
         self.r_hat = tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), axis=1)
         self.total_loss = tf.nn.l2_loss(self.r- self.r_hat)
-
         self.optimizer = tf.train.AdamOptimizer(self.lRate)
         self.train = self.optimizer.minimize(self.total_loss, var_list=[self.U, self.V])
 
-        # 初始化会话
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-
-            # 迭代，传递变量
             for step in range(self.maxIter):
-                # 按批优化
                 batch_size = self.batch_size
 
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
@@ -59,8 +52,10 @@ class BasicMF(IterativeRecommender):
                 print 'iteration:', step, 'loss:', sess.run(self.total_loss,
                                                             feed_dict={self.r: rating, self.u_idx: user_idx,
                                                                        self.v_idx: item_idx})
-
-            # 输出训练完毕的矩阵
             self.P = sess.run(self.U)
             self.Q = sess.run(self.V)
-
+            import pickle
+            f = open('user_embeddings', 'wb')
+            pickle.dump(self.P, f)
+            f = open('user_idx', 'wb')
+            pickle.dump(self.data.user, f)

@@ -108,7 +108,7 @@ class APR(DeepRecommender):
 
             item_j = random.randint(0,self.num_items-1)
 
-            while self.data.trainSet_u[user].has_key(self.data.id2item[item_j]):
+            while self.data.id2item[item_j] in self.data.trainSet_u[user]:
                 item_j = random.randint(0, self.num_items - 1)
 
             user_idx.append(self.data.user[user])

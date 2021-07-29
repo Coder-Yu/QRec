@@ -69,7 +69,7 @@ class IF_BPR(SocialRecommender):
 
         for user in self.data.user:
             for item in self.negative[user]:
-                if self.data.item.has_key(item):
+                if item in self.data.item:
                     self.NegSets[user][item] = 1
 
     def randomWalks(self):
@@ -104,8 +104,8 @@ class IF_BPR(SocialRecommender):
         for u in self.social.followers:
             s1 = set(self.social.followers[u])
             for v in self.social.followers[u]:
-                if self.social.followers.has_key(v):  # make sure that v has out links
-                    if u <> v:
+                if v in self.social.followers:  # make sure that v has out links
+                    if u != v:
                         s2 = set(self.social.followers[v])
                         weight = len(s1.intersection(s2))
                         self.UTNet[u] += [v] * (weight + 1)
@@ -134,21 +134,21 @@ class IF_BPR(SocialRecommender):
                                         nextNode = choice(self.pItems[lastNode])
                                     elif lastType == 'F':
                                         nextNode = choice(self.UFNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UFNet[lastNode])
                                     elif lastType == 'T':
                                         nextNode = choice(self.UTNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UTNet[lastNode])
 
                                 if tp == 'F':
                                     nextNode = choice(self.UFNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
                                     nextNode = choice(self.UTNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UTNet[lastNode])
 
                                 path.append(tp + nextNode)
@@ -185,21 +185,21 @@ class IF_BPR(SocialRecommender):
                                         nextNode = choice(self.nItems[lastNode])
                                     elif lastType == 'F':
                                         nextNode = choice(self.UFNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UFNet[lastNode])
                                     elif lastType == 'T':
                                         nextNode = choice(self.UTNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UTNet[lastNode])
 
                                 if tp == 'F':
                                     nextNode = choice(self.UFNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
                                     nextNode = choice(self.UTNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UTNet[lastNode])
 
                                 path.append(tp + nextNode)
@@ -292,7 +292,7 @@ class IF_BPR(SocialRecommender):
                             if item not in self.PositiveSet[user] and item not in self.NegSets[user]:
                                 self.JointSet[user][item] = friend
 
-            if self.pTopKSim.has_key(user):
+            if user in self.pTopKSim:
                 for friend in self.pTopKSim[user][:self.topK]:
                     if friend in self.data.user and self.pSimilarity[user][friend] >= self.threshold[user]:
                         for item in self.positive[friend]:
@@ -300,7 +300,7 @@ class IF_BPR(SocialRecommender):
                                     and item not in self.NegSets[user]:
                                 self.PS_Set[user][item] = friend
 
-            if self.nTopKSim.has_key(user):
+            if user in self.nTopKSim:
                 for friend in self.nTopKSim[user][:self.topK]:
                     if friend in self.data.user and self.nSimilarity[user][friend]>=self.threshold[user]:
                         for item in self.negative[friend]:

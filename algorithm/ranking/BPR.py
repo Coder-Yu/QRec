@@ -4,7 +4,8 @@ from random import choice
 from tool.qmath import sigmoid
 from math import log
 from collections import defaultdict
-#import tensorflow as tf
+from random import shuffle
+import tensorflow as tf
 class BPR(IterativeRecommender):
 
     # BPR：Bayesian Personalized Ranking from Implicit Feedback
@@ -43,7 +44,7 @@ class BPR(IterativeRecommender):
                     i = self.data.item[item]
 
                     item_j = choice(itemList)
-                    while (self.PositiveSet[user].has_key(item_j)):
+                    while item_j in self.PositiveSet[user]:
                         item_j = choice(itemList)
                     j = self.data.item[item_j]
                     self.optimization(u,i,j)
@@ -75,20 +76,21 @@ class BPR(IterativeRecommender):
             return sigmoid(self.data.globalMean)
 
     def next_batch(self):
-        batch_id=0
-        while batch_id<self.train_size:
-            if batch_id+self.batch_size<=self.train_size:
-                users = [self.data.trainingData[idx][0] for idx in range(batch_id,self.batch_size+batch_id)]
-                items = [self.data.trainingData[idx][1] for idx in range(batch_id,self.batch_size+batch_id)]
-                batch_id+=self.batch_size
+        shuffle(self.data.trainingData)
+        batch_id = 0
+        while batch_id < self.train_size:
+            if batch_id + self.batch_size <= self.train_size:
+                users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.batch_size + batch_id)]
+                items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.batch_size + batch_id)]
+                batch_id += self.batch_size
             else:
                 users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
                 items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
-                batch_id=self.train_size
+                batch_id = self.train_size
 
-            u_idx,i_idx,j_idx = [],[],[]
+            u_idx, i_idx, j_idx = [], [], []
             item_list = self.data.item.keys()
-            for i,user in enumerate(users):
+            for i, user in enumerate(users):
 
                 i_idx.append(self.data.item[items[i]])
                 u_idx.append(self.data.user[user])
@@ -98,7 +100,7 @@ class BPR(IterativeRecommender):
                     neg_item = choice(item_list)
                 j_idx.append(self.data.item[neg_item])
 
-            yield u_idx,i_idx,j_idx
+            yield u_idx, i_idx, j_idx
 
     def buildModel_tf(self):
         super(BPR, self).buildModel_tf()
@@ -106,14 +108,12 @@ class BPR(IterativeRecommender):
         self.neg_item_embedding = tf.nn.embedding_lookup(self.V, self.neg_idx)
         y = tf.reduce_sum(tf.multiply(self.user_embedding,self.item_embedding),1)\
                                  -tf.reduce_sum(tf.multiply(self.user_embedding,self.neg_item_embedding),1)
-        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.user_embedding) +
-                                                                       tf.nn.l2_loss(self.item_embedding) +
-                                                                       tf.nn.l2_loss(self.neg_item_embedding))
+        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y)+1e-6)) + self.regU * (tf.nn.l2_loss(self.U) + tf.nn.l2_loss(self.V))
         opt = tf.train.AdamOptimizer(self.lRate)
-
         train = opt.minimize(loss)
-
-        with tf.Session() as sess:
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        with tf.Session(config=config) as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
             for iteration in range(self.maxIter):
@@ -122,8 +122,6 @@ class BPR(IterativeRecommender):
                     _, l = sess.run([train, loss], feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx,self.v_idx: i_idx})
                     print 'training:', iteration + 1, 'batch', n, 'loss:', l
             self.P,self.Q = sess.run([self.U,self.V])
-
-
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

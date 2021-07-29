@@ -47,7 +47,7 @@ class CoFactor(IterativeRecommender):
             for item2 in self.data.item:
                 if item1 == item2:
                     continue
-                if not occurrence[item1].has_key(item2):
+                if item2 not in occurrence[item1]:
                     uList2, rList2 = self.data.itemRated(item2)
                     if len(uList2) < self.filter:
                         continue

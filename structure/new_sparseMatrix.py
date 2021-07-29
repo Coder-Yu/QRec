@@ -8,9 +8,9 @@ class SparseMatrix():
         self.matrix_User = {}
         self.matrix_Item = {}
         for item in triple:
-            if not self.matrix_User.has_key(item[0]):
+            if item[0] not in self.matrix_User:
                 self.matrix_User[item[0]] = {}
-            if not self.matrix_Item.has_key(item[1]):
+            if item[1] not in self.matrix_Item:
                 self.matrix_Item[item[1]] = {}
             self.matrix_User[item[0]][item[1]]=item[2]
             self.matrix_Item[item[1]][item[0]]=item[2]
@@ -18,13 +18,13 @@ class SparseMatrix():
         self.size = (len(self.matrix_User),len(self.matrix_Item))
 
     def sRow(self,r):
-        if not self.matrix_User.has_key(r):
+        if r not in self.matrix_User:
             return {}
         else:
             return self.matrix_User[r]
 
     def sCol(self,c):
-        if not self.matrix_Item.has_key(c):
+        if c not in self.matrix_Item:
             return {}
         else:
             return self.matrix_Item[c]
@@ -32,7 +32,7 @@ class SparseMatrix():
 
 
     def row(self,r):
-        if not self.matrix_User.has_key(r):
+        if r not in self.matrix_User:
             return np.zeros((1,self.size[1]))
         else:
             array = np.zeros((1,self.size[1]))
@@ -42,7 +42,7 @@ class SparseMatrix():
             return array
 
     def col(self,c):
-        if not self.matrix_Item.has_key(c):
+        if c not in self.matrix_Item:
             return np.zeros((1,self.size[0]))
         else:
             array = np.zeros((1,self.size[0]))
@@ -56,7 +56,7 @@ class SparseMatrix():
         return self.matrix_User[r][c]
 
     def contains(self,r,c):
-        if self.matrix_User.has_key(r) and self.matrix_User[r].has_key(c):
+        if r in self.matrix_User and c in self.matrix_User[r]:
             return True
         return False
 

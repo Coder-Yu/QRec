@@ -23,12 +23,12 @@ class SBPR(SocialRecommender):
                     self.PositiveSet[user][item] = 1
                     # else:
                     #     self.NegativeSet[user].append(item)
-            if self.social.user.has_key(user):
+            if user in self.social.user:
                 for friend in self.social.getFollowees(user):
-                    if self.data.user.has_key(friend):
+                    if friend in self.data.user:
                         for item in self.data.trainSet_u[friend]:
-                            if not self.PositiveSet[user].has_key(item):
-                                if not self.FPSet[user].has_key(item):
+                            if item not in self.PositiveSet[user]:
+                                if item not in self.FPSet[user]:
                                     self.FPSet[user][item] = 1
                                 else:
                                     self.FPSet[user][item] += 1
@@ -58,7 +58,7 @@ class SBPR(SocialRecommender):
 
 
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j) or self.FPSet.has_key(item_j)):
+                        while item_j in self.PositiveSet[user] or item_j in self.FPSet:
                             item_j = choice(itemList)
                         j = self.data.item[item_j]
                         s = sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])+self.b[k]-self.b[j])
@@ -76,7 +76,7 @@ class SBPR(SocialRecommender):
                                      - log(sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))
                     else:
                         item_j = choice(itemList)
-                        while (self.PositiveSet[user].has_key(item_j)):
+                        while item_j in self.PositiveSet[user]:
                             item_j = choice(itemList)
                         j = self.data.item[item_j]
                         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])+self.b[i]-self.b[j])
@@ -122,7 +122,7 @@ class SBPR(SocialRecommender):
                 f_idx.append(self.data.item[f_item])
 
                 neg_item = choice(item_list)
-                while neg_item in self.data.trainSet_u[user]:
+                while neg_item in self.data.trainSet_u[user] or neg_item in self.FPSet[user]:
                     neg_item = choice(item_list)
                 j_idx.append(self.data.item[neg_item])
 
@@ -141,19 +141,19 @@ class SBPR(SocialRecommender):
         # self.social_item_bias = tf.nn.embedding_lookup(self.item_biases, self.social_idx)
 
         y_ik = (tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), 1)
-                -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1))#/(self.weights+1)
+                -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1))/(self.weights+1)
         y_kj = tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1)\
                -tf.reduce_sum(tf.multiply(self.user_embedding, self.neg_item_embedding), 1)
-        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ik))+ tf.log(tf.sigmoid(y_kj)))
-        + self.regU * (tf.nn.l2_loss(self.user_embedding) + tf.nn.l2_loss(self.item_embedding)
-                       + tf.nn.l2_loss(self.neg_item_embedding)+tf.nn.l2_loss(self.social_item_embedding))
-                       #+tf.nn.l2_loss(self.pos_item_bias)+tf.nn.l2_loss(self.social_item_bias)+tf.nn.l2_loss(self.neg_item_bias))
+        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ik)+1e-6)+ tf.log(tf.sigmoid(y_kj)+1e-6))
+        + self.regU * (tf.nn.l2_loss(self.U) + tf.nn.l2_loss(self.V))
+
 
         opt = tf.train.AdamOptimizer(self.lRate)
 
         train = opt.minimize(loss)
-
-        with tf.Session() as sess:
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        with tf.Session(config=config) as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
             for iteration in range(self.maxIter):
@@ -162,8 +162,7 @@ class SBPR(SocialRecommender):
                     _, l = sess.run([train, loss],
                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.social_idx:s_idx,self.weights:weights})
                     print 'training:', iteration + 1, 'batch', n, 'loss:', l
-            self.P, self.Q,self.b = sess.run([self.U, self.V,self.item_biases])
-            self.b = self.b.reshape(self.num_items)
+            self.P, self.Q = sess.run([self.U, self.V])
 
 
 

@@ -47,13 +47,13 @@ class SocialDAO(object):
         return self.trustMatrix.size
 
     def getFollowers(self,u):
-        if self.followers.has_key(u):
+        if u in self.followers:
             return self.followers[u]
         else:
             return {}
 
     def getFollowees(self,u):
-        if self.followees.has_key(u):
+        if u in self.followees:
             return self.followees[u]
         else:
             return {}

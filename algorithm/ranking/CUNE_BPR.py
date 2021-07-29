@@ -215,7 +215,7 @@ class CUNE_BPR(IterativeRecommender):
                 for i in range(1,self.walkLength):
                     nextNode = choice(self.CUNet[lastNode])
                     count=0
-                    while(self.visited[lastNode].has_key(nextNode)):
+                    while nextNode in self.visited[lastNode]:
                         nextNode = choice(self.CUNet[lastNode])
                         #break infinite loop
                         count+=1
@@ -294,7 +294,7 @@ class CUNE_BPR(IterativeRecommender):
 
             for friend in self.topKSim[user]:
                 for item in self.data.trainSet_u[friend[0]]:
-                    if not self.PositiveSet[user].has_key(item):
+                    if item not in self.PositiveSet[user]:
                         self.IPositiveSet[user][item]=1
 
 
@@ -324,7 +324,7 @@ class CUNE_BPR(IterativeRecommender):
                             #     item_j = choice(self.NegativeSet[user])
                             # else:
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j) or self.IPositiveSet.has_key(item_j)):
+                            while item_j in self.PositiveSet[user] or item_j in self.IPositiveSet:
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             self.P[u] += (1 / self.s) * self.lRate * (
@@ -344,7 +344,7 @@ class CUNE_BPR(IterativeRecommender):
                                          log(sigmoid((1 / self.s) * (self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j]))))
                         else:
                             item_j = choice(itemList)
-                            while (self.PositiveSet[user].has_key(item_j)):
+                            while item_j in self.PositiveSet[user]:
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
                             self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (

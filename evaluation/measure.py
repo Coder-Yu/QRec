@@ -9,7 +9,6 @@ class Measure(object):
         measure.append('MAE:'+str(mae)+'\n')
         rmse = Measure.RMSE(res)
         measure.append('RMSE:' + str(rmse)+'\n')
-
         return measure
 
     @staticmethod
@@ -61,7 +60,7 @@ class Measure(object):
             hits = 0
             precision = 0
             for n, item in enumerate(res[user]):
-                if origin[user].has_key(item[0]):
+                if item[0] in origin[user]:
                     hits += 1
                     precision += hits / (n + 1.0)
             sum_prec += precision / (min(len(origin[user]), N) + 0.0)
@@ -75,7 +74,7 @@ class Measure(object):
             IDCG = 0
             #1 = related, 0 = unrelated
             for n, item in enumerate(res[user]):
-                if origin[user].has_key(item[0]):
+                if item[0] in origin[user]:
                     DCG+= 1.0/math.log(n+2)
             for n, item in enumerate(origin[user].keys()[:N]):
                 IDCG+=1.0/math.log(n+2)

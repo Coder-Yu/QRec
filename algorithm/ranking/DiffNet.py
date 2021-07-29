@@ -27,7 +27,7 @@ class DiffNet(SocialRecommender,DeepRecommender):
         for pair in self.social.relation:
             row += [self.data.user[pair[0]]]
             col += [self.data.user[pair[1]]]
-            entries += [1.0/len(self.social.getFollowees(pair[0]))]
+            entries += [1.0/len(self.social.followees[pair[0]])]
         AdjacencyMatrix = coo_matrix((entries, (row, col)), shape=(self.num_users,self.num_users),dtype=np.float32)
         return AdjacencyMatrix
 
@@ -53,7 +53,6 @@ class DiffNet(SocialRecommender,DeepRecommender):
     def buildModel(self):
         self.weights = {}
         initializer = tf.contrib.layers.xavier_initializer()
-        self.training = tf.placeholder_with_default(True, shape=None, name='training')
         for k in range(self.n_layers):
             self.weights['weights%d' % k] = tf.Variable(
                 initializer([2*self.embed_size, self.embed_size]), name='weights%d' % k)
@@ -63,7 +62,7 @@ class DiffNet(SocialRecommender,DeepRecommender):
             new_user_embeddings = tf.sparse_tensor_dense_matmul(self.S,user_embeddings)
             user_embeddings = tf.matmul(tf.concat([new_user_embeddings,user_embeddings],1),self.weights['weights%d' % k])
             user_embeddings = tf.nn.relu(user_embeddings)
-            user_embeddings = tf.math.l2_normalize(user_embeddings,axis=1)
+            #user_embeddings = tf.math.l2_normalize(user_embeddings,axis=1)
 
         final_user_embeddings = user_embeddings+tf.sparse_tensor_dense_matmul(self.A,self.item_embeddings)
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")

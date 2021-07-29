@@ -110,19 +110,19 @@ class TBPR(SocialRecommender):
             self.weakSet = defaultdict(dict)
 
             for u1 in self.social.user:
-                if self.data.user.has_key(u1):
+                if u1 in self.data.user:
                     for u2 in self.strongTies[u1]:
                         for item in self.data.trainSet_u[u2]:
-                            if self.data.trainSet_u[u2][item] >= 1 and not self.positiveSet[u1].has_key(item):
+                            if self.data.trainSet_u[u2][item] >= 1 and item not in self.positiveSet[u1]:
                                 self.strongSet[u1][item]=1
 
                     for u2 in self.weakTies[u1]:
                         for item in self.data.trainSet_u[u2]:
-                            if self.data.trainSet_u[u2][item] >= 1 and not self.positiveSet[u1].has_key(item):
+                            if self.data.trainSet_u[u2][item] >= 1 and item not in self.positiveSet[u1]:
                                 self.weakSet[u1][item]=1
 
             for u1 in self.social.user:
-                if self.data.user.has_key(u1):
+                if u1 in self.data.user:
                     self.jointSet[u1] = dict.fromkeys(set(self.strongSet[u1].keys()).intersection(set(self.weakSet[u1].keys())),1)
 
             for u1 in self.jointSet:
@@ -163,7 +163,7 @@ class TBPR(SocialRecommender):
                         selectedItems.append(s)
 
                     item_k = choice(itemList)
-                    while (self.positiveSet[user].has_key(item_k)):
+                    while item_k in self.positiveSet[user]:
                         item_k = choice(itemList)
                     k = self.data.item[item_k]
                     selectedItems.append(k)

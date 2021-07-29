@@ -12,7 +12,7 @@ def gumbel_softmax(logits, temperature=0.2):
     eps = 1e-20
     u = tf.random_uniform(tf.shape(logits), minval=0, maxval=1)
     gumbel_noise = -tf.log(-tf.log(u + eps) + eps)
-    y = tf.log(logits + eps) + gumbel_noise
+    y = logits + gumbel_noise
     return tf.nn.softmax(y / temperature)
 
 class RSGAN(SocialRecommender,DeepRecommender):
@@ -71,7 +71,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         for u in self.social.followers:
             s1 = set(self.social.followers[u])
             for v in self.social.followers[u]:
-                if self.social.followers.has_key(v):  # make sure that v has out links
+                if v in self.social.followers:  # make sure that v has out links
                     if u != v:
                         s2 = set(self.social.followers[v])
                         weight = len(s1.intersection(s2))
@@ -99,21 +99,21 @@ class RSGAN(SocialRecommender,DeepRecommender):
                                         nextNode = choice(self.pItems[lastNode])
                                     elif lastType == 'F':
                                         nextNode = choice(self.UFNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UFNet[lastNode])
                                     elif lastType == 'T':
                                         nextNode = choice(self.UTNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UTNet[lastNode])
 
                                 if tp == 'F':
                                     nextNode = choice(self.UFNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
                                     nextNode = choice(self.UFNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 path.append(tp + nextNode)
@@ -150,21 +150,21 @@ class RSGAN(SocialRecommender,DeepRecommender):
                                         nextNode = choice(self.nItems[lastNode])
                                     elif lastType == 'F':
                                         nextNode = choice(self.UFNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UFNet[lastNode])
                                     elif lastType == 'T':
                                         nextNode = choice(self.UTNet[lastNode])
-                                        while not self.data.user.has_key(nextNode):
+                                        while nextNode not in self.data.user:
                                             nextNode = choice(self.UTNet[lastNode])
 
                                 if tp == 'F':
                                     nextNode = choice(self.UFNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 if tp == 'T':
                                     nextNode = choice(self.UFNet[lastNode])
-                                    while not self.data.user.has_key(nextNode):
+                                    while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
 
                                 path.append(tp + nextNode)

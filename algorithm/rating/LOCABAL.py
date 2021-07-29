@@ -39,7 +39,7 @@ class LOCABAL(SocialRecommender):
                 uvec1=self.data.trainSet_u[u1]
                 uvec2=self.data.trainSet_u[u2]
             #add relations to dict
-                if not self.S.has_key(u1):
+                if u1 not in self.S:
                     self.S[u1] = {}
                 self.S[u1][u2] = qmath.cosine_sp(uvec1,uvec2)
 
@@ -52,14 +52,14 @@ class LOCABAL(SocialRecommender):
                 error = r - self.predict(user,item)
                 i = self.data.getItemId(item)
                 u = self.data.getUserId(user)
-                if self.W.has_key(user):
+                if user in self.W:
                     self.loss += self.W[user]*error ** 2
                 else:
                     self.loss += error ** 2
                 p = self.P[u].copy()
                 q = self.Q[i].copy()
                 #update latent vectors
-                if self.W.has_key(user):
+                if user in self.W:
                     self.P[u] += self.lRate * (self.W[user]*error * q - self.regU * p)
                     self.Q[i] += self.lRate * (self.W[user]*error * p - self.regI * q)
                 #else:

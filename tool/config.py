@@ -17,7 +17,7 @@ class Config(object):
         return self.config[item]
 
     def contains(self,key):
-        return self.config.has_key(key)
+        return key in self.config
 
     def readConfiguration(self,fileName):
         path = '../config/'+fileName
@@ -76,6 +76,6 @@ class LineConfig(object):
         return self.mainOption
 
     def contains(self,key):
-        return self.options.has_key(key)
+        return key in self.options
 
 

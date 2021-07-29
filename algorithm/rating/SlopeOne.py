@@ -21,7 +21,7 @@ class SlopeOne(Recommender,):
                 diff = 0.0
                 commonItem = 0
                 for key in x1:
-                    if x2.has_key(key):
+                    if key in x2:
                         diff+=x1[key]-x2[key]
                         commonItem+=1
                 if commonItem==0:

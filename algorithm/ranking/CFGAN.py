@@ -35,14 +35,14 @@ class CFGAN(DeepRecommender):
 
             for i in range(int(self.S_zr*self.num_items)):
                 ng = choice(itemList)
-                while self.data.trainSet_u[user].has_key(ng):
+                while ng in self.data.trainSet_u[user]:
                     ng = choice(itemList)
                 ng = self.data.item[ng]
                 N_zr[n][ng] = 1
 
             for i in range(int(self.S_pm*self.num_items)):
                 ng = choice(itemList)
-                while self.data.trainSet_u[user].has_key(ng):
+                while ng in self.data.trainSet_u[user]:
                     ng = choice(itemList)
                 ng = self.data.item[ng]
                 mask[n][ng] = 1

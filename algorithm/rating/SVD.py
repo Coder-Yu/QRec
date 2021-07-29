@@ -22,10 +22,8 @@ class SVD(IterativeRecommender):
                 self.loss+=error**2
                 p = self.P[u]
                 q = self.Q[i]
-
                 bu = self.Bu[u]
                 bi = self.Bi[i]
-
                 #update latent vectors
                 self.P[u] += self.lRate*(error*q-self.regU*p)
                 self.Q[i] += self.lRate*(error*p-self.regI*q)
@@ -36,17 +34,10 @@ class SVD(IterativeRecommender):
             iteration += 1
             self.isConverged(iteration)
 
-
     def buildModel_tf(self):
         super(SVD, self).buildModel_tf()
-
         import tensorflow as tf
-
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
-        reg_lambda = tf.constant(self.regU, dtype=tf.float32)
-        reg_biase = tf.constant(self.regB, dtype=tf.float32)
-
-
 
         self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.num_users], stddev=0.005,mean=0.02), name='U_bias')
         self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.num_items], stddev=0.005,mean=0.02), name='V_bias')
@@ -70,26 +61,18 @@ class SVD(IterativeRecommender):
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-
-
             for step in range(self.maxIter):
-
                 batch_size = self.batch_size
-
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
-
                 user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
                 item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
                 g_mean = [self.data.globalMean]*batch_size
                 rating = [self.data.trainingData[idx][2] for idx in batch_idx]
-
                 sess.run(train_U, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
                 sess.run(train_V, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx, global_mean: g_mean})
 
                 print 'iteration:', step, 'loss:', sess.run(self.total_loss,
                                                             feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
-
-
             self.P = sess.run(self.U)
             self.Q = sess.run(self.V)
             self.Bu = sess.run(self.U_bias)

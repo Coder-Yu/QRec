@@ -214,7 +214,7 @@ class CUNE_MF(IterativeRecommender):
                 for i in range(1,self.walkLength):
                     nextNode = choice(self.CUNet[lastNode])
                     count=0
-                    while(self.visited[lastNode].has_key(nextNode)):
+                    while nextNode in self.visited[lastNode]:
                         nextNode = choice(self.CUNet[lastNode])
                         #break infinite loop
                         count+=1

@@ -26,7 +26,7 @@ class SoReg(SocialRecommender):
         print 'constructing similarity matrix...'
         for user in self.data.user:
             for f in self.social.getFollowees(user):
-                if self.Sim.has_key(user) and self.Sim[user].has_key(f):
+                if user in self.Sim and f in self.Sim[user]:
                     pass
                 else:
                     self.Sim[user][f]=self.sim(user,f)
