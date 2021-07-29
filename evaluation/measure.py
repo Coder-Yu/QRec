@@ -51,7 +51,7 @@ class Measure(object):
     @staticmethod
     def precision(hits, N):
         prec = sum([hits[user] for user in hits])
-        return float(prec) / (len(hits) * N)
+        return prec / (len(hits) * N)
 
     @staticmethod
     def MAP(origin, res, N):
@@ -63,8 +63,8 @@ class Measure(object):
                 if item[0] in origin[user]:
                     hits += 1
                     precision += hits / (n + 1.0)
-            sum_prec += precision / (min(len(origin[user]), N) + 0.0)
-        return sum_prec / (len(res))
+            sum_prec += precision / min(len(origin[user]), N)
+        return sum_prec / len(res)
 
     @staticmethod
     def NDCG(origin,res,N):
@@ -79,7 +79,7 @@ class Measure(object):
             for n, item in enumerate(list(origin[user].keys())[:N]):
                 IDCG+=1.0/math.log(n+2)
             sum_NDCG += DCG / IDCG
-        return sum_NDCG / (len(res))
+        return sum_NDCG / len(res)
     # @staticmethod
     # def AUC(origin, res, rawRes):
     #
@@ -104,8 +104,8 @@ class Measure(object):
 
     @staticmethod
     def recall(hits, origin):
-        recallList = [float(hits[user]) / len(origin[user]) for user in hits]
-        recall = sum(recallList) / float(len(recallList))
+        recallList = [hits[user]/len(origin[user]) for user in hits]
+        recall = sum(recallList) / len(recallList)
         return recall
 
     @staticmethod
@@ -124,7 +124,7 @@ class Measure(object):
             count+=1
         if count==0:
             return error
-        return float(error)/count
+        return error/count
 
     @staticmethod
     def RMSE(res):
@@ -135,7 +135,7 @@ class Measure(object):
             count += 1
         if count==0:
             return error
-        return math.sqrt(float(error)/count)
+        return math.sqrt(error/count)
 
 
 
