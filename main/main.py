@@ -2,7 +2,6 @@ import sys
 sys.path.append("..")
 from QRec import QRec
 from tool.config import Config
-#from visual.display import Display
 
 if __name__ == '__main__':
 
@@ -29,7 +28,7 @@ if __name__ == '__main__':
     print('d11. DHCF         d12. DiffNet      d13. MHCN')
 
     print('Self-Supervised Recommenders:')
-    print('q1. SGL           q2. CHER          q3. SEPT')
+    print('q1. SGL           q2. SEPT')
 
     print('Baselines:')
     print('b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand')
@@ -41,15 +40,6 @@ if __name__ == '__main__':
     order = input('please enter the num of the algorithm to run it:')
     import time
     s = time.time()
-    # if order == '0':
-    #     try:
-    #         import seaborn as sns
-    #     except ImportError:
-    #         print '!!!To obtain nice data charts, ' \
-    #               'we strongly recommend you to install the third-party package <seaborn>!!!'
-    #     conf = Config('../config/visual/visual.conf')
-    #     Display(conf).render()
-    #     exit(0)
 
     algorthms = {'1':'UserKNN','2':'ItemKNN','3':'BasicMF','4':'SlopeOne','5':'SVD','6':'PMF',
                  '7':'SVD++','8':'EE','9':'BPR','10':'WRMF','11':'ExpoMF',
@@ -58,7 +48,7 @@ if __name__ == '__main__':
                  'a2':'CUNE_MF','a3':'CUNE_BPR','a4':'IF_BPR',
                  'd1':'APR','d2':'CDAE','d3':'DMF','d4':'NeuMF','d5':'CFGAN','d6':'IRGAN','d7':'RSGAN','d8':'NGCF',
                  'd9':'LightGCN', 'd10':'ESRF', 'd11':'DHCF', 'd12':'DiffNet','d13':'MHCN',
-                 'q1':'SGL', 'q2':'CHER', 'q3':'SEPT',
+                 'q1':'SGL', 'q2':'SEPT',
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
 
     try:
