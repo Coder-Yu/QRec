@@ -42,7 +42,7 @@
 </ul>
 
 <h2>Usage</h2>
-<p>There are two ways to run the algorthms:</p>
+<p>There are two ways to run the algorithms:</p>
 <ul>
 <li>1.Configure the xx.conf file in the directory named config. (xx is the name of the algorithm you want to run)</li>
 <li>2.Run main.py in the directory named main.</li>
