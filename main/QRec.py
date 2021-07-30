@@ -1,7 +1,4 @@
-import sys
-from re import split
-from tool.config import Config,LineConfig
-from tool.file import FileIO
+from tool.config import LineConfig
 from evaluation.dataSplit import *
 from multiprocessing import Process,Manager
 from tool.file import FileIO
@@ -111,6 +108,7 @@ class QRec(object):
             else:
                 recommender = self.config['recommender'] + '(self.config,self.trainingData,self.testData)'
             eval(recommender).execute()
+
 
 def run(measure,algor,order):
     measure[order] = algor.execute()

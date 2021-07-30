@@ -25,7 +25,7 @@ class Recommender(object):
         self.foldInfo = fold
         self.evalSettings = LineConfig(self.config['evaluation.setup'])
         self.measure = []
-        self.record = []
+        self.recOutput = []
         if self.evalSettings.contains('-cold'):
             #evaluation on cold-start users
             threshold = int(self.evalSettings['-cold'])
@@ -136,8 +136,6 @@ class Recommender(object):
 
 
     def evalRanking(self):
-        res = []  # used to contain the text of the result
-
         if self.ranking.contains('-topN'):
             top = self.ranking['-topN'].split(',')
             top = [int(num) for num in top]
@@ -151,7 +149,7 @@ class Recommender(object):
             print('No correct evaluation metric is specified!')
             exit(-1)
 
-        res.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
+        self.recOutput.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
         # predict
         recList = {}
         userCount = len(self.data.testSet_u)
@@ -178,14 +176,14 @@ class Recommender(object):
                 if item[0] not in self.data.testSet_u[user]:
                     line += '*'
             line += '\n'
-            res.append(line)
+            self.recOutput.append(line)
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
         # output prediction result
         if self.isOutput:
             outDir = self.output['-dir']
             fileName = self.config['recommender'] + '@' + currentTime + '-top-' + str(
             N) + 'items' + self.foldInfo + '.txt'
-            FileIO.writeFile(outDir, fileName, res)
+            FileIO.writeFile(outDir, fileName, self.recOutput)
             print('The result has been output to ', abspath(outDir), '.')
         # output evaluation result
         outDir = self.output['-dir']
@@ -218,7 +216,7 @@ class Recommender(object):
             except ImportError:
                 self.buildModel()
 
-        #preict the ratings or item ranking
+        #rating prediction or item ranking
         print('Predicting %s...' %self.foldInfo)
         if self.ranking.isMainOn():
             self.evalRanking()
@@ -229,8 +227,6 @@ class Recommender(object):
         if self.isSaveModel:
             print('Saving model %s...' %self.foldInfo)
             self.saveModel()
-        # with open(self.foldInfo+'measure.txt','w') as f:
-        #     f.writelines(self.record)
         return self.measure
 
 
