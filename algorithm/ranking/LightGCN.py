@@ -1,10 +1,13 @@
 from baseclass.DeepRecommender import DeepRecommender
 import tensorflow as tf
 from math import sqrt
+from tool.config import LineConfig
 class LightGCN(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(LightGCN, self).__init__(conf,trainingSet,testSet,fold)
+        args = LineConfig(self.config['LightGCN'])
+        self.n_layers = int(args['-n_layer'])
 
     def initModel(self):
         super(LightGCN, self).initModel()
@@ -14,7 +17,6 @@ class LightGCN(DeepRecommender):
         values = [float(item[2])/sqrt(len(self.data.trainSet_u[item[0]]))/sqrt(len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData]*2
         norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
 
-        self.n_layers = 2
         all_embeddings = [ego_embeddings]
         for k in range(self.n_layers):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
