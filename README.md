@@ -1,28 +1,28 @@
 <img src="https://i.ibb.co/Bsn8CM5/logo.png" alt="logo" border="0"><br>
-<p float="left"><img src="https://img.shields.io/badge/python-v3.7-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
+<p float="left"><img src="https://img.shields.io/badge/python-v3.7+-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
 <h2>Introduction</h2>
 
-**QRec** is a Python framework for recommender systems (Supported by Python 3.7 and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. QRec has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
+**QRec** is a Python framework for recommender systems (Supported by Python 3.7.4 and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. QRec has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
 <br>
 **Founder and principal contributor**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
-**Other Contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
+**Other contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 **Supported by**: [@AIhongzhi](https://github.com/AIhongzhi) (<a href="https://sites.google.com/view/hongzhi-yin/home">A/Prof. Hongzhi Yin</a>, UQ), [@mingaoo](https://github.com/mingaoo) (<a href="http://www.cse.cqu.edu.cn/info/2096/3497.htm">A/Prof. Min Gao</a>, CQU) <br> 
 
 <h2>What's New</h2>
 <p>
-30/07/2021 - We have transplanted QRec from py2 to py3. </br>
-07/06/2021 - SEPT proposed in our KDD'21 paper has been added. </br>
-16/05/2021 - SGL proposed in SIGIR'21 paper has been added. </br>
-16/01/2021 - MHCN proposed in our WWW'21 paper has been added.</br>
-22/09/2020 - DiffNet proposed in SIGIR'19 has been added. </br>
-19/09/2020 - DHCF proposed in KDD'20 has been added. </br>
-29/07/2020 - ESRF proposed in my TKDE paper has been added. </br>
-23/07/2020 - LightGCN proposed in SIGIR'20 has been added. </br>
-17/09/2019 - NGCF proposed in SIGIR'19 has been added. </br>
-13/08/2019 - RSGAN proposed in ICDM'19 has been added.</br>
-09/08/2019 - Our paper is accepted as full research paper by ICDM'19. </br>
-20/02/2019 - IRGAN proposed in SIGIR'17 has been added. </br>
-12/02/2019 - CFGAN proposed in CIKM'18 has been added.</br>
+30/07/2021 - We have transplanted QRec from py2 to py3. <br>
+07/06/2021 - SEPT proposed in our KDD'21 paper has been added. <br>
+16/05/2021 - SGL proposed in SIGIR'21 paper has been added. <br>
+16/01/2021 - MHCN proposed in our WWW'21 paper has been added.<br>
+22/09/2020 - DiffNet proposed in SIGIR'19 has been added. <br>
+19/09/2020 - DHCF proposed in KDD'20 has been added. <br>
+29/07/2020 - ESRF proposed in my TKDE paper has been added. <br>
+23/07/2020 - LightGCN proposed in SIGIR'20 has been added. <br>
+17/09/2019 - NGCF proposed in SIGIR'19 has been added. <br>
+13/08/2019 - RSGAN proposed in ICDM'19 has been added.<br>
+09/08/2019 - Our paper is accepted as full research paper by ICDM'19. <br>
+20/02/2019 - IRGAN proposed in SIGIR'17 has been added. <br>
+12/02/2019 - CFGAN proposed in CIKM'18 has been added.<br>
 </p>
 
 <h2>Architecture</h2>
@@ -43,8 +43,8 @@
 
 <h2>Usage</h2>
 <ul>
-<li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
-<li>2.Run **main.py** in the project.</li>
+<li>1.Configure the xx.conf file in the directory named config. (xx is the name of the algorithm you want to run)</li>
+<li>2.Run main.py in the directory named main.</li>
 </ul>
 <h2>Configuration</h2>
 <h3>Essential Options</h3>
@@ -58,45 +58,43 @@
   <tr>
     <td>ratings</td>
     <td>D:/MovieLens/100K.txt</td>
-    <td>Set the path to input dataset. Format: each row separated by empty, tab or comma symbol. </td>
+    <td>Set the file path of the dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
  <tr>
     <td>social</td>
     <td>D:/MovieLens/trusts.txt</td>
-    <td>Set the path to input social dataset. Format: each row separated by empty, tab or comma symbol. </td>
+    <td>Set the file path of the social dataset. Format: each row separated by empty, tab or comma symbol. </td>
   </tr>
   <tr>
     <td scope="row">ratings.setup</td>
     <td>-columns 0 1 2</td>
-    <td>-columns: (user, item, rating) columns of rating data are used;
-      -header: to skip the first head line when reading data<br>
+    <td>-columns: (user, item, rating) columns of rating data are used.<br>
     </td>
   </tr>
   <tr>
     <td scope="row">social.setup</td>
     <td>-columns 0 1 2</td>
-    <td>-columns: (trustor, trustee, weight) columns of social data are used;
-      -header: to skip the first head line when reading data<br>
+    <td>-columns: (trustor, trustee, weight) columns of social data are used.<br>
     </td>
   </tr>
   <tr>
     <td scope="row">recommender</td>
     <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
-    <td>Set the recommender to use. </br>
+    <td>Set the recommender to use. <br>
     </td>
   </tr>
   <tr>
     <td scope="row">evaluation.setup</td>
     <td>-testSet ../dataset/testset.txt</td>
-    <td>Main option: -testSet, -ap, -cv (choose one of them) </br>
-      -testSet path/to/test/file (need to specify the test set manually)</br>
-      -ap ratio (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of test set. e.g. -ap 0.2)</br>
-      -cv k (-cv means cross validation, k is the number of the fold. e.g. -cv 5)</br>
-      Secondary option:-b, -p, -cold, -tf, -val (multiple choices) </br>
-      <b>-val ratio </b> (model test would be conducted on the validation set which is generated by randomly sampling the training dataset with the given ratio.)</br> 
-      -b thres （binarizing the rating values. Ratings equal or greater than thres will be changed into 1, and ratings lower than thres will be unused. e.g. -b 3.0）</br>
-      -p (if this option is added, the cross validation wll be executed parallelly, otherwise executed one by one) </br>
-      <b>-tf </b> (model training would be conducted on TensorFlow if TensorFlow has been installed) </br>
+    <td>Main option: -testSet, -ap, -cv (choose one of them) <br>
+      -testSet path/to/test/file (need to specify the test set manually)<br>
+      -ap ratio (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of the test set. e.g. -ap 0.2)<br>
+      -cv k (-cv means cross validation, k is the number of the fold. e.g. -cv 5)<br>
+      Secondary option:-b, -p, -cold, -tf, -val (multiple choices) <br>
+      <b>-val ratio </b> (model test would be conducted on the validation set which is generated by randomly sampling the training dataset with the given ratio.)<br> 
+      -b thres （binarizing the rating values. Ratings equal or greater than thres will be changed into 1, and ratings lower than thres will be abandoned. e.g. -b 3.0）<br>
+      -p (if this option is added, the cross validation wll be executed parallelly, otherwise executed one by one) <br>
+      <b>-tf </b> (model training will be conducted on TensorFlow (only applicable and needed for shallow models)) <br>
       -cold threshold (evaluation on cold-start users, users in training set with ratings more than threshold will be removed from the test set)
      </td>
   </tr>
@@ -104,13 +102,13 @@
     <td scope="row">item.ranking</td>
     <td>off -topN -1 </td>
     <td>Main option: whether to do item ranking<br>
-      -topN N1,N2,N3...: the length of the recommendation list. *QRec can generate multiple evaluation results for different N at the same time</br>
+      -topN N1,N2,N3...: the length of the recommendation list. *QRec can generate multiple evaluation results for different N at the same time<br>
     </td>
   </tr>
   <tr>
     <td scope="row">output.setup</td>
     <td>on -dir ./Results/</td>
-    <td>Main option: whether to output recommendation results</br>
+    <td>Main option: whether to output recommendation results<br>
       -dir path: the directory path of output results.
        </td>
   </tr>  
@@ -124,11 +122,6 @@
     <td scope="row">similarity</td>
     <td>pcc/cos</td>
     <td>Set the similarity method to use. Options: PCC, COS;</td>
-  </tr>
-  <tr>
-    <td scope="row">num.shrinkage</td>
-    <td>25</td>
-    <td>Set the shrinkage parameter to devalue similarity value. -1: to disable simialrity shrinkage. </td>
   </tr>
   <tr>
     <td scope="row">num.neighbors</td>
@@ -170,7 +163,7 @@
 <h2>Implement Your Model</h2>
 <ul>
 <li>1.Make your new algorithm generalize the proper base class.</li>
-<li>2.Rewrite some of the following functions as needed.</li>
+<li>2.Reimplement some of the following functions as needed.</li>
 </ul>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- readConfiguration()<br>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- printAlgorConfig()<br>
@@ -250,7 +243,7 @@
      </td>
   </table>
 
-  </br>
+  <br>
   <table class="table table-hover table-bordered">
   <tr>
 		<th>Item Ranking</th>
@@ -465,21 +458,21 @@ on Generative Adversarial Networks, CIKM'18.
 <h2>Acknowledgment</h2>
 <p>This project is supported by the Responsible Big Data Intelligence Lab (RBDI) at the school of ITEE, University of Queensland, and Chongqing University.</p>
 
-If our project is helpful to you, please cite one of these papers.</br>
-@inproceedings{yu2018adaptive,</br>
-  title={Adaptive implicit friends identification over heterogeneous network for social recommendation},</br>
-  author={Yu, Junliang and Gao, Min and Li, Jundong and Yin, Hongzhi and Liu, Huan},</br>
-  booktitle={Proceedings of the 27th ACM International Conference on Information and Knowledge Management},</br>
-  pages={357--366},</br>
-  year={2018},</br>
-  organization={ACM}</br>
+If our project is helpful to you, please cite one of these papers.<br>
+@inproceedings{yu2018adaptive,<br>
+  title={Adaptive implicit friends identification over heterogeneous network for social recommendation},<br>
+  author={Yu, Junliang and Gao, Min and Li, Jundong and Yin, Hongzhi and Liu, Huan},<br>
+  booktitle={Proceedings of the 27th ACM International Conference on Information and Knowledge Management},<br>
+  pages={357--366},<br>
+  year={2018},<br>
+  organization={ACM}<br>
 }
-</br>
-</br>
-@inproceedings{yu2021self,</br>
-  title={Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation},</br>
-  author={Yu, Junliang and Yin, Hongzhi and Li, Jundong and Wang, Qinyong and Hung, Nguyen Quoc Viet and Zhang, Xiangliang},</br>
-  booktitle={Proceedings of the Web Conference 2021},</br>
-  pages={413--424},</br>
-  year={2021}</br>
+<br>
+<br>
+@inproceedings{yu2021self,<br>
+  title={Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation},<br>
+  author={Yu, Junliang and Yin, Hongzhi and Li, Jundong and Wang, Qinyong and Hung, Nguyen Quoc Viet and Zhang, Xiangliang},<br>
+  booktitle={Proceedings of the Web Conference 2021},<br>
+  pages={413--424},<br>
+  year={2021}<br>
 }
