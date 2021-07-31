@@ -284,7 +284,7 @@ class ESRF(SocialRecommender,DeepRecommender):
 
         #conventional training
         print('pretraining...')
-        for iteration in range(self.maxIter/2):
+        for iteration in range(self.maxIter//3):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx= batch
@@ -294,7 +294,7 @@ class ESRF(SocialRecommender,DeepRecommender):
                                                 self.isSocial:0,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
 
         print('normal training with social relations...')
-        for iteration in range(self.maxIter / 2):
+        for iteration in range(self.maxIter//3):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
                 u_i = np.random.randint(0, self.num_users)
@@ -307,11 +307,10 @@ class ESRF(SocialRecommender,DeepRecommender):
             self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
                                            feed_dict={self.isSocial: 0, self.isAttentive: 0, self.userSegment:u_i,
                                                       self.sampledItems: selectedItems})
-            self.isConverged(iteration + 1)
 
         #adversarial learning without attention
         print('adversarial training with social relations...')
-        for iteration in range(self.maxIter/2):
+        for iteration in range(self.maxIter//3):
             selectedItems = self.sampleItems()
             for n, batch in enumerate(self.next_batch_pairwise()):
                 u_i = np.random.randint(0, self.num_users)
