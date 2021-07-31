@@ -2,7 +2,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-from data.rating import RatingDAO
+from dtype.rating import Rating
 from utils.file import FileIO
 from utils.config import LineConfig
 from utils.log import Log
@@ -21,7 +21,7 @@ class Recommender(object):
         self.isLoadModel = False
         self.output = None
         self.isOutput = True
-        self.data = RatingDAO(self.config, trainingSet, testSet)
+        self.data = Rating(self.config, trainingSet, testSet)
         self.foldInfo = fold
         self.evalSettings = LineConfig(self.config['evaluation.setup'])
         self.measure = []

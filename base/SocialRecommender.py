@@ -1,11 +1,11 @@
 from base.IterativeRecommender import IterativeRecommender
-from data.social import SocialDAO
+from dtype.social import Social
 from utils import config
 from os.path import abspath
 class SocialRecommender(IterativeRecommender):
     def __init__(self,conf,trainingSet,testSet,relation,fold='[1]'):
         super(SocialRecommender, self).__init__(conf,trainingSet,testSet,fold)
-        self.social = SocialDAO(self.config,relation) #social relations access control
+        self.social = Social(self.config, relation) #social relations access control
 
         # data clean
         cleanList = []

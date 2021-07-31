@@ -1,7 +1,7 @@
 from utils.structure import new_sparseMatrix
 from collections import defaultdict
 
-class SocialDAO(object):
+class Social(object):
     def __init__(self,conf,relation=None):
         self.config = conf
         self.user = {} #used to store the order of users

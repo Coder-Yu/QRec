@@ -2,7 +2,7 @@ import numpy as np
 from utils.config import Config,LineConfig
 import random
 from collections import defaultdict
-class RatingDAO(object):
+class Rating(object):
     'data access control'
     def __init__(self,config,trainingSet, testSet):
         self.config = config
