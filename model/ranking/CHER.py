@@ -1,7 +1,7 @@
 from base.DeepRecommender import DeepRecommender
 import tensorflow as tf
 from math import sqrt
-from utils import config
+from util import config
 import os
 import numpy as np
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"

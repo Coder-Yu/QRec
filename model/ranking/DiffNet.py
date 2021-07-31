@@ -5,7 +5,7 @@ from scipy.sparse import coo_matrix
 from math import sqrt
 import numpy as np
 import os
-from utils import config
+from util import config
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 #For general comparison. We do not include the user/item features extracted from text/images

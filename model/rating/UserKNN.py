@@ -1,6 +1,6 @@
 from base.Recommender import Recommender
-from utils import qmath
-from utils.structure.symmetricMatrix import SymmetricMatrix
+from util import qmath
+from util.structure.symmetricMatrix import SymmetricMatrix
 
 
 class UserKNN(Recommender):

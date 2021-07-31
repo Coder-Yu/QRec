@@ -6,7 +6,7 @@ from scipy.sparse import coo_matrix
 from math import sqrt
 import numpy as np
 import os
-from utils import config
+from util import config
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 def gumbel_softmax(logits, temperature=0.2):

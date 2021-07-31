@@ -1,9 +1,9 @@
 from base.Recommender import Recommender
-from utils import config
+from util import config
 import numpy as np
 from random import shuffle
-from utils.measure import Measure
-from utils.qmath import find_k_largest
+from util.measure import Measure
+from util.qmath import find_k_largest
 class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         super(IterativeRecommender, self).__init__(conf,trainingSet,testSet,fold)

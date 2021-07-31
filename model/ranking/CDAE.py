@@ -2,7 +2,7 @@
 from base.DeepRecommender import DeepRecommender
 import numpy as np
 from random import choice
-from utils import config
+from util import config
 import tensorflow as tf
 
 class CDAE(DeepRecommender):

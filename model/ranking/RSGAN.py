@@ -6,7 +6,7 @@ from random import choice,shuffle
 from collections import defaultdict
 import tensorflow as tf
 import gensim.models.word2vec as w2v
-from utils.qmath import cosine
+from util.qmath import cosine
 
 def gumbel_softmax(logits, temperature=0.2):
     eps = 1e-20

@@ -1,7 +1,7 @@
 #coding:utf8
 from base.IterativeRecommender import IterativeRecommender
 from random import choice
-from utils.qmath import sigmoid
+from util.qmath import sigmoid
 from math import log
 from collections import defaultdict
 from random import shuffle

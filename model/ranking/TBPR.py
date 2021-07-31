@@ -1,8 +1,8 @@
 from base.SocialRecommender import SocialRecommender
 from math import log
 import numpy as np
-from utils import config
-from utils.qmath import sigmoid
+from util import config
+from util.qmath import sigmoid
 from random import choice
 from collections import defaultdict
 class TBPR(SocialRecommender):

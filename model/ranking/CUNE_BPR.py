@@ -1,10 +1,10 @@
 
 from base.IterativeRecommender import IterativeRecommender
-from utils import config
+from util import config
 from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
-from utils.qmath import sigmoid,cosine
+from util.qmath import sigmoid,cosine
 from math import log
 import gensim.models.word2vec as w2v
 

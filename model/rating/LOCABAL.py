@@ -1,9 +1,9 @@
 from base.SocialRecommender import SocialRecommender
-from utils import config
+from util import config
 import numpy as np
 import networkx as nx
 import math
-from utils import qmath
+from util import qmath
 
 class LOCABAL(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):

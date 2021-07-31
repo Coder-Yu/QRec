@@ -1,6 +1,6 @@
 from base.IterativeRecommender import IterativeRecommender
 from dtype.social import Social
-from utils import config
+from util import config
 from os.path import abspath
 class SocialRecommender(IterativeRecommender):
     def __init__(self,conf,trainingSet,testSet,relation,fold='[1]'):

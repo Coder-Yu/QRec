@@ -2,7 +2,7 @@
 from base.DeepRecommender import DeepRecommender
 import numpy as np
 import random
-from utils import config
+from util import config
 
 try:
     import tensorflow as tf

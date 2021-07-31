@@ -1,4 +1,4 @@
-from utils.structure import new_sparseMatrix
+from util.structure import new_sparseMatrix
 from collections import defaultdict
 
 class Social(object):

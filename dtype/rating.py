@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import Config,LineConfig
+from util.config import Config,LineConfig
 import random
 from collections import defaultdict
 class Rating(object):

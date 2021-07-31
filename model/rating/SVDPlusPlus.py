@@ -1,6 +1,6 @@
 from base.IterativeRecommender import IterativeRecommender
 import numpy as np
-from utils import config
+from util import config
 import math
 class SVDPlusPlus(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):

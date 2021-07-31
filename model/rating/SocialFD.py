@@ -1,5 +1,5 @@
 from base.SocialRecommender import SocialRecommender
-from utils import config
+from util import config
 import numpy as np
 
 

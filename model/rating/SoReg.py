@@ -1,6 +1,6 @@
 from base.SocialRecommender import SocialRecommender
-from utils import config
-from utils import qmath
+from util import config
+from util import qmath
 
 
 class SoReg(SocialRecommender):
