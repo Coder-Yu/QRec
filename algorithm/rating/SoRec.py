@@ -1,7 +1,7 @@
 from baseclass.SocialRecommender import SocialRecommender
 import math
 import numpy as np
-from tool import config
+from utils import config
 #Social Recommendation Using Probabilistic Matrix Factorization
 class SoRec(SocialRecommender ):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):

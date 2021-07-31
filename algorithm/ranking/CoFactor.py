@@ -1,6 +1,6 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 import numpy as np
-from tool import config
+from utils import config
 from collections import defaultdict
 from math import log,exp
 from scipy.sparse import *

@@ -1,9 +1,8 @@
 #coding:utf8
 from baseclass.DeepRecommender import DeepRecommender
-
 import numpy as np
 import random
-from tool import config
+from utils import config
 
 try:
     import tensorflow as tf

@@ -1,6 +1,6 @@
 from baseclass.SocialRecommender import SocialRecommender
 import numpy as np
-from tool import config
+from utils import config
 
 ###################################
 #NOTE: WE CONSIDER THAT THE SOCIAL TERM IN THE RATING PREDICTION EQUATION SHOULD

@@ -1,5 +1,5 @@
 import numpy as np
-from tool.config import Config,LineConfig
+from utils.config import Config,LineConfig
 import random
 from collections import defaultdict
 class RatingDAO(object):

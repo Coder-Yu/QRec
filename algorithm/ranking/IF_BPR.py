@@ -1,9 +1,9 @@
 from baseclass.SocialRecommender import SocialRecommender
-from tool import config
+from utils import config
 from random import shuffle, choice
 from collections import defaultdict
 import numpy as np
-from tool.qmath import sigmoid, cosine
+from utils.qmath import sigmoid, cosine
 from math import log
 import gensim.models.word2vec as w2v
 

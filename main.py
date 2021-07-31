@@ -1,5 +1,5 @@
 from QRec import Recommender
-from tool.config import Config
+from utils.config import Config
 
 if __name__ == '__main__':
 

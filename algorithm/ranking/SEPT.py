@@ -5,7 +5,7 @@ from scipy.sparse import coo_matrix, eye
 import scipy.sparse as sp
 import numpy as np
 import os
-from tool import config
+from utils import config
 import random
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"

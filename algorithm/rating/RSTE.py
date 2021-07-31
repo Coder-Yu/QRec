@@ -1,5 +1,5 @@
 from baseclass.SocialRecommender import SocialRecommender
-from tool import config
+from utils import config
 import numpy as np
 class RSTE(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):

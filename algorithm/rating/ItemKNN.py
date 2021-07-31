@@ -1,6 +1,6 @@
 from baseclass.Recommender import Recommender
-from tool import qmath
-from structure.symmetricMatrix import SymmetricMatrix
+from utils import qmath
+from utils.structure.symmetricMatrix import SymmetricMatrix
 
 class ItemKNN(Recommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):

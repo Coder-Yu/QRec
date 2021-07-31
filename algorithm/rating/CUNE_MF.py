@@ -1,13 +1,12 @@
 from baseclass.IterativeRecommender import IterativeRecommender
-from tool import config
-from random import randint
+from utils import config
 from random import shuffle,choice
 from collections import defaultdict
 import numpy as np
-from tool.qmath import sigmoid,cosine
-from math import log
+from utils.qmath import cosine
 import gensim.models.word2vec as w2v
-from structure.symmetricMatrix import SymmetricMatrix
+
+
 # class Node(object):
 #     def __init__(self):
 #         self.val = 0

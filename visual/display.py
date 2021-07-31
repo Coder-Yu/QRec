@@ -1,12 +1,10 @@
 from .chart import Chart
-from tool.config import Config
 from data.rating import RatingDAO
 from data.social import SocialDAO
-from tool.file import FileIO
-from tool.qmath import denormalize
+from utils.qmath import denormalize
 from os.path import abspath
 import webbrowser
-from tool.file import FileIO
+from utils.file import FileIO
 class Display(object):
     def __init__(self,conf):
         self.conf = conf

@@ -1,6 +1,6 @@
 from baseclass.DeepRecommender import DeepRecommender
 import tensorflow as tf
-from tool import config
+from utils import config
 import numpy as np
 import scipy.sparse as sp
 import random

@@ -3,13 +3,13 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 from data.rating import RatingDAO
-from tool.file import FileIO
-from tool.config import LineConfig
-from tool.log import Log
+from utils.file import FileIO
+from utils.config import LineConfig
+from utils.log import Log
 from os.path import abspath
 from time import strftime,localtime,time
-from evaluation.measure import Measure
-from tool.qmath import find_k_largest
+from utils.measure import Measure
+from utils.qmath import find_k_largest
 
 
 class Recommender(object):

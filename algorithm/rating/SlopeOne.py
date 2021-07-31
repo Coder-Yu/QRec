@@ -1,6 +1,5 @@
 from baseclass.Recommender import Recommender
-from tool import qmath
-from structure.symmetricMatrix import SymmetricMatrix
+
 
 class SlopeOne(Recommender,):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):

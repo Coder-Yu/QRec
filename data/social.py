@@ -1,5 +1,4 @@
-import numpy as np
-from structure import sparseMatrix,new_sparseMatrix
+from utils.structure import new_sparseMatrix
 from collections import defaultdict
 
 class SocialDAO(object):

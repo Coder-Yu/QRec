@@ -1,6 +1,6 @@
 from baseclass.IterativeRecommender import IterativeRecommender
 import numpy as np
-from tool import config
+from utils import config
 
 
 class EE(IterativeRecommender):

@@ -1,7 +1,7 @@
 from baseclass.DeepRecommender import DeepRecommender
 import tensorflow as tf
 from math import sqrt
-from tool.config import LineConfig
+from utils.config import LineConfig
 class LightGCN(DeepRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):

@@ -4,7 +4,7 @@ import tensorflow as tf
 from scipy.sparse import coo_matrix,csr_matrix
 import numpy as np
 import os
-from tool import config
+from utils import config
 from math import sqrt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 

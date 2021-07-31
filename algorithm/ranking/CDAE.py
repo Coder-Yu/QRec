@@ -1,8 +1,8 @@
 #coding:utf8
 from baseclass.DeepRecommender import DeepRecommender
 import numpy as np
-from random import choice,random
-from tool import config
+from random import choice
+from utils import config
 import tensorflow as tf
 
 class CDAE(DeepRecommender):
