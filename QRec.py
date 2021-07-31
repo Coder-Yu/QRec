@@ -1,7 +1,7 @@
 from utils.config import LineConfig
 from utils.dataSplit import *
 from multiprocessing import Process,Manager
-from utils.file import FileIO
+from utils.io import FileIO
 from time import strftime,localtime,time
 import mkl
 class Recommender(object):

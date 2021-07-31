@@ -1,5 +1,5 @@
 from random import random
-from utils.file import FileIO
+from utils.io import FileIO
 class DataSplit(object):
 
     def __init__(self):

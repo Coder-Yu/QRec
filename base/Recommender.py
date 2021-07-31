@@ -3,7 +3,7 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 from dtype.rating import Rating
-from utils.file import FileIO
+from utils.io import FileIO
 from utils.config import LineConfig
 from utils.log import Log
 from os.path import abspath
