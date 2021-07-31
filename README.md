@@ -83,9 +83,9 @@
     </td>
   </tr>
   <tr>
-    <td scope="row">recommender</td>
+    <td scope="row">mode.name</td>
     <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
-    <td>Set the recommender to use. <br>
+    <td>name of the recommendation model. <br>
     </td>
   </tr>
   <tr>
