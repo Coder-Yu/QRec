@@ -4,7 +4,7 @@ from utils.config import Config
 if __name__ == '__main__':
 
     print('='*80)
-    print('   QRec: An effective python-based recommender algorithm library.   ')
+    print('   QRec: An effective python-based recommendation model library.   ')
     print('='*80)
     # print('0. Analyze the input data.(Configure the visual.conf in config/visual first.)')
     # print('-' * 80)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     print('='*80)
     algor = -1
     conf = -1
-    order = input('please enter the num of the algorithm to run it:')
+    order = input('please enter the number of the model you want to run:')
     import time
     s = time.time()
 

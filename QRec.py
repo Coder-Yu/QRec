@@ -44,12 +44,12 @@ class Recommender(object):
         print('Reading data and preprocessing...')
 
     def execute(self):
-        #import the algorithm module
+        #import the model module
         try:
-            importStr = 'from algorithm.rating.' + self.config['recommender'] + ' import ' + self.config['recommender']
+            importStr = 'from model.rating.' + self.config['model.name'] + ' import ' + self.config['model.name']
             exec (importStr)
         except ImportError:
-            importStr = 'from algorithm.ranking.' + self.config['recommender'] + ' import ' + self.config['recommender']
+            importStr = 'from model.ranking.' + self.config['model.name'] + ' import ' + self.config['model.name']
             exec (importStr)
         if self.evaluation.contains('-cv'):
             k = int(self.evaluation['-cv'])
@@ -67,9 +67,9 @@ class Recommender(object):
             for train,test in DataSplit.crossValidation(self.trainingData,k,binarized=binarized):
                 fold = '['+str(i)+']'
                 if self.config.contains('social'):
-                    recommender = self.config['recommender'] + "(self.config,train,test,self.relation,fold)"
+                    recommender = self.config['model.name'] + "(self.config,train,test,self.relation,fold)"
                 else:
-                    recommender = self.config['recommender']+ "(self.config,train,test,fold)"
+                    recommender = self.config['model.name']+ "(self.config,train,test,fold)"
                #create the process
                 p = Process(target=run,args=(mDict,eval(recommender),i))
                 tasks.append(p)
@@ -98,15 +98,15 @@ class Recommender(object):
             #output result
             currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
             outDir = LineConfig(self.config['output.setup'])['-dir']
-            fileName = self.config['recommender'] +'@'+currentTime+'-'+str(k)+'-fold-cv' + '.txt'
+            fileName = self.config['model.name'] +'@'+currentTime+'-'+str(k)+'-fold-cv' + '.txt'
             FileIO.writeFile(outDir,fileName,res)
             print('The result of %d-fold cross validation:\n%s' %(k,''.join(res)))
 
         else:
             if self.config.contains('social'):
-                recommender = self.config['recommender']+'(self.config,self.trainingData,self.testData,self.relation)'
+                recommender = self.config['model.name']+'(self.config,self.trainingData,self.testData,self.relation)'
             else:
-                recommender = self.config['recommender'] + '(self.config,self.trainingData,self.testData)'
+                recommender = self.config['model.name'] + '(self.config,self.trainingData,self.testData)'
             eval(recommender).execute()
 
 
