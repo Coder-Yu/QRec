@@ -4,7 +4,7 @@ from multiprocessing import Process,Manager
 from tool.file import FileIO
 from time import strftime,localtime,time
 import mkl
-class QRec(object):
+class Recommender(object):
     def __init__(self,config):
         self.trainingData = []  # training data
         self.testData = []  # testData

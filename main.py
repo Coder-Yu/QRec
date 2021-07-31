@@ -1,6 +1,4 @@
-import sys
-sys.path.append("..")
-from QRec import QRec
+from QRec import Recommender
 from tool.config import Config
 
 if __name__ == '__main__':
@@ -52,11 +50,11 @@ if __name__ == '__main__':
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
 
     try:
-        conf = Config('../config/'+algorthms[order]+'.conf')
+        conf = Config('./config/'+algorthms[order]+'.conf')
     except KeyError:
         print('Error num!')
         exit(-1)
-    recSys = QRec(conf)
+    recSys = Recommender(conf)
     recSys.execute()
     e = time.time()
     print("Run time: %f s" % (e - s))
