@@ -1,4 +1,4 @@
-from QRec import Recommender
+from QRec import QRec
 from util.config import Config
 
 if __name__ == '__main__':
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     except KeyError:
         print('wrong num!')
         exit(-1)
-    recSys = Recommender(conf)
+    recSys = QRec(conf)
     recSys.execute()
     e = time.time()
     print("Run time: %f s" % (e - s))

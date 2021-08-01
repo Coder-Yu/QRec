@@ -4,7 +4,7 @@ from multiprocessing import Process,Manager
 from util.io import FileIO
 from time import strftime,localtime,time
 import mkl
-class Recommender(object):
+class QRec(object):
     def __init__(self,config):
         self.trainingData = []  # training data
         self.testData = []  # testData
@@ -32,7 +32,6 @@ class Recommender(object):
             elif self.evaluation.contains('-cv'):
                 #cross validation
                 self.trainingData = FileIO.loadDataSet(config, config['ratings'],binarized=binarized,threshold=bottom)
-                #self.trainingData,self.testData = DataSplit.crossValidation(self.trainingData,int(self.evaluation['-cv']))
 
         else:
             print('Wrong configuration of evaluation!')
@@ -53,8 +52,9 @@ class Recommender(object):
             exec (importStr)
         if self.evaluation.contains('-cv'):
             k = int(self.evaluation['-cv'])
-            if k <= 1 or k > 10: #limit to 1-10 fold cross validation
-                k = 3
+            if k < 2 or k > 10: #limit to 2-10 fold cross validation
+                print("k for cross-validation should not be greater than 10 or less than 2")
+                exit(-1)
             mkl.set_num_threads(max(1,mkl.get_max_threads()//k))
             #create the manager for communication among multiple processes
             manager = Manager()
@@ -69,7 +69,7 @@ class Recommender(object):
                 if self.config.contains('social'):
                     recommender = self.config['model.name'] + "(self.config,train,test,self.relation,fold)"
                 else:
-                    recommender = self.config['model.name']+ "(self.config,train,test,fold)"
+                    recommender = self.config['model.name'] + "(self.config,train,test,fold)"
                #create the process
                 p = Process(target=run,args=(mDict,eval(recommender),i))
                 tasks.append(p)
