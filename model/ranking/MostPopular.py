@@ -2,21 +2,15 @@
 from base.Recommender import Recommender
 import numpy as np
 class MostPopular(Recommender):
-
     # Recommend the most popular items for every user
-
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(MostPopular, self).__init__(conf,trainingSet,testSet,fold)
-
-    # def readConfiguration(self):
-    #     super(BPR, self).readConfiguration()
 
     def initModel(self):
         self.popularItemList = np.random.random(self.data.trainingSize()[1])
         for item in self.data.trainSet_i:
             ind = self.data.item[item]
             self.popularItemList[ind] = len(self.data.trainSet_i[item])
-
 
     def predict(self,user,item):
         return 0

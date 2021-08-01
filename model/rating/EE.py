@@ -1,16 +1,9 @@
 from base.IterativeRecommender import IterativeRecommender
 import numpy as np
-from util import config
-
 
 class EE(IterativeRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, fold='[1]'):
         super(EE, self).__init__(conf, trainingSet, testSet, fold)
-
-    # def readConfiguration(self):
-    #     super(EE, self).readConfiguration()
-    #     Dim = config.LineConfig(self.config['EE'])
-    #     self.Dim = int(Dim['-d'])
 
     def initModel(self):
         super(EE, self).initModel()
@@ -44,27 +37,19 @@ class EE(IterativeRecommender):
 
     def buildModel_tf(self):
         super(EE, self).buildModel_tf()
-
         import tensorflow as tf
-
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
         reg_lambda = tf.constant(self.regU, dtype=tf.float32)
         reg_biase = tf.constant(self.regB, dtype=tf.float32)
-
-
-
         self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.num_users], stddev=0.005,mean=0.02), name='U_bias')
         self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.num_items], stddev=0.005,mean=0.02), name='V_bias')
-
         self.U_bias_embed = tf.nn.embedding_lookup(self.U_bias, self.u_idx)
         self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
-
         difference = tf.subtract(self.user_embedding, self.item_embedding)
         self.r_hat = tf.reduce_sum(tf.multiply(difference, difference), axis=1)
         self.r_hat = tf.subtract(self.U_bias_embed, self.r_hat)
         self.r_hat = tf.add(self.r_hat, self.V_bias_embed)
         self.r_hat = tf.add(self.r_hat, global_mean)
-
         self.loss = tf.nn.l2_loss(tf.subtract(self.r, self.r_hat))
         reg_loss = tf.add(tf.multiply(reg_lambda, tf.nn.l2_loss(self.user_embedding)),
                           tf.multiply(reg_lambda, tf.nn.l2_loss(self.item_embedding)))
@@ -74,30 +59,20 @@ class EE(IterativeRecommender):
         optimizer = tf.train.AdamOptimizer(self.lRate)
         train_U = optimizer.minimize(self.total_loss, var_list=[self.U, self.U_bias])
         train_V = optimizer.minimize(self.total_loss, var_list=[self.V, self.V_bias])
-
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-
-
             for step in range(self.maxIter):
-
                 batch_size = self.batch_size
-
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
-
                 user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
                 item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
                 g_mean = [self.data.globalMean]*batch_size
                 rating = [self.data.trainingData[idx][2] for idx in batch_idx]
-
                 sess.run(train_U, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
                 sess.run(train_V, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx, global_mean: g_mean})
-
                 print('iteration:', step, 'loss:', sess.run(self.total_loss,
                                                             feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean}))
-
-
             self.P = sess.run(self.U)
             self.Q = sess.run(self.V)
             self.Bu = sess.run(self.U_bias)

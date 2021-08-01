@@ -1,6 +1,5 @@
 from base.Recommender import Recommender
 
-
 class SlopeOne(Recommender,):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(SlopeOne, self).__init__(conf,trainingSet,testSet,fold)
@@ -32,9 +31,7 @@ class SlopeOne(Recommender,):
             self.diffAverage[item] = diffAverage_sub
             self.freq[item] = freq_sub
 
-
     def predict(self,u,i):
-        pred = 0
         # check if the user existed in trainSet or not
         if self.data.containsUser(u):
             sum = 0

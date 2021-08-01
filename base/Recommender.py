@@ -33,10 +33,8 @@ class Recommender(object):
             for user in self.data.testSet_u:
                 if user in self.data.trainSet_u and len(self.data.trainSet_u[user])>threshold:
                     removedUser[user]=1
-
             for user in removedUser:
                 del self.data.testSet_u[user]
-
             testData = []
             for item in self.data.testData:
                 if item[0] not in removedUser:

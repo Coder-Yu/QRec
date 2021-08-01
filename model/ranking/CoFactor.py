@@ -29,7 +29,6 @@ class CoFactor(IterativeRecommender):
 
     def initModel(self):
         super(CoFactor, self).initModel()
-
         #constructing SPPMI matrix
         self.SPPMI = defaultdict(dict)
         print('Constructing SPPMI matrix...')
@@ -70,13 +69,11 @@ class CoFactor(IterativeRecommender):
                 except ValueError:
                     print(self.SPPMI[item1][item2])
                     print(self.SPPMI[item1][item2] * D / (frequency[item1] * frequency[item2]))
-
                 if val > 0:
                     if maxVal < val:
                         maxVal = val
                     self.SPPMI[item1][item2] = val
                     self.SPPMI[item2][item1] = self.SPPMI[item1][item2]
-
 
         #normalize
         for item1 in self.SPPMI:
@@ -85,8 +82,6 @@ class CoFactor(IterativeRecommender):
 
 
     def buildModel(self):
-        iteration = 0
-
         self.X=self.P*10 #Theta
         self.Y=self.Q*10 #Beta
         self.w = np.random.rand(self.num_items) / 10  # bias value of item
@@ -163,11 +158,8 @@ class CoFactor(IterativeRecommender):
                     self.w[iid] = update_w/len(self.SPPMI[item])
                     self.c[iid] = update_c/len(self.SPPMI[item])
 
-            # self.loss += (self.X * self.X).sum() + (self.Y * self.Y).sum()
             iteration += 1
             print('iteration:', iteration, 'loss:', self.loss)
-            # if self.isConverged(iteration):
-            #     break
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'

@@ -31,7 +31,6 @@ class RSTE(SocialRecommender):
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
-
                 # update latent vectors
                 self.P[u] += self.lRate * (self.alpha*error * q - self.regU * p)
                 self.Q[i] += self.lRate * (self.alpha*error * p - self.regI * q)
@@ -39,12 +38,10 @@ class RSTE(SocialRecommender):
             iteration += 1
             self.isConverged(iteration)
 
-
     def predict(self,u,i):
         if self.data.containsUser(u) and self.data.containsItem(i):   
             i = self.data.getItemId(i)
             fPred = 0
-            denom = 0
             relations = self.social.getFollowees(u)
             weights = []
             indexes = []

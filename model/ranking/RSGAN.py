@@ -19,7 +19,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
-
     def readNegativeFeedbacks(self):
         self.negative = defaultdict(list)
         self.nItems = defaultdict(list)
@@ -31,7 +30,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
                     continue
                 self.negative[items[0]].append(items[1])
                 self.nItems[items[1]].append(items[0])
-
 
     def randomWalks(self):
         self.positive = defaultdict(list)
@@ -52,7 +50,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         mPaths = [p1, p2, p3, p4, p5]
         mPathCnt = [10,8,8,5,5]
         mPathSetting = list(zip(mPaths,mPathCnt))
-        walkLen=20        
+        walkLen=20
 
         self.G = np.random.rand(self.num_users, 50) * 0.1
         self.W = np.random.rand(self.num_users, 50) * 0.1
@@ -88,7 +86,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
-                    for i in range(walkLen / len(mp[1:])):
+                    for i in range(walkLen//len(mp[1:])):
                         for tp in mp[1:]:
                             try:
                                 if tp == 'I':
@@ -105,31 +103,23 @@ class RSGAN(SocialRecommender,DeepRecommender):
                                         nextNode = choice(self.UTNet[lastNode])
                                         while nextNode not in self.data.user:
                                             nextNode = choice(self.UTNet[lastNode])
-
                                 if tp == 'F':
                                     nextNode = choice(self.UFNet[lastNode])
                                     while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
-
                                 if tp == 'T':
                                     nextNode = choice(self.UFNet[lastNode])
                                     while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
-
                                 path.append(tp + nextNode)
                                 lastNode = nextNode
                                 lastType = tp
-
                             except (KeyError, IndexError):
                                 path = []
                                 break
-
                     if path:
                         self.pWalks.append(path)
-
         self.nWalks = []
-        # self.usercovered = {}
-
         # negative
         for user in self.data.user:
             for mps in mPathSetting:
@@ -139,12 +129,11 @@ class RSGAN(SocialRecommender,DeepRecommender):
                     lastNode = user
                     nextNode = user
                     lastType = 'U'
-                    for i in range(walkLen / len(mp[1:])):
+                    for i in range(walkLen // len(mp[1:])):
                         for tp in mp[1:]:
                             try:
                                 if tp == 'I':
                                     nextNode = choice(self.negative[lastNode])
-
                                 if tp == 'U':
                                     if lastType == 'I':
                                         nextNode = choice(self.nItems[lastNode])
@@ -156,21 +145,17 @@ class RSGAN(SocialRecommender,DeepRecommender):
                                         nextNode = choice(self.UTNet[lastNode])
                                         while nextNode not in self.data.user:
                                             nextNode = choice(self.UTNet[lastNode])
-
                                 if tp == 'F':
                                     nextNode = choice(self.UFNet[lastNode])
                                     while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
-
                                 if tp == 'T':
                                     nextNode = choice(self.UFNet[lastNode])
                                     while nextNode not in self.data.user:
                                         nextNode = choice(self.UFNet[lastNode])
-
                                 path.append(tp + nextNode)
                                 lastNode = nextNode
                                 lastType = tp
-
                             except (KeyError, IndexError):
                                 path = []
                                 break
@@ -238,12 +223,10 @@ class RSGAN(SocialRecommender,DeepRecommender):
             trueFriends = list(set(self.pTopKSim[user]).intersection(set(self.nTopKSim[user])))
             self.seededFriends[user] = trueFriends+self.pTopKSim[user][:30]
 
-
     def sampling(self,vec):
         vec = tf.nn.softmax(vec)
         logits = gumbel_softmax(vec, 0.1)
         return logits
-
 
     def build_graph(self):
         indices = [[self.data.item[item[1]], self.data.user[item[0]]] for item in self.data.trainingData]
@@ -283,55 +266,39 @@ class RSGAN(SocialRecommender,DeepRecommender):
             self.reconstruction = tf.reduce_sum(cross_entropy) + self.regU * (
                     tf.nn.l2_loss(self.weights['encoder']) + tf.nn.l2_loss(self.weights['decoder']) +
                     tf.nn.l2_loss(self.biases['encoder']) + tf.nn.l2_loss(self.biases['decoder']))
-
             g_pre = tf.train.AdamOptimizer(self.lRate)
             self.g_pretrain = g_pre.minimize(self.reconstruction, var_list=self.g_params)
-
-
 
         with tf.variable_scope('discriminator'):
             self.item_selection = tf.get_variable('item_selection',initializer=tf.constant_initializer(0.01),shape=[self.num_users, self.num_items])
             self.g_params.append(self.item_selection)
             self.d_params = [self.user_embeddings, self.item_embeddings]
-
             # placeholder definition
             self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx,name='u_e')
             self.i_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.pos,name='i_e')
             self.j_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.neg,name='j_e')
-
-
             #generate virtual friends by gumbel-softmax
             self.virtualFriends = self.sampling(self.g_output) #one-hot
-
             #get candidate list (items)
             self.candidateItems = tf.transpose(tf.sparse_tensor_dense_matmul(self.i_u_matrix,tf.transpose(self.virtualFriends)))
             self.embedding_selection = tf.nn.embedding_lookup(self.item_selection, self.u_idx,name='e_s')
             self.virtual_items = self.sampling(tf.multiply(self.candidateItems,self.embedding_selection))
-
             self.v_i_embedding = tf.matmul(self.virtual_items,self.item_embeddings,transpose_a=False,transpose_b=False)
             y_us = tf.reduce_sum(tf.multiply(self.u_embedding,self.i_embedding),1)\
                                  -tf.reduce_sum(tf.multiply(self.u_embedding,self.j_embedding),1)
-
             self.d_pretrain_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_us)))+self.regU*(tf.nn.l2_loss(self.u_embedding)+
                                                                                        tf.nn.l2_loss(self.j_embedding)+
                                                                                        tf.nn.l2_loss(self.i_embedding))
-
             y_uf = tf.reduce_sum(tf.multiply(self.u_embedding, self.i_embedding), 1) - \
                  tf.reduce_sum(tf.multiply(self.u_embedding, self.v_i_embedding), 1)
             y_fs = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_i_embedding), 1)-\
                  tf.reduce_sum(tf.multiply(self.u_embedding, self.j_embedding), 1)
-
             self.d_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_uf)))-tf.reduce_sum(tf.log(tf.sigmoid(y_fs)))+\
-                          self.regU*(tf.nn.l2_loss(self.u_embedding)+tf.nn.l2_loss(self.i_embedding)+tf.nn.l2_loss(self.j_embedding))
-            #
+                          self.regU*(tf.nn.l2_loss(self.u_embedding)+tf.nn.l2_loss(self.i_embedding)+tf.nn.l2_loss(self.j_embedding))            #
             self.g_loss = 30*tf.reduce_sum(y_uf) #better performance
-
             d_pre = tf.train.AdamOptimizer(self.lRate)
-
             self.d_pretrain = d_pre.minimize(self.d_pretrain_loss, var_list=self.d_params)
-
             self.d_output = tf.reduce_sum(tf.multiply(self.u_embedding, self.item_embeddings),1)
-
         d_opt = tf.train.AdamOptimizer(self.lRate)
         self.d_update = d_opt.minimize(self.d_loss,var_list=self.d_params)
         g_opt = tf.train.AdamOptimizer(self.lRate)
@@ -349,7 +316,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
                     profiles[i][ind]=1
                     sampled_users.append(self.data.user[user])
                 batch_id+=self.batch_size
-
             else:
                 profiles = []
                 sampled_users = []
@@ -361,7 +327,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
                     sampled_users.append(self.data.user[user])
                 batch_id=self.num_users
             yield profiles,sampled_users
-
 
     def initModel(self):
         super(RSGAN, self).initModel()
@@ -375,14 +340,12 @@ class RSGAN(SocialRecommender,DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         # pretraining
-
         print('pretraining for generator...')
         for i in range(30):
             for num,batch in enumerate(self.next_batch_g()):
                 profiles,uid = batch
                 _,loss = self.sess.run([self.g_pretrain,self.reconstruction],feed_dict={self.X:profiles,self.u_idx:uid})
                 print('pretraining:', i + 1, 'batch',num,'generator loss:', loss)
-
 
         print('Training GAN...')
         for i in range(self.maxIter):
@@ -393,7 +356,6 @@ class RSGAN(SocialRecommender,DeepRecommender):
                     u_name = self.data.id2user[u]
                     idx = [self.data.user[friend] for friend in self.seededFriends[u_name]]
                     profiles[n][idx]=1
-
                 #generator
                 _,loss = self.sess.run([self.g_update,self.g_loss],feed_dict={self.u_idx: user_idx,self.neg:j_idx,
                                                    self.pos: i_idx,self.X:profiles})
@@ -403,14 +365,12 @@ class RSGAN(SocialRecommender,DeepRecommender):
 
                 print('training:', i + 1, 'batch_id', num, 'discriminator loss:', loss)
 
-
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             u = self.data.user[u]
             res = self.sess.run(self.d_output, {self.u_idx:[u]})
             return res
-
         else:
             return [self.data.globalMean] * self.num_items
 

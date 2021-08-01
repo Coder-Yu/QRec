@@ -134,7 +134,6 @@ class CUNE_BPR(IterativeRecommender):
         self.nonLeafVec = {}
         self.leafVec = {}
 
-
     def readConfiguration(self):
         super(CUNE_BPR, self).readConfiguration()
         options = config.LineConfig(self.config['CUNE-BPR'])
@@ -278,20 +277,14 @@ class CUNE_BPR(IterativeRecommender):
             if i % 200 == 0:
                 print('progress:', i, '/', len(self.CUNet))
         print('Similarity matrix finished.')
-        #print self.topKSim
-
         #prepare Pu set, IPu set, and Nu set
         print('Preparing item sets...')
         self.PositiveSet = defaultdict(dict)
         self.IPositiveSet = defaultdict(dict)
-        #self.NegativeSet = defaultdict(list)
 
         for user in self.topKSim:
             for item in self.data.trainSet_u[user]:
                  self.PositiveSet[user][item]=1
-                # else:
-                #     self.NegativeSet[user].append(item)
-
             for friend in self.topKSim[user]:
                 for item in self.data.trainSet_u[friend[0]]:
                     if item not in self.PositiveSet[user]:
@@ -318,11 +311,6 @@ class CUNE_BPR(IterativeRecommender):
                                          self.P[u]
                             self.Q[k] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))) * \
                                          self.P[u]
-
-                            item_j = ''
-                            # if len(self.NegativeSet[user])>0:
-                            #     item_j = choice(self.NegativeSet[user])
-                            # else:
                             item_j = choice(itemList)
                             while item_j in self.PositiveSet[user] or item_j in self.IPositiveSet:
                                 item_j = choice(itemList)
@@ -347,15 +335,11 @@ class CUNE_BPR(IterativeRecommender):
                             while item_j in self.PositiveSet[user]:
                                 item_j = choice(itemList)
                             j = self.data.item[item_j]
-                            self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (
-                                self.Q[i] - self.Q[j])
-                            self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
-                                         self.P[u]
-                            self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * \
-                                         self.P[u]
+                            self.P[u] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * (self.Q[i] - self.Q[j])
+                            self.Q[i] += self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * self.P[u]
+                            self.Q[j] -= self.lRate * (1 - sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))) * self.P[u]
 
                             self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
-
 
                 self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1

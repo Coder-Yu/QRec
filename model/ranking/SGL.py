@@ -125,7 +125,6 @@ class SGL(DeepRecommender):
         col_idx = [self.data.item[pair[1]] for pair in self.data.trainingData]
         if is_subgraph and aug_type in [0, 1, 2] and self.drop_rate > 0:
             # data augmentation type --- 0: Node Dropout; 1: Edge Dropout; 2: Random Walk
-
             if aug_type == 0:
                 drop_user_idx = random.sample(list(range(self.num_users)), int(self.num_users * self.drop_rate))
                 drop_item_idx = random.sample(list(range(self.num_items)), int(self.num_items * self.drop_rate))
@@ -264,7 +263,6 @@ class SGL(DeepRecommender):
 
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
-
                 feed_dict = {self.u_idx: user_idx,
                              self.v_idx: i_idx,
                              self.neg_idx: j_idx, }
@@ -289,7 +287,6 @@ class SGL(DeepRecommender):
                         })
 
                 _, l,rec_l,ssl_l = self.sess.run([train, total_loss, rec_loss, ssl_loss],feed_dict=feed_dict)
-
                 print('training:', iteration + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
 
     def predictForRanking(self, u):

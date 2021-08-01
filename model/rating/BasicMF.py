@@ -18,19 +18,15 @@ class BasicMF(IterativeRecommender):
                 self.loss += error**2
                 p = self.P[u]
                 q = self.Q[i]
-
                 #update latent vectors
                 self.P[u] += self.lRate*error*q
                 self.Q[i] += self.lRate*error*p
-
-
             iteration += 1
             if self.isConverged(iteration):
                 break
 
     def buildModel_tf(self):
         super(BasicMF, self).buildModel_tf()
-
         import tensorflow as tf
         self.r_hat = tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), axis=1)
         self.total_loss = tf.nn.l2_loss(self.r- self.r_hat)
@@ -42,9 +38,7 @@ class BasicMF(IterativeRecommender):
             sess.run(init)
             for step in range(self.maxIter):
                 batch_size = self.batch_size
-
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
-
                 user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
                 item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
                 rating = [self.data.trainingData[idx][2] for idx in batch_idx]
@@ -54,8 +48,4 @@ class BasicMF(IterativeRecommender):
                                                                        self.v_idx: item_idx}))
             self.P = sess.run(self.U)
             self.Q = sess.run(self.V)
-            import pickle
-            f = open('user_embeddings', 'wb')
-            pickle.dump(self.P, f)
-            f = open('user_idx', 'wb')
-            pickle.dump(self.data.user, f)
+

@@ -161,15 +161,12 @@ class CUNE_MF(IterativeRecommender):
         for item in self.data.trainSet_i:
             if len(self.data.trainSet_i[item])>1:
                 self.itemNet[item] = self.data.trainSet_i[item]
-
         self.filteredRatings = defaultdict(list)
         for item in self.itemNet:
             for user in self.itemNet[item]:
                 if self.itemNet[item][user]>=1:
                     self.filteredRatings[user].append(item)
-
         self.CUNet = defaultdict(list)
-
         for user1 in self.filteredRatings:
             s1 = set(self.filteredRatings[user1])
             for user2 in self.filteredRatings:
@@ -293,20 +290,16 @@ class CUNE_MF(IterativeRecommender):
                 self.loss += error**2
                 p = self.P[u]
                 q = self.Q[i]
-
                 #update latent vectors
                 self.P[u] += self.lRate*(error*q-self.regU*p)
                 self.Q[i] += self.lRate*(error*p-self.regI*q)
-
             for user in self.CUNet:
-
                 u = self.data.user[user]
                 friends = self.topKSim[user]
                 for friend in friends:
                     uf = self.data.user[friend[0]]
                     self.P[u] -= self.lRate*(self.P[u]-self.P[uf])*self.alpha
                     self.loss += self.alpha * (self.P[u]-self.P[uf]).dot(self.P[u]-self.P[uf])
-
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):

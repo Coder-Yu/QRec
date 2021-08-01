@@ -3,24 +3,12 @@ from base.DeepRecommender import DeepRecommender
 import numpy as np
 import random
 from util import config
-
-try:
-    import tensorflow as tf
-except ImportError:
-    print('This method can only run on tensorflow!')
-    exit(-1)
-from tensorflow import set_random_seed
-set_random_seed(2)
+import tensorflow as tf
 
 class APR(DeepRecommender):
-
     # APR：Adversarial Personalized Ranking for Recommendation
-
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(APR, self).__init__(conf,trainingSet,testSet,fold)
-
-    # def readConfiguration(self):
-    #     super(APR, self).readConfiguration()
 
     def readConfiguration(self):
         super(APR, self).readConfiguration()
@@ -29,12 +17,10 @@ class APR(DeepRecommender):
         self.regAdv = float(args['-regA'])
         self.advEpoch = int(args['-advEpoch'])
 
-
     def _create_variables(self):
         #perturbation vectors
         self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.embed_size]),dtype=tf.float32, trainable=False)
         self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.embed_size]),dtype=tf.float32, trainable=False)
-
         self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
         self.V_neg_embed = tf.nn.embedding_lookup(self.item_embeddings, self.neg_idx)
         #parameters
@@ -72,7 +58,6 @@ class APR(DeepRecommender):
         self.loss = tf.reduce_sum(tf.nn.softplus(-self._create_inference()))
         self.reg_loss = tf.add(tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.u_embedding)),
                                tf.multiply(self.reg_lambda, tf.nn.l2_loss(self.v_embedding)))
-
         self.total_loss = tf.add(self.loss, self.reg_loss)
         #loss of adversarial training
         self.loss_adv = tf.multiply(self.regAdv,tf.reduce_sum(tf.nn.softplus(-self._create_adv_inference())))
@@ -81,7 +66,6 @@ class APR(DeepRecommender):
     def _create_optimizer(self):
         self.optimizer = tf.train.AdamOptimizer(self.lRate)
         self.train = self.optimizer.minimize(self.total_loss)
-
         self.optimizer_adv = tf.train.AdamOptimizer(self.lRate)
         self.train_adv = self.optimizer.minimize(self.loss_adv)
 
@@ -98,18 +82,14 @@ class APR(DeepRecommender):
 
     def next_batch(self):
         batch_idx = np.random.randint(self.train_size, size=self.batch_size)
-
         users = [self.data.trainingData[idx][0] for idx in batch_idx]
         items = [self.data.trainingData[idx][1] for idx in batch_idx]
         user_idx,item_idx=[],[]
         neg_item_idx = []
         for i,user in enumerate(users):
-
             item_j = random.randint(0,self.num_items-1)
-
             while self.data.id2item[item_j] in self.data.trainSet_u[user]:
                 item_j = random.randint(0, self.num_items - 1)
-
             user_idx.append(self.data.user[user])
             item_idx.append(self.data.item[items[i]])
             neg_item_idx.append(item_j)
@@ -118,37 +98,27 @@ class APR(DeepRecommender):
 
 
     def buildModel(self):
-        print('training...')
-        iteration = 0
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-
-            # train the model until converged
-            for epoch in range(self.maxIter):
-
-                user_idx,item_idx,neg_item_idx = self.next_batch()
-                _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
-                print('iteration:', epoch, 'loss:',loss)
-
-
-                self.P = sess.run(self.user_embeddings)
-                self.Q = sess.run(self.item_embeddings)
-
+            # pretraining
+            print('pretraining...')
+            for iteration in range(self.maxIter//2):
+                for n, batch in enumerate(self.next_batch_pairwise()):
+                    user_idx, i_idx, j_idx = batch
+                    _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: i_idx, self.neg_idx:j_idx})
 
             # start adversarial training
-            for epoch in range(self.advEpoch):
-
-                user_idx,item_idx,neg_item_idx = self.next_batch()
-                sess.run([self.update_U, self.update_V],
-                         feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx: neg_item_idx})
-                _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: item_idx, self.neg_idx:neg_item_idx})
-
-                print('iteration:', epoch, 'loss:',loss)
-
+            print('adversarial training...')
+            for iteration in range(self.maxIter // 2):
+                for n, batch in enumerate(self.next_batch_pairwise()):
+                    user_idx, i_idx, j_idx = batch
+                    sess.run([self.update_U, self.update_V],
+                             feed_dict={self.u_idx: user_idx, self.v_idx: j_idx, self.neg_idx: j_idx})
+                    _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: i_idx, self.neg_idx:j_idx})
+                    print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'loss:', loss)
                 self.P = sess.run(self.user_embeddings)
                 self.Q = sess.run(self.item_embeddings)
-
 
 
     def predictForRanking(self, u):

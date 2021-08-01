@@ -78,9 +78,6 @@ class LOCABAL(SocialRecommender):
                     self.H-=self.lRate*self.regS*self.H
                     self.P[u]+=self.lRate*self.alpha*error*(self.H.dot(q))
                     self.P[k]+=self.lRate*self.alpha*error*(p.T.dot(self.H))
-
-
-
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()+self.regS*(self.H*self.H).sum()
             iteration += 1
             self.isConverged(iteration)

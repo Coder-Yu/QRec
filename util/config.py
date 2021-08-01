@@ -32,8 +32,6 @@ class Config(object):
                     except ValueError:
                         print('config file is not in the correct format! Error Line:%d'%(ind))
 
-
-
 class LineConfig(object):
     def __init__(self,content):
         self.line = content.strip().split(' ')
@@ -57,7 +55,6 @@ class LineConfig(object):
                     self.options[item] = ' '.join(self.line[i+1:i+1+ind])
                 except IndexError:
                     self.options[item] = 1
-
 
     def __getitem__(self, item):
         if not self.contains(item):

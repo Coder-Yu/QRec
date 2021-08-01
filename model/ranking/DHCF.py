@@ -10,7 +10,6 @@ import numpy as np
 #So, I just use the 1-hop hyperedge.
 
 class DHCF(DeepRecommender):
-
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(DHCF, self).__init__(conf,trainingSet,testSet,fold)
 

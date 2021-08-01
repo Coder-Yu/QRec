@@ -50,12 +50,10 @@ class UserKNN(Recommender):
         pred = self.data.userMeans[u]+sum/float(denom)
         return pred
 
-
     def computeSimilarities(self):
         'compute correlation among users'
         print('Computing user similarities...')
         for idx,u1 in enumerate(self.data.testSet_u):
-
             for u2 in self.data.user:
                 if u1 != u2:
                     if self.userSim.contains(u1,u2):
@@ -65,9 +63,7 @@ class UserKNN(Recommender):
             self.topUsers[u1]=sorted(iter(self.userSim[u1].items()), key=lambda d: d[1], reverse=True)
             if idx%100==0:
                 print('progress:',idx,'/',len(self.data.testSet_u))
-
         print('The user similarities have been calculated.')
-
 
     def predictForRanking(self,u):
         print('Using Memory based algorithms to rank items is extremely time-consuming. So ranking for all items in UserKNN is not available.')

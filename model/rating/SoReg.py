@@ -32,7 +32,6 @@ class SoReg(SocialRecommender):
                     self.Sim[user][f]=self.sim(user,f)
                     self.Sim[f][user]=self.Sim[user][f]
 
-
     def sim(self,u,v):
         return (qmath.pearson_sp(self.data.sRow(u), self.data.sRow(v))+self.social.weight(u,v))/2.0
 
@@ -44,19 +43,14 @@ class SoReg(SocialRecommender):
                 user, item, rating = entry
                 uid = self.data.user[user]
                 vid = self.data.item[item]
-
                 # add the followees' influence
-
                 error = rating - self.P[uid].dot(self.Q[vid])
                 p = self.P[uid]
                 q = self.Q[vid]
-
                 self.loss += error**2
-
                 #update latent vectors
                 self.P[uid] += self.lRate*(error*q - self.regU * p)
                 self.Q[vid] += self.lRate*(error*p - self.regI * q)
-
             for user in self.social.user:
                 simSum = 0
                 simSumf1 = 0
@@ -69,7 +63,6 @@ class SoReg(SocialRecommender):
                         simSumf1 += self.Sim[user][f] * (self.P[uid] - self.P[fid])
                         simSum += self.Sim[user][f] * ((self.P[uid] - self.P[fid]).dot(self.P[uid] - self.P[fid]))
                         self.loss += simSum
-
                 simSumf2 = 0
                 for g in self.social.getFollowers(user):
                     if self.data.containsUser(g):

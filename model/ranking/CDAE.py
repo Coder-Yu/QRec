@@ -50,19 +50,13 @@ class CDAE(DeepRecommender):
 
     def initModel(self):
         super(CDAE, self).initModel()
-
         self.negative_sp = 5
         initializer = tf.contrib.layers.xavier_initializer()
         self.X = tf.placeholder(tf.float32, [None, self.num_items])
-
         self.positive = tf.placeholder(tf.float32, [None, self.num_items])
         self.negative = tf.placeholder(tf.float32, [None, self.num_items])
         self.V = tf.Variable(initializer([self.num_users, self.n_hidden]))
-
         self.U_embeding = tf.nn.embedding_lookup(self.V, self.u_idx)
-
-
-
         self.weights = {
             'encoder': tf.Variable(initializer([self.num_items, self.n_hidden])),
             'decoder': tf.Variable(initializer([self.n_hidden, self.num_items])),
@@ -81,33 +75,21 @@ class CDAE(DeepRecommender):
         y_pred = tf.maximum(1e-6,y_pred)
         y_positive = tf.multiply(self.positive,self.mask_corruption)
         y_negative = tf.multiply(self.negative,self.mask_corruption)
-
-
         self.loss = -tf.multiply(y_positive,tf.log(y_pred))-tf.multiply((y_negative),tf.log(1-y_pred))
-
-
         self.reg_loss = self.regU*(tf.nn.l2_loss(self.weights['encoder'])+tf.nn.l2_loss(self.weights['decoder'])+
                                    tf.nn.l2_loss(self.biases['encoder'])+tf.nn.l2_loss(self.biases['decoder']))
-
         self.reg_loss = self.reg_loss + self.regU*tf.nn.l2_loss(self.U_embeding)
-        #self.loss = self.loss
         self.loss = tf.reduce_mean(self.loss) + self.reg_loss
-
         optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.loss)
-
-
         init = tf.global_variables_initializer()
         self.sess.run(init)
 
 
         for epoch in range(self.maxIter):
-
             mask = np.random.binomial(1, self.corruption_level,(self.batch_size, self.num_items))
             batch_xs,users,positive,negative = self.next_batch()
-
             _, loss= self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,
                                                                                      self.u_idx:users,self.positive:positive,self.negative:negative})
-
             print(self.foldInfo,"Epoch:", '%04d' % (epoch + 1),"loss=", "{:.9f}".format(loss))
             #print y
             #self.ranking_performance()

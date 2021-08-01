@@ -2,8 +2,6 @@ from base.SocialRecommender import SocialRecommender
 from util import config
 import numpy as np
 
-
-
 class SocialFD(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
         super(SocialFD, self).__init__(conf,trainingSet,testSet,relation,fold)
@@ -16,14 +14,12 @@ class SocialFD(SocialRecommender):
         self.P /= 10
         self.Q /= 10
 
-
     def readConfiguration(self):
         super(SocialFD, self).readConfiguration()
         eps = config.LineConfig(self.config['SocialFD'])
         self.alpha = float(eps['-alpha'])
         self.eta = float(eps['-eta'])
         self.beta = float(eps['-beta'])
-
 
     def buildModel(self):
         iteration = 0
@@ -35,7 +31,6 @@ class SocialFD(SocialRecommender):
                 u = self.data.getUserId(u)
                 i = self.data.getItemId(i)
                 self.loss += error ** 2
-
                 bu = self.Bu[u]
                 bi = self.Bi[i]
                 x = self.P[u]
@@ -44,16 +39,13 @@ class SocialFD(SocialRecommender):
                 derivative_d = self.H.dot((x - y).T.dot(x - y))
                 if r > 0.7: #high ratings, ratings are compressed to range (0.01,1.01)
                     self.loss += self.eta*self.alpha * d
-
                     # update latent vectors
                     self.H -= self.lRate * ((error + self.eta*self.alpha) * derivative_d)
                     W = (self.H.dot(self.H.T) + self.H.dot(self.H.T).T)
                     self.P[u] -= self.lRate * ((error + self.eta*self.alpha) * (W.dot(np.array([x - y]).T)).T[0])
                     self.Q[i] += self.lRate * ((error + self.eta*self.alpha) * (W.dot(np.array([x - y]).T)).T[0])
 
-
                 elif r <= 0.5: #low ratings
-
                     self.loss += self.eta*self.alpha * abs(1 - min(d, 1))
                     # update latent vectors
                     if d < 1:
@@ -68,14 +60,12 @@ class SocialFD(SocialRecommender):
                         self.P[u] += self.lRate * (-error * (W.dot(np.array([x - y]).T)).T[0])
                         self.Q[i] += self.lRate * (error * (W.dot(np.array([x - y]).T)).T[0])
 
-
                 else: #medium
                     # update latent vectors
                     self.H -= self.lRate * ((error) * derivative_d)
                     W = (self.H.dot(self.H.T) + self.H.dot(self.H.T).T)
                     self.P[u] += self.lRate * ((-error) * (W.dot(np.array([x - y]).T)).T[0] - self.regU * x)
                     self.Q[i] += self.lRate * ((error) * (W.dot(np.array([x - y]).T)).T[0] - self.regI * y)
-
                 self.Bu[u] += self.lRate * (error - self.regU * bu)
                 self.Bi[i] += self.lRate * (error - self.regI * bi)
                 self.P[u] += self.lRate*(error*x-self.regU*x)

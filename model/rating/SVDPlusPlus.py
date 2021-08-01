@@ -11,7 +11,6 @@ class SVDPlusPlus(IterativeRecommender):
         regY = config.LineConfig(self.config['SVDPlusPlus'])
         self.regY = float( regY['-y'])
 
-
     def printAlgorConfig(self):
         super(SVDPlusPlus, self).printAlgorConfig()
         print('Specified Arguments of', self.config['model.name'] + ':')
@@ -23,7 +22,6 @@ class SVDPlusPlus(IterativeRecommender):
         self.Bu = np.random.rand(self.data.trainingSize()[0])  # biased value of user
         self.Bi = np.random.rand(self.data.trainingSize()[1])  # biased value of item
         self.Y = np.random.rand(self.data.trainingSize()[1], self.embed_size)
-
 
     def buildModel(self):
         iteration = 0

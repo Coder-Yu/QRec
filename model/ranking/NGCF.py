@@ -30,7 +30,6 @@ class NGCF(DeepRecommender):
                 initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_1' % k)
             self.weights['W_%d_2' % k] = tf.Variable(
                 initializer([weight_size_list[k], weight_size_list[k + 1]]), name='W_%d_2' % k)
-
         all_embeddings = [ego_embeddings]
         for k in range(self.n_layers):
             side_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
@@ -38,13 +37,11 @@ class NGCF(DeepRecommender):
             bi_embeddings = tf.multiply(ego_embeddings, side_embeddings)
             bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2' % k])
             ego_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
-
             # message dropout.
             def without_dropout():
                 return ego_embeddings
             def dropout():
                 return tf.nn.dropout(ego_embeddings, keep_prob=0.9)
-
             ego_embeddings = tf.cond(self.isTraining,lambda:dropout(),lambda:without_dropout())
             # normalize the distribution of embeddings.
             norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)

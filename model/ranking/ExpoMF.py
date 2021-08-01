@@ -1,11 +1,7 @@
 from base.IterativeRecommender import IterativeRecommender
 from scipy.sparse import *
-from scipy import *
 import numpy as np
-
-
 from numpy import linalg as LA
-
 from joblib import Parallel, delayed
 from math import sqrt
 
@@ -41,7 +37,6 @@ class ExpoMF(IterativeRecommender):
                 row.append(u)
                 col.append(i)
                 val.append(1)
-
         self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.num_users,self.num_items))
 
     def buildModel(self):
@@ -53,23 +48,10 @@ class ExpoMF(IterativeRecommender):
             self._update_factors(self.X, XT)
             self._update_expo(self.X, n_users)
 
-
     def _update_factors(self, X, XT):
         '''Update user and item collaborative factors with ALS'''
-        self.theta = recompute_factors(self.beta, self.theta, X,
-                                       self.lam_theta / self.lam_y,
-                                       self.lam_y,
-                                       self.mu,
-                                       self.n_jobs,
-                                       batch_size=self.batch_size)
-
-        self.beta = recompute_factors(self.theta, self.beta, XT,
-                                      self.lam_beta / self.lam_y,
-                                      self.lam_y,
-                                      self.mu,
-                                      self.n_jobs,
-                                      batch_size=self.batch_size)
-
+        self.theta = recompute_factors(self.beta, self.theta, X, self.lam_theta / self.lam_y, self.lam_y,self.mu, self.n_jobs,batch_size=self.batch_size)
+        self.beta = recompute_factors(self.theta, self.beta, XT, self.lam_beta / self.lam_y,  self.lam_y,  self.mu, self.n_jobs, batch_size=self.batch_size)
 
     def _update_expo(self, X, n_users):
         '''Update exposure prior'''
@@ -95,9 +77,6 @@ class ExpoMF(IterativeRecommender):
             return [self.data.globalMean] * self.num_items
 
 # Utility functions #
-
-
-
 def get_row(Y, i):
     '''Given a scipy.sparse.csr_matrix Y, get the values and indices of the
     non-zero values in i_th row'''

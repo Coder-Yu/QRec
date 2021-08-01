@@ -9,20 +9,15 @@ class SBPR(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=None,fold='[1]'):
         super(SBPR, self).__init__(conf,trainingSet,testSet,relation,fold)
 
-
     def initModel(self):
         super(SBPR, self).initModel()
         print('Preparing item sets...')
         self.PositiveSet = defaultdict(dict)
         self.FPSet = defaultdict(dict)
-        # self.NegativeSet = defaultdict(list)
-
         for user in self.data.user:
             for item in self.data.trainSet_u[user]:
                 if self.data.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
-                    # else:
-                    #     self.NegativeSet[user].append(item)
             if user in self.social.user:
                 for friend in self.social.getFollowees(user):
                     if friend in self.data.user:
@@ -35,7 +30,6 @@ class SBPR(SocialRecommender):
 
     def buildModel(self):
         self.b = np.random.random(self.num_items)
-
         print('Training...')
         iteration = 0
         while iteration < self.maxIter:
@@ -46,7 +40,6 @@ class SBPR(SocialRecommender):
                 kItems = list(self.FPSet[user].keys())
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
-
                     if len(self.FPSet[user]) > 0:
                         item_k = choice(kItems)
                         k = self.data.item[item_k]
@@ -55,8 +48,6 @@ class SBPR(SocialRecommender):
                         self.P[u] += 1 / (Suk+1) *self.lRate * (1 - s) * (self.Q[i] - self.Q[k])
                         self.Q[i] += 1 / (Suk+1) *self.lRate * (1 - s) * self.P[u]
                         self.Q[k] -= 1 / (Suk+1) *self.lRate * (1 - s) * self.P[u]
-
-
                         item_j = choice(itemList)
                         while item_j in self.PositiveSet[user] or item_j in self.FPSet:
                             item_j = choice(itemList)
@@ -65,13 +56,10 @@ class SBPR(SocialRecommender):
                         self.P[u] +=  self.lRate * (1 - s) * (self.Q[k] - self.Q[j])
                         self.Q[k] += self.lRate * (1 - s) * self.P[u]
                         self.Q[j] -= self.lRate * (1 - s) * self.P[u]
-
-
                         self.P[u] -= self.lRate * self.regU * self.P[u]
                         self.Q[i] -= self.lRate * self.regI * self.Q[i]
                         self.Q[j] -= self.lRate * self.regI * self.Q[j]
                         self.Q[k] -= self.lRate * self.regI * self.Q[k]
-
                         self.loss += -log(sigmoid((self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[k]))/ (Suk+1))) \
                                      - log(sigmoid(self.P[u].dot(self.Q[k]) - self.P[u].dot(self.Q[j])))
                     else:
@@ -83,10 +71,7 @@ class SBPR(SocialRecommender):
                         self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
                         self.Q[i] += self.lRate * (1 - s) * self.P[u]
                         self.Q[j] -= self.lRate * (1 - s) * self.P[u]
-
-
                         self.loss += -log(s)
-
                 self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()+self.b.dot(self.b)
             iteration += 1
             if self.isConverged(iteration):
@@ -108,24 +93,19 @@ class SBPR(SocialRecommender):
             u_idx,i_idx,f_idx,j_idx,weights = [],[],[],[],[]
             item_list = list(self.data.item.keys())
             for i,user in enumerate(users):
-
                 i_idx.append(self.data.item[items[i]])
                 u_idx.append(self.data.user[user])
-
                 if len(self.FPSet[user])==0:
                     f_item = choice(item_list)
                     weights.append(0)
                 else:
                     f_item = choice(list(self.FPSet[user].keys()))
                     weights.append(self.FPSet[user][f_item])
-
                 f_idx.append(self.data.item[f_item])
-
                 neg_item = choice(item_list)
                 while neg_item in self.data.trainSet_u[user] or neg_item in self.FPSet[user]:
                     neg_item = choice(item_list)
                 j_idx.append(self.data.item[neg_item])
-
             yield u_idx,i_idx,f_idx,j_idx,weights
 
     def buildModel_tf(self):
@@ -133,23 +113,15 @@ class SBPR(SocialRecommender):
         self.social_idx = tf.placeholder(tf.int32, name="social_holder")
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
         self.weights = tf.placeholder(tf.float32, name="weights")
-
         self.neg_item_embedding = tf.nn.embedding_lookup(self.V, self.neg_idx)
         self.social_item_embedding = tf.nn.embedding_lookup(self.V, self.social_idx)
-        # self.pos_item_bias = tf.nn.embedding_lookup(self.item_biases, self.u_idx)
-        # self.neg_item_bias = tf.nn.embedding_lookup(self.item_biases, self.neg_idx)
-        # self.social_item_bias = tf.nn.embedding_lookup(self.item_biases, self.social_idx)
-
         y_ik = (tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), 1)
                 -tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1))/(self.weights+1)
         y_kj = tf.reduce_sum(tf.multiply(self.user_embedding, self.social_item_embedding), 1)\
                -tf.reduce_sum(tf.multiply(self.user_embedding, self.neg_item_embedding), 1)
         loss = -tf.reduce_sum(tf.log(tf.sigmoid(y_ik)+1e-6)+ tf.log(tf.sigmoid(y_kj)+1e-6))
         + self.regU * (tf.nn.l2_loss(self.U) + tf.nn.l2_loss(self.V))
-
-
         opt = tf.train.AdamOptimizer(self.lRate)
-
         train = opt.minimize(loss)
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -164,10 +136,7 @@ class SBPR(SocialRecommender):
                     print('training:', iteration + 1, 'batch', n, 'loss:', l)
             self.P, self.Q = sess.run([self.U, self.V])
 
-
-
     def predict(self,user,item):
-
         if self.data.containsUser(user) and self.data.containsItem(item):
             u = self.data.getUserId(user)
             i = self.data.getItemId(item)
@@ -175,7 +144,6 @@ class SBPR(SocialRecommender):
             return predictRating
         else:
             return sigmoid(self.data.globalMean)
-
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

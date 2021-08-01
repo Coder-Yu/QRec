@@ -19,10 +19,8 @@ class Rating(object):
         self.testSet_u = defaultdict(dict) # Store the test set in the form of [user][item]=rating
         self.testSet_i = defaultdict(dict) # Store the test set in the form of [item][user]=rating
         self.rScale = [] #rating scale
-
         self.trainingData = trainingSet[:]
         self.testData = testSet[:]
-
         self.__generateSet()
         self.__computeItemMean()
         self.__computeUserMean()

@@ -38,18 +38,14 @@ class SVD(IterativeRecommender):
         super(SVD, self).buildModel_tf()
         import tensorflow as tf
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
-
-        self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.num_users], stddev=0.005,mean=0.02), name='U_bias')
-        self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.num_items], stddev=0.005,mean=0.02), name='V_bias')
-
+        self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.num_users], stddev=0.005), name='U_bias')
+        self.V_bias = tf.Variable(tf.truncated_normal(shape=[self.num_items], stddev=0.005), name='V_bias')
         self.U_bias_embed = tf.nn.embedding_lookup(self.U_bias, self.u_idx)
         self.V_bias_embed = tf.nn.embedding_lookup(self.V_bias, self.v_idx)
-
         self.r_hat = tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), axis=1)
         self.r_hat = self.r_hat + self.U_bias_embed
         self.r_hat = self.r_hat + self.V_bias_embed
         self.r_hat = self.r_hat + global_mean
-
         self.loss = tf.nn.l2_loss(self.r-self.r_hat)
         reg_loss = self.regU * tf.nn.l2_loss(self.user_embedding) + self.regI * tf.nn.l2_loss(self.item_embedding)
         reg_loss += self.regB*self.U_bias_embed+ self.regB*self.U_bias_embed
@@ -57,7 +53,6 @@ class SVD(IterativeRecommender):
         optimizer = tf.train.AdamOptimizer(self.lRate)
         train_U = optimizer.minimize(self.total_loss, var_list=[self.U, self.U_bias])
         train_V = optimizer.minimize(self.total_loss, var_list=[self.V, self.V_bias])
-
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)

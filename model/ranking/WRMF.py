@@ -9,12 +9,10 @@ import numpy as np
 class WRMF(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(WRMF, self).__init__(conf,trainingSet,testSet,fold)
-
     def initModel(self):
         super(WRMF, self).initModel()
         self.X=self.P*10
         self.Y=self.Q*10
-
 
     def buildModel(self):
         print('training...')

@@ -29,8 +29,6 @@ class SparseMatrix():
         else:
             return self.matrix_Item[c]
 
-
-
     def row(self,r):
         if r not in self.matrix_User:
             return np.zeros((1,self.size[1]))
@@ -60,19 +58,10 @@ class SparseMatrix():
             return True
         return False
 
-
     def elemCount(self):
         return self.elemNum
 
     def size(self):
         return self.size
-    # def sRow(self,r):
-    #     'return the sparse row'
-    #     return self.matrix.getrow(r)
-    # def sCol(self,c):
-    #     'return the sparse column'
-    #     return self.matrix.getcol(c)
-    # def toDense(self):
-    #     return self.matrix.todense()
 
 

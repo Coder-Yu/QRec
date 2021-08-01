@@ -1,16 +1,13 @@
 from base.SocialRecommender import SocialRecommender
 from scipy.sparse import *
-from scipy import *
 import numpy as np
 from numpy import linalg as LA
 from joblib import Parallel, delayed
 from math import sqrt
-
 EPS = 1e-8
 # this model refers to the following paper:
 # #########----  Collaborative Filtering with Social Exposure: A Modular Approach to Social Recommendation   ----#############
 # SEREC_boost
-
 class SERec(SocialRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=None,fold='[1]'):
         super(SERec, self).__init__(conf,trainingSet,testSet,relation,fold)
@@ -52,11 +49,8 @@ class SERec(SocialRecommender):
                 val.append(1)
         self.T = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.num_users, self.num_users))
 
-
     def buildModel(self):
         print('training...')
-        iteration = 0
-
         self._update(self.X)
 
     def _update(self, X):
@@ -70,8 +64,6 @@ class SERec(SocialRecommender):
             self._update_factors(X, XT)
             print(self.mu)
             self._update_expo(X, n_users)
-            self.ranking_performance()
-
 
     def _update_factors(self, X, XT):
         '''Update user and item collaborative factors with ALS'''
@@ -88,24 +80,18 @@ class SERec(SocialRecommender):
                                       self.mu,
                                       self.n_jobs,
                                       batch_size=self.batch_size)
-
-
     def _update_expo(self, X, n_users):
         '''Update exposure prior'''
         print('\tUpdating exposure prior...')
-
         start_idx = list(range(0, n_users, self.batch_size))
         end_idx = start_idx[1:] + [n_users]
-
         A_sum = np.zeros(self.num_items)
         for lo, hi in zip(start_idx, end_idx):
             A_sum += a_row_batch(X[lo:hi], self.theta[lo:hi], self.beta,
                                  self.lam_y, self.mu[lo:hi]).sum(axis=0)
-
         A_sum=np.tile(A_sum,[self.num_users,1])
         S_sum = self.T.dot(A_sum)
         self.mu = (self.a + A_sum +(self.s-1)*S_sum- 1) / (self.a + self.b + (self.s-1)*S_sum+n_users - 2)
-
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'
@@ -114,10 +100,6 @@ class SERec(SocialRecommender):
             return self.beta.dot(self.theta[u])
         else:
             return [self.data.globalMean] * self.num_items
-
-# Utility functions #
-
-
 
 def get_row(Y, i):
     '''Given a scipy.sparse.csr_matrix Y, get the values and indices of the
@@ -170,10 +152,6 @@ def recompute_factors(X, X_old, Y, lam, lam_y, mu, n_jobs, batch_size=1000):
     res = Parallel(n_jobs=n_jobs)(delayed(_solve_batch)(
         lo, hi, X, X_old[lo:hi], Y, m, f, lam, lam_y, mu)
                                    for lo, hi in zip(start_idx, end_idx))
-    # res = []
-    # for lo, hi in zip(start_idx, end_idx):
-    #     res.append(_solve_batch(lo, hi, X, X_old[lo:hi], Y, m, f, lam, lam_y, mu))
-
     X_new = np.vstack(res)
     return X_new
 

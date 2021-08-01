@@ -7,7 +7,6 @@ class SoRec(SocialRecommender ):
     def __init__(self,conf,trainingSet=None,testSet=None,relation=list(),fold='[1]'):
         super(SoRec, self).__init__(conf,trainingSet,testSet,relation,fold)
 
-
     def readConfiguration(self):
         super(SoRec, self).readConfiguration()
         regZ = config.LineConfig(self.config['SoRec'])
@@ -23,7 +22,6 @@ class SoRec(SocialRecommender ):
         print('regZ: %.3f' % self.regZ)
         print('=' * 80)
 
-
     def buildModel(self):
         iteration = 0
         while iteration < self.maxIter:
@@ -37,11 +35,9 @@ class SoRec(SocialRecommender ):
                 self.loss += error ** 2
                 p = self.P[u]
                 q = self.Q[i]
-
                 # update latent vectors
                 self.P[u] += self.lRate * (error * q - self.regU * p)
                 self.Q[i] += self.lRate * (error * p - self.regI * q)
-
             #relations
             for entry in self.social.relation:
                 u, v, tuv = entry

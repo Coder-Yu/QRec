@@ -43,16 +43,12 @@ class IterativeRecommender(Recommender):
         self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.r = tf.placeholder(tf.float32, [None], name="rating")
-
         self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='U')
         self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='V')
-
         self.user_biases = tf.Variable(tf.truncated_normal(shape=[self.num_users, 1], stddev=0.005), name='U')
         self.item_biases = tf.Variable(tf.truncated_normal(shape=[self.num_items, 1], stddev=0.005), name='U')
-
         self.user_bias = tf.nn.embedding_lookup(self.user_biases, self.u_idx)
         self.item_bias = tf.nn.embedding_lookup(self.item_biases, self.v_idx)
-
         self.user_embedding = tf.nn.embedding_lookup(self.U, self.u_idx)
         self.item_embedding = tf.nn.embedding_lookup(self.V, self.v_idx)
 

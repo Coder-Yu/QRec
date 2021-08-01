@@ -14,25 +14,16 @@ class BPR(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(BPR, self).__init__(conf,trainingSet,testSet,fold)
 
-    # def readConfiguration(self):
-    #     super(BPR, self).readConfiguration()
-
     def initModel(self):
         super(BPR, self).initModel()
 
-
     def buildModel(self):
-
         print('Preparing item sets...')
         self.PositiveSet = defaultdict(dict)
-        #self.NegativeSet = defaultdict(list)
-
         for user in self.data.user:
             for item in self.data.trainSet_u[user]:
                 if self.data.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
-                # else:
-                #     self.NegativeSet[user].append(item)
         print('training...')
         iteration = 0
         itemList = list(self.data.item.keys())
@@ -42,13 +33,11 @@ class BPR(IterativeRecommender):
                 u = self.data.user[user]
                 for item in self.PositiveSet[user]:
                     i = self.data.item[item]
-
                     item_j = choice(itemList)
                     while item_j in self.PositiveSet[user]:
                         item_j = choice(itemList)
                     j = self.data.item[item_j]
                     self.optimization(u,i,j)
-
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             iteration += 1
             if self.isConverged(iteration):
@@ -59,24 +48,21 @@ class BPR(IterativeRecommender):
         self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
         self.Q[i] += self.lRate * (1 - s) * self.P[u]
         self.Q[j] -= self.lRate * (1 - s) * self.P[u]
-
         self.P[u] -= self.lRate * self.regU * self.P[u]
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
         self.loss += -log(s)
 
     def predict(self,user,item):
-
         if self.data.containsUser(user) and self.data.containsItem(item):
             u = self.data.getUserId(user)
             i = self.data.getItemId(item)
-            predictRating = sigmoid(self.Q[i].dot(self.P[u]))
+            predictRating = self.Q[i].dot(self.P[u])
             return predictRating
         else:
-            return sigmoid(self.data.globalMean)
+            return self.data.globalMean
 
     def next_batch(self):
-        shuffle(self.data.trainingData)
         batch_id = 0
         while batch_id < self.train_size:
             if batch_id + self.batch_size <= self.train_size:
@@ -87,19 +73,15 @@ class BPR(IterativeRecommender):
                 users = [self.data.trainingData[idx][0] for idx in range(batch_id, self.train_size)]
                 items = [self.data.trainingData[idx][1] for idx in range(batch_id, self.train_size)]
                 batch_id = self.train_size
-
             u_idx, i_idx, j_idx = [], [], []
             item_list = list(self.data.item.keys())
             for i, user in enumerate(users):
-
                 i_idx.append(self.data.item[items[i]])
                 u_idx.append(self.data.user[user])
-
                 neg_item = choice(item_list)
                 while neg_item in self.data.trainSet_u[user]:
                     neg_item = choice(item_list)
                 j_idx.append(self.data.item[neg_item])
-
             yield u_idx, i_idx, j_idx
 
     def buildModel_tf(self):

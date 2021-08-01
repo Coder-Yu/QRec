@@ -20,7 +20,6 @@ class DataSplit(object):
                     testSet.append(entry)
             else:
                 trainingSet.append(entry)
-
         if output:
             FileIO.writeFile(path,'testSet['+str(order)+']',testSet)
             FileIO.writeFile(path, 'trainingSet[' + str(order) + ']', trainingSet)

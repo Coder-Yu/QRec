@@ -187,7 +187,7 @@ class SEPT(SocialRecommender, DeepRecommender):
     def sampling(self, logits):
         return tf.math.top_k(logits, self.instance_cnt)[1]
 
-    def generate_pesudo_labels(self, prob1, prob2, emb):
+    def generate_pesudo_labels(self, prob1, prob2):
         positive = (prob1 + prob2) / 2
         pos_examples = self.sampling(positive)
         return pos_examples
@@ -220,9 +220,9 @@ class SEPT(SocialRecommender, DeepRecommender):
         sharing_prediction = self.label_prediction(self.sharing_view_embeddings)
         rec_prediction = self.label_prediction(self.rec_user_embeddings)
         # find informative positive examples for each encoder
-        self.f_pos = self.generate_pesudo_labels(sharing_prediction, rec_prediction, self.friend_view_embeddings)
-        self.sh_pos = self.generate_pesudo_labels(social_prediction, rec_prediction, self.sharing_view_embeddings)
-        self.r_pos = self.generate_pesudo_labels(social_prediction, sharing_prediction, self.rec_user_embeddings)
+        self.f_pos = self.generate_pesudo_labels(sharing_prediction, rec_prediction)
+        self.sh_pos = self.generate_pesudo_labels(social_prediction, rec_prediction)
+        self.r_pos = self.generate_pesudo_labels(social_prediction, sharing_prediction)
         # neighbor-discrimination based contrastive learning
         self.neighbor_dis_loss = self.neighbor_discrimination(self.f_pos, self.friend_view_embeddings)
         self.neighbor_dis_loss += self.neighbor_discrimination(self.sh_pos, self.sharing_view_embeddings)
@@ -243,7 +243,6 @@ class SEPT(SocialRecommender, DeepRecommender):
                 sub_mat['adj_indices_sub1'], sub_mat['adj_values_sub1'], sub_mat[
                     'adj_shape_sub1'] = self._convert_csr_to_sparse_tensor_inputs(
                     self.get_adj_mat(is_subgraph=True))
-
                 for n, batch in enumerate(self.next_batch_pairwise()):
                     user_idx, i_idx, j_idx = batch
                     feed_dict = {self.u_idx: user_idx,
@@ -254,8 +253,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                         self.sub_mat['adj_indices_sub1']: sub_mat['adj_indices_sub1'],
                         self.sub_mat['adj_shape_sub1']: sub_mat['adj_shape_sub1'],
                     })
-                    _, l1, l3, = self.sess.run([v2_op, rec_loss, self.neighbor_dis_loss],
-                                                  feed_dict=feed_dict)
+                    _, l1, l3, = self.sess.run([v2_op, rec_loss, self.neighbor_dis_loss],feed_dict=feed_dict)
                     print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3)
             else:
                 #initialization with only recommendation task
@@ -267,7 +265,6 @@ class SEPT(SocialRecommender, DeepRecommender):
                     _, l1 = self.sess.run([v1_op, rec_loss],
                                           feed_dict=feed_dict)
                     print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1)
-
             self.U, self.V = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
 
     def predictForRanking(self, u):

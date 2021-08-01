@@ -14,7 +14,6 @@ class TBPR(SocialRecommender):
         options = config.LineConfig(self.config['TBPR'])
         self.regT = float(options['-regT'])
 
-
     def initModel(self):
         super(TBPR, self).initModel()
         self.strength = defaultdict(dict)
@@ -42,9 +41,6 @@ class TBPR(SocialRecommender):
         self.t_s = self.weights[len(self.weights)/2+1:].sum()/(len(self.weights[len(self.weights)/2+1:])+0.0)
         self.t_w = self.weights[0:len(self.weights)/2].sum()/(len(self.weights[0:len(self.weights)/2])+0.0)
 
-    
-    
-    
     def optimization(self,u,i,j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
         self.P[u] += self.lRate * (1 - s) * (self.Q[i] - self.Q[j])
@@ -150,28 +146,22 @@ class TBPR(SocialRecommender):
                         item_j = choice(jItems)
                         j = self.data.item[item_j]
                         selectedItems.append(j)
-
                     if len(wItems) > 0:
                         item_w = choice(wItems)
                         w = self.data.item[item_w]
                         selectedItems.append(w)
-
-
                     if len(sItems) > 0:
                         item_s = choice(sItems)
                         s = self.data.item[item_s]
                         selectedItems.append(s)
-
                     item_k = choice(itemList)
                     while item_k in self.positiveSet[user]:
                         item_k = choice(itemList)
                     k = self.data.item[item_k]
                     selectedItems.append(k)
-
                     # optimization
                     for ind, item in enumerate(selectedItems[:-1]):
                         self.optimization(u, item, selectedItems[ind + 1])
-
                 self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
             if self.theta_count>0:
                 self.theta -= self.lRate*self.theta_derivative/self.theta_count
@@ -186,9 +176,6 @@ class TBPR(SocialRecommender):
             iteration += 1
             if self.isConverged(iteration):
                 break
-
-
-
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

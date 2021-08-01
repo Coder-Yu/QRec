@@ -17,7 +17,6 @@ class NeuMF(DeepRecommender):
         with tf.variable_scope("latent_factors"):
             self.PG = tf.get_variable(name='PG',initializer=initializer([self.num_users, self.embed_size]))
             self.QG = tf.get_variable(name='QG',initializer=initializer([self.num_items, self.embed_size]))
-
             self.PM = tf.get_variable(name='PM', initializer=initializer([self.num_users, self.embed_size]),regularizer=mlp_regularizer)
             self.QM = tf.get_variable(name='QM', initializer=initializer([self.num_items, self.embed_size]),regularizer=mlp_regularizer)
 
@@ -50,16 +49,13 @@ class NeuMF(DeepRecommender):
             self.MLP_Layer = tf.nn.relu(tf.add(tf.matmul(self.h_out,MLP_W3), MLP_b3))
             self.h_mlp = tf.get_variable(name='mlp_out', initializer=initializer([self.embed_size]), regularizer=mlp_regularizer)
 
-
         #single inference
         #GMF
         self.y_mf = tf.reduce_sum(tf.multiply(self.GMF_Layer,self.h_mf),1)
         self.y_mf = tf.sigmoid(self.y_mf)
         self.mf_loss = self.r * tf.log(self.y_mf+10e-10) + (1 - self.r) * tf.log(1 - self.y_mf+10e-10)
         mf_reg = self.regU*(tf.nn.l2_loss(self.UG_embedding)+tf.nn.l2_loss(self.IG_embedding) + tf.nn.l2_loss(self.h_mf))
-
         self.mf_loss = -tf.reduce_sum(self.mf_loss) + mf_reg
-
         self.mf_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.mf_loss)
         #MLP
         self.y_mlp = tf.reduce_sum(tf.multiply(self.MLP_Layer,self.h_mlp),1)
@@ -67,7 +63,6 @@ class NeuMF(DeepRecommender):
         self.mlp_loss = self.r * tf.log(self.y_mlp+10e-10) + (1 - self.r) * tf.log(1 - self.y_mlp+10e-10)
         self.mlp_loss = -tf.reduce_sum(self.mlp_loss)
         self.mlp_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.mlp_loss)
-
         #fusion
         self.NeuMF_Layer = tf.concat([self.GMF_Layer,self.MLP_Layer], 1)
         self.h_NeuMF = tf.concat([0.5*self.h_mf,0.5*self.h_mlp], 0)
@@ -80,29 +75,24 @@ class NeuMF(DeepRecommender):
         self.neu_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.neu_loss)
 
     def buildModel(self):
-
         init = tf.global_variables_initializer()
         self.sess.run(init)
-
         print('pretraining... (GMF)')
         for iteration in range(self.maxIter):
             for num,batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
-
                 _, loss,y_mf = self.sess.run([self.mf_optimizer, self.mf_loss,self.y_mf],
                                    feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
                 print('iteration:', iteration, 'batch:', num, 'loss:', loss)
-
         print('pretraining... (MLP)')
-        for iteration in range(self.maxIter/2):
+        for iteration in range(self.maxIter//2):
             for num, batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
                 print('iteration:', iteration, 'batch:', num, 'loss:', loss)
-
         print('training... (NeuMF)')
-        for iteration in range(self.maxIter/5):
+        for iteration in range(self.maxIter//5):
             for num, batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],

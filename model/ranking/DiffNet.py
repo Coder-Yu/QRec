@@ -15,12 +15,10 @@ class DiffNet(SocialRecommender,DeepRecommender):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
 
-
     def readConfiguration(self):
         super(DiffNet, self).readConfiguration()
         args = config.LineConfig(self.config['DiffNet'])
         self.n_layers = int(args['-n_layer']) #the number of layers of the recommendation module (discriminator)
-
 
     def buildSparseRelationMatrix(self):
         row, col, entries = [], [], []
@@ -39,7 +37,6 @@ class DiffNet(SocialRecommender,DeepRecommender):
             entries += [1.0/len(self.data.trainSet_u[pair[0]])]
         ratingMatrix = coo_matrix((entries, (row, col)), shape=(self.num_users,self.num_items),dtype=np.float32)
         return ratingMatrix
-
 
     def initModel(self):
         super(DiffNet, self).initModel()
@@ -86,7 +83,6 @@ class DiffNet(SocialRecommender,DeepRecommender):
                 _, l = self.sess.run([train, loss],
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
                 print('training:', iteration + 1, 'batch', n, 'loss:', l)
-
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
