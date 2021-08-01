@@ -1,5 +1,5 @@
 #coding:utf8
-from base.DeepRecommender import DeepRecommender
+from base.deepRecommender import DeepRecommender
 import numpy as np
 from random import choice,random,randint,shuffle
 from util import config

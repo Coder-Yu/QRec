@@ -1,5 +1,5 @@
 #coding:utf8
-from base.DeepRecommender import DeepRecommender
+from base.deepRecommender import DeepRecommender
 from random import choice
 import tensorflow as tf
 import numpy as np

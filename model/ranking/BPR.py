@@ -1,5 +1,5 @@
 #coding:utf8
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 from random import choice
 from util.qmath import sigmoid
 from math import log

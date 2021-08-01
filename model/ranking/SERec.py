@@ -1,4 +1,4 @@
-from base.SocialRecommender import SocialRecommender
+from base.socialRecommender import SocialRecommender
 from scipy.sparse import *
 import numpy as np
 from numpy import linalg as LA

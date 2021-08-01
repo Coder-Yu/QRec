@@ -1,4 +1,4 @@
-from base.Recommender import Recommender
+from base.recommender import Recommender
 
 class SlopeOne(Recommender,):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):

@@ -1,4 +1,4 @@
-from base.Recommender import Recommender
+from base.recommender import Recommender
 from util import config
 import numpy as np
 from random import shuffle

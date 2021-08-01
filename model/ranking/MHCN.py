@@ -1,7 +1,7 @@
-from base.DeepRecommender import DeepRecommender
-from base.SocialRecommender import SocialRecommender
+from base.deepRecommender import DeepRecommender
+from base.socialRecommender import SocialRecommender
 import tensorflow as tf
-from scipy.sparse import coo_matrix,csr_matrix
+from scipy.sparse import coo_matrix
 import numpy as np
 import os
 from util import config

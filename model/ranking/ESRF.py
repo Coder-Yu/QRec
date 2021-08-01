@@ -1,5 +1,5 @@
-from base.DeepRecommender import DeepRecommender
-from base.SocialRecommender import SocialRecommender
+from base.deepRecommender import DeepRecommender
+from base.socialRecommender import SocialRecommender
 from random import choice
 import tensorflow as tf
 from scipy.sparse import coo_matrix

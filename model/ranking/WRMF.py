@@ -2,7 +2,7 @@
 #                   Weighted Rating Matrix  Factorization                   #
 # this model refers to the following paper:
 # Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 from scipy.sparse import *
 from scipy import *
 import numpy as np

@@ -1,5 +1,5 @@
 #coding:utf-8
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 import numpy as np
 
 class PMF(IterativeRecommender):

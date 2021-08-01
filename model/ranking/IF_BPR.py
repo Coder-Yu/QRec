@@ -1,4 +1,4 @@
-from base.SocialRecommender import SocialRecommender
+from base.socialRecommender import SocialRecommender
 from util import config
 from random import shuffle, choice
 from collections import defaultdict

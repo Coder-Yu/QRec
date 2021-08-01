@@ -1,4 +1,4 @@
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 from random import shuffle,randint,choice
 import tensorflow as tf
 

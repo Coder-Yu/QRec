@@ -1,4 +1,4 @@
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 from util import config
 from random import shuffle,choice
 from collections import defaultdict

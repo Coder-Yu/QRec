@@ -1,4 +1,4 @@
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 import numpy as np
 
 class EE(IterativeRecommender):

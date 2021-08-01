@@ -1,4 +1,4 @@
-from base.SocialRecommender import SocialRecommender
+from base.socialRecommender import SocialRecommender
 import numpy as np
 from util import config
 

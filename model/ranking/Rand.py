@@ -1,5 +1,5 @@
 #coding:utf8
-from base.Recommender import Recommender
+from base.recommender import Recommender
 import numpy as np
 class Rand(Recommender):
     # Recommend items for every user at random

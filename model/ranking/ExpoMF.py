@@ -1,4 +1,4 @@
-from base.IterativeRecommender import IterativeRecommender
+from base.iterativeRecommender import IterativeRecommender
 from scipy.sparse import *
 import numpy as np
 from numpy import linalg as LA

@@ -1,5 +1,5 @@
 #coding:utf8
-from base.Recommender import Recommender
+from base.recommender import Recommender
 import numpy as np
 class MostPopular(Recommender):
     # Recommend the most popular items for every user

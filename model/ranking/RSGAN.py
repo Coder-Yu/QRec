@@ -1,6 +1,6 @@
 # coding:utf8
-from base.DeepRecommender import DeepRecommender
-from base.SocialRecommender import SocialRecommender
+from base.deepRecommender import DeepRecommender
+from base.socialRecommender import SocialRecommender
 import numpy as np
 from random import choice,shuffle
 from collections import defaultdict

@@ -1,5 +1,5 @@
 #coding:utf8
-from base.DeepRecommender import DeepRecommender
+from base.deepRecommender import DeepRecommender
 from scipy.sparse import coo_matrix,hstack
 import tensorflow as tf
 import numpy as np

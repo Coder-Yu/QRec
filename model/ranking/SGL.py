@@ -1,4 +1,4 @@
-from base.DeepRecommender import DeepRecommender
+from base.deepRecommender import DeepRecommender
 import tensorflow as tf
 from util import config
 import numpy as np
