@@ -31,15 +31,11 @@ if __name__ == '__main__':
     print('Baselines:')
     print('b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand')
 
-
     print('='*80)
-    algor = -1
-    conf = -1
-    order = input('please enter the number of the model you want to run:')
+    num = input('please enter the number of the model you want to run:')
     import time
     s = time.time()
-
-    algorthms = {'1':'UserKNN','2':'ItemKNN','3':'BasicMF','4':'SlopeOne','5':'SVD','6':'PMF',
+    models = {'1':'UserKNN','2':'ItemKNN','3':'BasicMF','4':'SlopeOne','5':'SVD','6':'PMF',
                  '7':'SVD++','8':'EE','9':'BPR','10':'WRMF','11':'ExpoMF',
                  's1':'RSTE','s2':'SoRec','s3':'SoReg','s4':'SocialMF','s5':'SBPR','s6':'SREE',
                  's7':'LOCABAL','s8':'SocialFD','s9':'TBPR','s10':'SEREC','a1':'CoFactor',
@@ -48,11 +44,10 @@ if __name__ == '__main__':
                  'd9':'LightGCN', 'd10':'ESRF', 'd11':'DHCF', 'd12':'DiffNet','d13':'MHCN',
                  'q1':'SGL', 'q2':'SEPT',
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
-
     try:
-        conf = Config('./config/'+algorthms[order]+'.conf')
+        conf = Config('./config/'+models[num]+'.conf')
     except KeyError:
-        print('Error num!')
+        print('wrong num!')
         exit(-1)
     recSys = Recommender(conf)
     recSys.execute()

@@ -127,8 +127,8 @@ class SEPT(SocialRecommender, DeepRecommender):
         social_mat, sharing_mat = self.get_social_related_views(self.bs_matrix, self.rating_mat)
         social_mat = self._convert_sp_mat_to_sp_tensor(social_mat)
         sharing_mat = self._convert_sp_mat_to_sp_tensor(sharing_mat)
-        self.user_embeddings/=2 # trick, equivalent to using lower-variance Gauss distribution
-        self.item_embeddings/=2 # trick, equivalent to using lower-variance Gauss distribution
+        self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='U')/2
+        self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='V')/2
         # initialize adjacency matrices
         R = self.get_adj_mat()
         R = self._convert_sp_mat_to_sp_tensor(R)
