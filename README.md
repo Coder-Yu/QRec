@@ -50,7 +50,10 @@
 <p>Or</p>
 <ul>
 <li>Follow the codes in snippet.py.</li>
-</ul>
+</ul>        
+For more details, we refer you to the [handbook of QRec](https://www.showdoc.com.cn/QRecHelp/7342003725025529).           
+
+
 <h2>Configuration</h2>
 <h3>Essential Options</h3>
 <div>
@@ -176,7 +179,10 @@
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- buildModel()<br>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- saveModel()<br>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- loadModel()<br>
+           - predictForRanking()<br>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- predict()<br>
+
+For more details, we refer you to the [handbook of QRec](https://www.showdoc.com.cn/1526742200869027/7347975167213420).           
 
 <h2>Implemented Algorithms</h2>
 <div>

@@ -11,7 +11,6 @@ from time import strftime,localtime,time
 from util.measure import Measure
 from util.qmath import find_k_largest
 
-
 class Recommender(object):
     def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         self.config = conf
@@ -91,7 +90,6 @@ class Recommender(object):
     def predictForRanking(self,u):
         pass
 
-
     def checkRatingBoundary(self,prediction):
         if prediction > self.data.rScale[-1]:
             return self.data.rScale[-1]
@@ -131,8 +129,6 @@ class Recommender(object):
         self.log.add(self.measure)
         print('The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure)))
 
-
-
     def evalRanking(self):
         if self.ranking.contains('-topN'):
             top = self.ranking['-topN'].split(',')
@@ -146,7 +142,6 @@ class Recommender(object):
         else:
             print('No correct evaluation metric is specified!')
             exit(-1)
-
         self.recOutput.append('userId: recommendations in (itemId, ranking score) pairs, * means the item matches.\n')
         # predict
         recList = {}
@@ -213,14 +208,12 @@ class Recommender(object):
                     self.buildModel()
             except ImportError:
                 self.buildModel()
-
         #rating prediction or item ranking
         print('Predicting %s...' %self.foldInfo)
         if self.ranking.isMainOn():
             self.evalRanking()
         else:
             self.evalRatings()
-
         #save model
         if self.isSaveModel:
             print('Saving model %s...' %self.foldInfo)
