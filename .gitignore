@@ -3,5 +3,7 @@ results/
 dataset/
 ../visual/visualization
 log/
+.gitignore
+LICENSE
 *.pyc
 
