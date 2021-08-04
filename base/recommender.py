@@ -2,7 +2,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-from dtype.rating import Rating
+from data.rating import Rating
 from util.io import FileIO
 from util.config import LineConfig
 from util.log import Log
