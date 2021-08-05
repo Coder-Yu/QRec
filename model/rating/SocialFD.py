@@ -27,7 +27,7 @@ class SocialFD(SocialRecommender):
             self.loss = 0
             for entry in self.data.trainingData:
                 u, i, r = entry
-                error = r - self.predict(u, i)
+                error = r - self.predictForRating(u, i)
                 u = self.data.getUserId(u)
                 i = self.data.getItemId(i)
                 self.loss += error ** 2
@@ -89,7 +89,7 @@ class SocialFD(SocialRecommender):
             if self.isConverged(iteration):
                 break
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         if self.data.containsUser(u) and self.data.containsItem(i):
             u = self.data.getUserId(u)
             i = self.data.getItemId(i)

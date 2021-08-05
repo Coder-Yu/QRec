@@ -76,6 +76,15 @@ class FileIO(object):
             return trainingData
 
     @staticmethod
+    def loadUserList(filepath):
+        userList = []
+        print('loading user List...')
+        with open(filepath) as f:
+            for line in f:
+                userList.append(line.strip().split()[0])
+        return userList
+
+    @staticmethod
     def loadRelationship(conf, filePath):
         socialConfig = LineConfig(conf['social.setup'])
         relation = []

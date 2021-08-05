@@ -346,16 +346,6 @@ class CUNE_BPR(IterativeRecommender):
             if self.isConverged(iteration):
                 break
 
-    def predict(self,u,i):
-        if self.data.containsUser(u) and self.data.containsItem(i):
-            return sigmoid(self.P[self.data.user[u]].dot(self.Q[self.data.item[i]]))
-        elif self.data.containsUser(u) and not self.data.containsItem(i):
-            return self.data.userMeans[u]
-        elif not self.data.containsUser(u) and self.data.containsItem(i):
-            return self.data.itemMeans[i]
-        else:
-            return self.data.globalMean
-
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):

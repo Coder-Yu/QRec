@@ -25,7 +25,7 @@ class RSTE(SocialRecommender):
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
-                error = rating - self.predict(user,item)
+                error = rating - self.predictForRating(user, item)
                 i = self.data.item[item]
                 u = self.data.user[user]
                 self.loss += error ** 2
@@ -38,7 +38,7 @@ class RSTE(SocialRecommender):
             iteration += 1
             self.isConverged(iteration)
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         if self.data.containsUser(u) and self.data.containsItem(i):   
             i = self.data.getItemId(i)
             fPred = 0

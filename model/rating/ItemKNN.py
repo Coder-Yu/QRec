@@ -24,7 +24,7 @@ class ItemKNN(Recommender):
         self.topItems = {}
         self.computeSimilarities()
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         #find the closest neighbors of item i
         topItems = self.topItems[i]
         itemCount = self.neighbors

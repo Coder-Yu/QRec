@@ -84,9 +84,11 @@ class Recommender(object):
     def loadModel(self):
         pass
 
-    def predict(self,u,i):
+    #for rating prediction
+    def predictForRating(self, u, i):
         pass
 
+    #for item prediction
     def predictForRanking(self,u):
         pass
 
@@ -105,7 +107,7 @@ class Recommender(object):
         for ind,entry in enumerate(self.data.testData):
             user,item,rating = entry
             #predict
-            prediction = self.predict(user,item)
+            prediction = self.predictForRating(user, item)
             #denormalize
             #prediction = denormalize(prediction,self.data.rScale[-1],self.data.rScale[0])
             #####################################
@@ -166,7 +168,7 @@ class Recommender(object):
                 print(self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount))
             for item in recList[user]:
                 line += ' (' + item[0] + ',' + str(item[1]) + ')'
-                if item[0] not in self.data.testSet_u[user]:
+                if item[0] in self.data.testSet_u[user]:
                     line += '*'
             line += '\n'
             self.recOutput.append(line)
@@ -179,6 +181,9 @@ class Recommender(object):
             FileIO.writeFile(outDir, fileName, self.recOutput)
             print('The result has been output to ', abspath(outDir), '.')
         # output evaluation result
+        if self.evalSettings.contains('-predict'):
+            #no evalutation
+            exit(0)
         outDir = self.output['-dir']
         fileName = self.config['model.name'] + '@' + currentTime + '-measure' + self.foldInfo + '.txt'
         self.measure = Measure.rankingMeasure(self.data.testSet_u, recList, top)

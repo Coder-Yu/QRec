@@ -136,15 +136,6 @@ class SBPR(SocialRecommender):
                     print('training:', iteration + 1, 'batch', n, 'loss:', l)
             self.P, self.Q = sess.run([self.U, self.V])
 
-    def predict(self,user,item):
-        if self.data.containsUser(user) and self.data.containsItem(item):
-            u = self.data.getUserId(user)
-            i = self.data.getItemId(item)
-            predictRating = sigmoid(self.Q[i].dot(self.P[u]))
-            return predictRating
-        else:
-            return sigmoid(self.data.globalMean)
-
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):

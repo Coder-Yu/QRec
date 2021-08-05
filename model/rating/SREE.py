@@ -30,7 +30,7 @@ class SREE(SocialRecommender):
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
-                error = rating - self.predict(user,item)
+                error = rating - self.predictForRating(user, item)
                 u = self.data.user[user]
                 i = self.data.item[item]
                 self.loss += error ** 2
@@ -62,7 +62,7 @@ class SREE(SocialRecommender):
             iteration += 1
             self.isConverged(iteration)
 
-    def predict(self, u, i):
+    def predictForRating(self, u, i):
         if self.data.containsUser(u) and self.data.containsItem(i):
             u = self.data.user[u]
             i = self.data.item[i]

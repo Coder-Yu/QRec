@@ -12,9 +12,6 @@ class MostPopular(Recommender):
             ind = self.data.item[item]
             self.popularItemList[ind] = len(self.data.trainSet_i[item])
 
-    def predict(self,user,item):
-        return 0
-
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):

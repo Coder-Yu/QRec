@@ -5,7 +5,7 @@ from util.qmath import sigmoid
 from math import log
 from collections import defaultdict
 from random import shuffle
-import tensorflow as tf
+#import tensorflow as tf
 class BPR(IterativeRecommender):
 
     # BPR：Bayesian Personalized Ranking from Implicit Feedback
@@ -52,15 +52,6 @@ class BPR(IterativeRecommender):
         self.Q[i] -= self.lRate * self.regI * self.Q[i]
         self.Q[j] -= self.lRate * self.regI * self.Q[j]
         self.loss += -log(s)
-
-    def predict(self,user,item):
-        if self.data.containsUser(user) and self.data.containsItem(item):
-            u = self.data.getUserId(user)
-            i = self.data.getItemId(item)
-            predictRating = self.Q[i].dot(self.P[u])
-            return predictRating
-        else:
-            return self.data.globalMean
 
     def next_batch(self):
         batch_id = 0

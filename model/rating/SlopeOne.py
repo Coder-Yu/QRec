@@ -31,7 +31,7 @@ class SlopeOne(Recommender,):
             self.diffAverage[item] = diffAverage_sub
             self.freq[item] = freq_sub
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         # check if the user existed in trainSet or not
         if self.data.containsUser(u):
             sum = 0

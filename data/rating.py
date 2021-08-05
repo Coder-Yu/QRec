@@ -7,17 +7,17 @@ class Rating(object):
     def __init__(self,config,trainingSet, testSet):
         self.config = config
         self.evalSettings = LineConfig(self.config['evaluation.setup'])
-        self.user = {} #map user names to identifiers (id)
-        self.item = {} #map item names to identifiers (id)
+        self.user = {} #map user names to id
+        self.item = {} #map item names to id
         self.id2user = {}
         self.id2item = {}
-        self.userMeans = {} #Store the mean values of users's ratings
-        self.itemMeans = {} #Store the mean values of items's ratings
+        self.userMeans = {} #mean values of users's ratings
+        self.itemMeans = {} #mean values of items's ratings
         self.globalMean = 0
         self.trainSet_u = defaultdict(dict)
         self.trainSet_i = defaultdict(dict)
-        self.testSet_u = defaultdict(dict) # Store the test set in the form of [user][item]=rating
-        self.testSet_i = defaultdict(dict) # Store the test set in the form of [item][user]=rating
+        self.testSet_u = defaultdict(dict) #test set in the form of [user][item]=rating
+        self.testSet_i = defaultdict(dict) #test set in the form of [item][user]=rating
         self.rScale = [] #rating scale
         self.trainingData = trainingSet[:]
         self.testData = testSet[:]
@@ -56,9 +56,13 @@ class Rating(object):
         self.rScale = list(scale)
         self.rScale.sort()
         for entry in self.testData:
-            userName, itemName, rating = entry
-            self.testSet_u[userName][itemName] = rating
-            self.testSet_i[itemName][userName] = rating
+            if self.evalSettings.contains('-predict'):
+                self.testSet_u[entry]={}
+            else:
+                userName, itemName, rating = entry
+                self.testSet_u[userName][itemName] = rating
+                self.testSet_i[itemName][userName] = rating
+
 
     def __globalAverage(self):
         total = sum(self.userMeans.values())

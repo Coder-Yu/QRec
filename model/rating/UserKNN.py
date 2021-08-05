@@ -25,7 +25,7 @@ class UserKNN(Recommender):
         self.topUsers = {}
         self.computeSimilarities()
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         #find the closest neighbors of user u
         topUsers = self.topUsers[u]
         userCount = self.neighbors

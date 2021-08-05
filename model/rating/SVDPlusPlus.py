@@ -32,7 +32,7 @@ class SVDPlusPlus(IterativeRecommender):
                 items, ratings = self.data.userRated(user)
                 w = len(items)
                 #w = math.sqrt(len(itemIndexs))
-                error = rating - self.predict(user, item)
+                error = rating - self.predictForRating(user, item)
                 u = self.data.user[user]
                 i = self.data.item[item]
                 self.loss += error ** 2
@@ -67,7 +67,7 @@ class SVDPlusPlus(IterativeRecommender):
             self.isConverged(iteration)
 
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         pred = 0
         if self.data.containsUser(u) and self.data.containsItem(i):
             itemIndexs,rating = self.data.userRated(u)

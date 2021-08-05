@@ -49,7 +49,7 @@ class LOCABAL(SocialRecommender):
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, r = entry
-                error = r - self.predict(user,item)
+                error = r - self.predictForRating(user, item)
                 i = self.data.getItemId(item)
                 u = self.data.getUserId(user)
                 if user in self.W:

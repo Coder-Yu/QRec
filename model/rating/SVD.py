@@ -18,7 +18,7 @@ class SVD(IterativeRecommender):
                 user, item, rating = entry
                 u = self.data.user[user]
                 i = self.data.item[item]
-                error = rating-self.predict(user,item)
+                error = rating-self.predictForRating(user, item)
                 self.loss+=error**2
                 p = self.P[u]
                 q = self.Q[i]
@@ -73,7 +73,7 @@ class SVD(IterativeRecommender):
             self.Bu = sess.run(self.U_bias)
             self.Bi = sess.run(self.V_bias)
 
-    def predict(self,u,i):
+    def predictForRating(self, u, i):
         if self.data.containsUser(u) and self.data.containsItem(i):
             u = self.data.user[u]
             i = self.data.item[i]

@@ -29,7 +29,7 @@ class SoRec(SocialRecommender ):
             #ratings
             for entry in self.data.trainingData:
                 user, item, rating = entry
-                error = rating - self.predict(user, item)
+                error = rating - self.predictForRating(user, item)
                 i = self.data.item[item]
                 u = self.data.user[user]
                 self.loss += error ** 2

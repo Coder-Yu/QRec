@@ -32,6 +32,10 @@ class QRec(object):
             elif self.evaluation.contains('-cv'):
                 #cross validation
                 self.trainingData = FileIO.loadDataSet(config, config['ratings'],binarized=binarized,threshold=bottom)
+            elif self.evaluation.contains('-predict'):
+                #cross validation
+                self.trainingData = FileIO.loadDataSet(config, config['ratings'],binarized=binarized,threshold=bottom)
+                self.testData = FileIO.loadUserList(self.evaluation['-predict'])
 
         else:
             print('Wrong configuration of evaluation!')
