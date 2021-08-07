@@ -48,7 +48,7 @@ class SocialRecommender(IterativeRecommender):
     def printAlgorConfig(self):
         super(SocialRecommender, self).printAlgorConfig()
         print('Social dataset:',abspath(self.config['social']))
-        print('Social size ','(User count:',len(self.social.user),'Trust statement count:'+str(len(self.social.relation))+')')
+        print('Social relation size ','(User count:',len(self.social.user),'Relation count:'+str(len(self.social.relation))+')')
         print('Social Regularization parameter: regS %.3f' % (self.regS))
         print('=' * 80)
 

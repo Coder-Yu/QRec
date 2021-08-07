@@ -27,7 +27,7 @@ class IterativeRecommender(Recommender):
 
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
-        print('Reduced Dimension:',self.embed_size)
+        print('Embedding Dimension:',self.embed_size)
         print('Maximum Iteration:',self.maxIter)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)

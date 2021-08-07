@@ -10,12 +10,6 @@ class Config(object):
             exit(-1)
         return self.config[item]
 
-    def getOptions(self,item):
-        if not self.contains(item):
-            print('parameter '+item+' is invalid!')
-            exit(-1)
-        return self.config[item]
-
     def contains(self,key):
         return key in self.config
 
@@ -62,11 +56,8 @@ class LineConfig(object):
             exit(-1)
         return self.options[item]
 
-    def getOption(self,key):
-        if not self.contains(key):
-            print('parameter '+key+' is invalid!')
-            exit(-1)
-        return self.options[key]
+    def keys(self):
+        return self.options.keys()
 
     def isMainOn(self):
         return self.mainOption

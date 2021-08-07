@@ -61,11 +61,19 @@ class Recommender(object):
         print('Algorithm:',self.config['model.name'])
         print('Ratings dataset:',abspath(self.config['ratings']))
         if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
-            print('Test set:',abspath(LineConfig(self.config['evaluation.setup']).getOption('-testSet')))
-        #print 'Count of the users in training set: ',len()
+            print('Test set:',abspath(LineConfig(self.config['evaluation.setup'])['-testSet']))
+        #print dataset statistics
         print('Training set size: (user count: %d, item count %d, record count: %d)' %(self.data.trainingSize()))
         print('Test set size: (user count: %d, item count %d, record count: %d)' %(self.data.testSize()))
         print('='*80)
+        #print specific parameters if applicable
+        if self.config.contains(self.config['model.name']):
+            parStr = ''
+            args = LineConfig(self.config[self.config['model.name']])
+            for key in args.keys():
+                parStr+=key[1:]+':'+args[key]+'  '
+            print('Specific parameters:',parStr)
+            print('=' * 80)
 
     def initModel(self):
         pass
