@@ -81,8 +81,8 @@ class ESRF(SocialRecommender,DeepRecommender):
         return A
 
     def buildMotifGCN(self,adjacency):
-        self.relation_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005),name='U_r')
-        projection_head = tf.Variable(tf.truncated_normal(shape=[self.embed_size, self.embed_size], stddev=0.005),  name='p_h')
+        self.relation_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.emb_size], stddev=0.005), name='U_r')
+        projection_head = tf.Variable(tf.truncated_normal(shape=[self.emb_size, self.emb_size], stddev=0.005), name='p_h')
         self.userSegment = tf.placeholder(tf.int32)
 
         #convert sparse matrix to sparse tensor
@@ -163,11 +163,11 @@ class ESRF(SocialRecommender,DeepRecommender):
 
         for k in range(self.n_layers_D):
             self.d_weights['attention_m1%d' % k] = tf.Variable(
-                initializer([self.embed_size,self.embed_size]), name='attention_m1%d' % k)
+                initializer([self.emb_size, self.emb_size]), name='attention_m1%d' % k)
             self.d_weights['attention_m2%d' % k] = tf.Variable(
-                initializer([self.embed_size, self.embed_size]), name='attention_m2%d' % k)
+                initializer([self.emb_size, self.emb_size]), name='attention_m2%d' % k)
             self.d_weights['attention_v%d' % k] = tf.Variable(
-                initializer([1,self.embed_size*2]), name='attention_v1%d' % k)
+                initializer([1, self.emb_size * 2]), name='attention_v1%d' % k)
 
         vals, indexes = tf.nn.top_k(self.alternativeNeighborhood, self.K)
         for k in range(self.n_layers_D):

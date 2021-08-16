@@ -40,11 +40,11 @@ class CHER(DeepRecommender):
         self.user_embeddings = self.user_embeddings/2
         self.item_embeddings = self.item_embeddings/2
         self.ssl_rate = tf.placeholder(tf.float32)
-        self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.embed_size]), dtype=tf.float32, trainable=False)
-        self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.embed_size]), dtype=tf.float32, trainable=False)
+        self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.emb_size]), dtype=tf.float32, trainable=False)
+        self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.emb_size]), dtype=tf.float32, trainable=False)
         self.random_noises_U = tf.placeholder(tf.float32)
         self.random_noises_V = tf.placeholder(tf.float32)
-        self.bi_matrix = tf.Variable(initializer([self.embed_size, self.embed_size]), name='bilinear')
+        self.bi_matrix = tf.Variable(initializer([self.emb_size, self.emb_size]), name='bilinear')
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
         self.n_layers = 2
 
@@ -115,8 +115,8 @@ class CHER(DeepRecommender):
         self.sess.run(init)
         for iteration in range(self.maxIter):
             for n, batch in enumerate(self.next_batch_pairwise()):
-                noise_u = np.random.random((self.num_users, self.embed_size))
-                noise_i = np.random.random((self.num_items, self.embed_size))
+                noise_u = np.random.random((self.num_users, self.emb_size))
+                noise_i = np.random.random((self.num_items, self.emb_size))
                 # if iteration < self.maxIter/3:
                 #     user_idx, i_idx, j_idx = batch
                 #     #self.sess.run([self.update_U, self.update_V], feed_dict={self.u_idx: user_idx, self.v_idx: i_idx})

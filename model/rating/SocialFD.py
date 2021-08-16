@@ -10,7 +10,7 @@ class SocialFD(SocialRecommender):
         super(SocialFD, self).initModel()
         self.Bu = np.random.rand(self.data.trainingSize()[0])/5 # biased value of user
         self.Bi = np.random.rand(self.data.trainingSize()[1])/5  # biased value of item
-        self.H = np.random.rand(self.embed_size, self.embed_size)/5
+        self.H = np.random.rand(self.emb_size, self.emb_size) / 5
         self.P /= 10
         self.Q /= 10
 

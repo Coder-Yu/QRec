@@ -23,9 +23,9 @@ class ExpoMF(IterativeRecommender):
         self.b = 99.0
         self.init_std = 0.01
         self.theta = self.init_std * \
-            np.random.randn(self.num_users, self.embed_size).astype(np.float32)
+            np.random.randn(self.num_users, self.emb_size).astype(np.float32)
         self.beta = self.init_std * \
-            np.random.randn(self.num_items, self.embed_size).astype(np.float32)
+            np.random.randn(self.num_items, self.emb_size).astype(np.float32)
         self.mu = self.init_mu * np.ones(self.num_items, dtype=np.float32)
         self.n_jobs=4
         self.batch_size=300

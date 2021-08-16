@@ -97,12 +97,12 @@ class MHCN(SocialRecommender,DeepRecommender):
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
         #define learnable paramters
         for i in range(self.n_channel):
-            self.weights['gating%d' % (i+1)] = tf.Variable(initializer([self.embed_size, self.embed_size]), name='g_W_%d_1' % (i+1))
-            self.weights['gating_bias%d' %(i+1)] = tf.Variable(initializer([1, self.embed_size]), name='g_W_b_%d_1' % (i+1))
-            self.weights['sgating%d' % (i + 1)] = tf.Variable(initializer([self.embed_size, self.embed_size]),name='sg_W_%d_1' % (i + 1))
-            self.weights['sgating_bias%d' % (i + 1)] = tf.Variable(initializer([1, self.embed_size]),name='sg_W_b_%d_1' % (i + 1))
-        self.weights['attention'] = tf.Variable(initializer([1, self.embed_size]), name='at')
-        self.weights['attention_mat'] = tf.Variable(initializer([self.embed_size, self.embed_size]), name='atm')
+            self.weights['gating%d' % (i+1)] = tf.Variable(initializer([self.emb_size, self.emb_size]), name='g_W_%d_1' % (i + 1))
+            self.weights['gating_bias%d' %(i+1)] = tf.Variable(initializer([1, self.emb_size]), name='g_W_b_%d_1' % (i + 1))
+            self.weights['sgating%d' % (i + 1)] = tf.Variable(initializer([self.emb_size, self.emb_size]), name='sg_W_%d_1' % (i + 1))
+            self.weights['sgating_bias%d' % (i + 1)] = tf.Variable(initializer([1, self.emb_size]), name='sg_W_b_%d_1' % (i + 1))
+        self.weights['attention'] = tf.Variable(initializer([1, self.emb_size]), name='at')
+        self.weights['attention_mat'] = tf.Variable(initializer([self.emb_size, self.emb_size]), name='atm')
         #define inline functions
         def self_gating(em,channel):
             return tf.multiply(em,tf.nn.sigmoid(tf.matmul(em,self.weights['gating%d' % channel])+self.weights['gating_bias%d' %channel]))

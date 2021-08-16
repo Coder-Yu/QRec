@@ -53,7 +53,7 @@ class IF_BPR(SocialRecommender):
                 self.positive[user].append(item)
                 self.pItems[item].append(user)
         self.readNegativeFeedbacks()
-        self.P = np.ones((len(self.data.user), self.embed_size))*0.1  # latent user matrix
+        self.P = np.ones((len(self.data.user), self.emb_size)) * 0.1  # latent user matrix
         self.threshold = {}
         self.avg_sim = {}
         self.thres_d = dict.fromkeys(list(self.data.user.keys()),0) #derivatives for learning thresholds

@@ -19,8 +19,8 @@ class APR(DeepRecommender):
 
     def _create_variables(self):
         #perturbation vectors
-        self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.embed_size]),dtype=tf.float32, trainable=False)
-        self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.embed_size]),dtype=tf.float32, trainable=False)
+        self.adv_U = tf.Variable(tf.zeros(shape=[self.num_users, self.emb_size]), dtype=tf.float32, trainable=False)
+        self.adv_V = tf.Variable(tf.zeros(shape=[self.num_items, self.emb_size]), dtype=tf.float32, trainable=False)
         self.neg_idx = tf.placeholder(tf.int32, [None], name="n_idx")
         self.V_neg_embed = tf.nn.embedding_lookup(self.item_embeddings, self.neg_idx)
         #parameters

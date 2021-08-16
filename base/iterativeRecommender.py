@@ -12,7 +12,7 @@ class IterativeRecommender(Recommender):
     def readConfiguration(self):
         super(IterativeRecommender, self).readConfiguration()
         # set the reduced dimension
-        self.embed_size = int(self.config['num.factors'])
+        self.emb_size = int(self.config['num.factors'])
         # set maximum iteration
         self.maxIter = int(self.config['num.max.iter'])
         # set learning rate
@@ -27,14 +27,14 @@ class IterativeRecommender(Recommender):
 
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
-        print('Embedding Dimension:',self.embed_size)
+        print('Embedding Dimension:', self.emb_size)
         print('Maximum Iteration:',self.maxIter)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)
 
     def initModel(self):
-        self.P = np.random.rand(len(self.data.user), self.embed_size)/3 # latent user matrix
-        self.Q = np.random.rand(len(self.data.item), self.embed_size)/3  # latent item matrix
+        self.P = np.random.rand(len(self.data.user), self.emb_size) / 3 # latent user matrix
+        self.Q = np.random.rand(len(self.data.item), self.emb_size) / 3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
     def buildModel_tf(self):
@@ -43,8 +43,8 @@ class IterativeRecommender(Recommender):
         self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")
         self.v_idx = tf.placeholder(tf.int32, [None], name="v_idx")
         self.r = tf.placeholder(tf.float32, [None], name="rating")
-        self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='U')
-        self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='V')
+        self.U = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.emb_size], stddev=0.005), name='U')
+        self.V = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.emb_size], stddev=0.005), name='V')
         self.user_biases = tf.Variable(tf.truncated_normal(shape=[self.num_users, 1], stddev=0.005), name='U')
         self.item_biases = tf.Variable(tf.truncated_normal(shape=[self.num_items, 1], stddev=0.005), name='U')
         self.user_bias = tf.nn.embedding_lookup(self.user_biases, self.u_idx)

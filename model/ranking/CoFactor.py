@@ -86,7 +86,7 @@ class CoFactor(IterativeRecommender):
         self.Y=self.Q*10 #Beta
         self.w = np.random.rand(self.num_items) / 10  # bias value of item
         self.c = np.random.rand(self.num_items) / 10  # bias value of context
-        self.G = np.random.rand(self.num_items, self.embed_size) / 10  # context embedding
+        self.G = np.random.rand(self.num_items, self.emb_size) / 10  # context embedding
 
         print('training...')
         iteration = 0
@@ -110,7 +110,7 @@ class CoFactor(IterativeRecommender):
                     self.loss += pow(error, 2)
                 # sparse matrix
                 C_u = coo_matrix((val, (pos, pos)), shape=(self.num_items, self.num_items))
-                A = (YtY + np.dot(self.Y.T, C_u.dot(self.Y)) + self.regU * np.eye(self.embed_size))
+                A = (YtY + np.dot(self.Y.T, C_u.dot(self.Y)) + self.regU * np.eye(self.emb_size))
                 self.X[uid] = np.dot(np.linalg.inv(A), (self.Y.T * H).dot(P_u))
 
             XtX = self.X.T.dot(self.X)
@@ -127,10 +127,10 @@ class CoFactor(IterativeRecommender):
                     H[uid] += 10 * r_ui
                     P_i[uid] = 1
 
-                matrix_g1 = np.zeros((self.embed_size,self.embed_size))
-                matrix_g2 = np.zeros((self.embed_size,self.embed_size))
-                vector_m1 = np.zeros(self.embed_size)
-                vector_m2 = np.zeros(self.embed_size)
+                matrix_g1 = np.zeros((self.emb_size, self.emb_size))
+                matrix_g2 = np.zeros((self.emb_size, self.emb_size))
+                vector_m1 = np.zeros(self.emb_size)
+                vector_m2 = np.zeros(self.emb_size)
                 update_w = 0
                 update_c = 0
 
@@ -139,11 +139,11 @@ class CoFactor(IterativeRecommender):
                         cid = self.data.item[context]
                         gamma = self.G[cid]
                         beta = self.Y[cid]
-                        matrix_g1 += gamma.reshape(self.embed_size,1).dot(gamma.reshape(1,self.embed_size))
+                        matrix_g1 += gamma.reshape(self.emb_size, 1).dot(gamma.reshape(1, self.emb_size))
                         vector_m1 += (self.SPPMI[item][context]-self.w[iid]-
                                       self.c[cid])*gamma
 
-                        matrix_g2 += beta.reshape(self.embed_size,1).dot(beta.reshape(1,self.embed_size))
+                        matrix_g2 += beta.reshape(self.emb_size, 1).dot(beta.reshape(1, self.emb_size))
                         vector_m2 += (self.SPPMI[item][context] - self.w[cid]
                                       - self.c[iid]) * beta
 
@@ -151,10 +151,10 @@ class CoFactor(IterativeRecommender):
                         update_c += self.SPPMI[item][context]-beta.dot(self.G[iid])-self.w[cid]
 
                 C_i = coo_matrix((val, (pos, pos)), shape=(self.num_users, self.num_users))
-                A = (XtX + np.dot(self.X.T, C_i.dot(self.X)) + self.regU * np.eye(self.embed_size) + matrix_g1)
+                A = (XtX + np.dot(self.X.T, C_i.dot(self.X)) + self.regU * np.eye(self.emb_size) + matrix_g1)
                 self.Y[iid] = np.dot(np.linalg.inv(A), (self.X.T * H).dot(P_i)+vector_m1)
                 if len(self.SPPMI[item]) > 0:
-                    self.G[iid] = np.dot(np.linalg.inv(matrix_g2+self.regR * np.eye(self.embed_size)),vector_m2)
+                    self.G[iid] = np.dot(np.linalg.inv(matrix_g2 + self.regR * np.eye(self.emb_size)), vector_m2)
                     self.w[iid] = update_w/len(self.SPPMI[item])
                     self.c[iid] = update_c/len(self.SPPMI[item])
 

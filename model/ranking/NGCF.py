@@ -20,8 +20,8 @@ class NGCF(DeepRecommender):
         norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
         self.weights = dict()
         initializer = tf.contrib.layers.xavier_initializer()
-        weight_size = [self.embed_size,self.embed_size,self.embed_size] #can be changed
-        weight_size_list = [self.embed_size] + weight_size
+        weight_size = [self.emb_size, self.emb_size, self.emb_size] #can be changed
+        weight_size_list = [self.emb_size] + weight_size
         self.n_layers = 3
 
         #initialize parameters

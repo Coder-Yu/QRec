@@ -63,15 +63,13 @@ class SEPT(SocialRecommender, DeepRecommender):
 
     def _create_variable(self):
         self.sub_mat = {}
-        self.sub_mat['adj_values_sub1'] = tf.placeholder(tf.float32)
-        self.sub_mat['adj_indices_sub1'] = tf.placeholder(tf.int64)
-        self.sub_mat['adj_shape_sub1'] = tf.placeholder(tf.int64)
-
-        for k in range(self.n_layers):
-            self.sub_mat['sub_mat_1%d' % k] = tf.SparseTensor(
-                self.sub_mat['adj_indices_sub1'],
-                self.sub_mat['adj_values_sub1'],
-                self.sub_mat['adj_shape_sub1'])
+        self.sub_mat['adj_values_sub'] = tf.placeholder(tf.float32)
+        self.sub_mat['adj_indices_sub'] = tf.placeholder(tf.int64)
+        self.sub_mat['adj_shape_sub'] = tf.placeholder(tf.int64)
+        self.sub_mat['sub_mat'] = tf.SparseTensor(
+            self.sub_mat['adj_indices_sub'],
+            self.sub_mat['adj_values_sub'],
+            self.sub_mat['adj_shape_sub'])
 
     def get_adj_mat(self, is_subgraph=False):
         n_nodes = self.num_users + self.num_items
@@ -127,11 +125,11 @@ class SEPT(SocialRecommender, DeepRecommender):
         social_mat, sharing_mat = self.get_social_related_views(self.bs_matrix, self.rating_mat)
         social_mat = self._convert_sp_mat_to_sp_tensor(social_mat)
         sharing_mat = self._convert_sp_mat_to_sp_tensor(sharing_mat)
-        self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embed_size], stddev=0.005), name='U')/2
-        self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embed_size], stddev=0.005), name='V')/2
+        self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.emb_size], stddev=0.005), name='U') / 2
+        self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.emb_size], stddev=0.005), name='V') / 2
         # initialize adjacency matrices
-        R = self.get_adj_mat()
-        R = self._convert_sp_mat_to_sp_tensor(R)
+        ui_mat = self.get_adj_mat()
+        ui_mat = self._convert_sp_mat_to_sp_tensor(ui_mat)
         friend_view_embeddings = self.user_embeddings
         sharing_view_embeddings = self.user_embeddings
         all_social_embeddings = [friend_view_embeddings]
@@ -141,7 +139,7 @@ class SEPT(SocialRecommender, DeepRecommender):
         aug_embeddings = ego_embeddings
         all_aug_embeddings = [ego_embeddings]
 
-        # multi-view convolution
+        #multi-view convolution: LightGCN structure
         for k in range(self.n_layers):
             # friend view
             friend_view_embeddings = tf.sparse_tensor_dense_matmul(social_mat,friend_view_embeddings)
@@ -152,13 +150,57 @@ class SEPT(SocialRecommender, DeepRecommender):
             norm_embeddings = tf.math.l2_normalize(sharing_view_embeddings, axis=1)
             all_sharing_embeddings += [norm_embeddings]
             # preference view
-            ego_embeddings = tf.sparse_tensor_dense_matmul(R, ego_embeddings)
+            ego_embeddings = tf.sparse_tensor_dense_matmul(ui_mat, ego_embeddings)
             norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
             all_embeddings += [norm_embeddings]
             # unlabeled sample view
-            aug_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat_1%d' % k], aug_embeddings)
+            aug_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat'], aug_embeddings)
             norm_embeddings = tf.math.l2_normalize(aug_embeddings, axis=1)
             all_aug_embeddings += [norm_embeddings]
+
+        # multi-view convolution: NGCF structure
+        # initializer = tf.contrib.layers.xavier_initializer()
+        # self.weights = dict()
+        # for k in range(self.n_layers):
+        #     for view in range(4):
+        #         self.weights['W_%d_1_%d' %(k,view)] = tf.Variable(
+        #             initializer([self.emb_size,self.emb_size]), name='W_%d_1_%d' %(k,view))
+        #         self.weights['W_%d_2_%d' %(k,view)] = tf.Variable(
+        #             initializer([self.emb_size,self.emb_size]), name='W_%d_2_%d' %(k,view))
+        #
+        # for k in range(self.n_layers):
+        #     #friend view
+        #     side_embeddings = tf.sparse_tensor_dense_matmul(social_mat,friend_view_embeddings)
+        #     sum_embeddings = tf.matmul(side_embeddings+friend_view_embeddings, self.weights['W_%d_1_0' % k])
+        #     bi_embeddings = tf.multiply(friend_view_embeddings, side_embeddings)
+        #     bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2_0' % k])
+        #     friend_view_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
+        #     norm_embeddings = tf.math.l2_normalize(friend_view_embeddings, axis=1)
+        #     all_social_embeddings += [norm_embeddings]
+        #     #sharing view
+        #     side_embeddings = tf.sparse_tensor_dense_matmul(sharing_mat,sharing_view_embeddings)
+        #     sum_embeddings = tf.matmul(side_embeddings+sharing_view_embeddings, self.weights['W_%d_1_1' % k])
+        #     bi_embeddings = tf.multiply(sharing_view_embeddings, side_embeddings)
+        #     bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2_1' % k])
+        #     sharing_view_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
+        #     norm_embeddings = tf.math.l2_normalize(sharing_view_embeddings, axis=1)
+        #     all_sharing_embeddings += [norm_embeddings]
+        #     #preference view
+        #     side_embeddings = tf.sparse_tensor_dense_matmul(ui_mat, ego_embeddings)
+        #     sum_embeddings = tf.matmul(side_embeddings+ego_embeddings, self.weights['W_%d_1_2' % k])
+        #     bi_embeddings = tf.multiply(ego_embeddings, side_embeddings)
+        #     bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2_2' % k])
+        #     ego_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
+        #     norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
+        #     all_embeddings += [norm_embeddings]
+        #     # unlabeled sample view
+        #     side_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat'], aug_embeddings)
+        #     sum_embeddings = tf.matmul(side_embeddings+aug_embeddings, self.weights['W_%d_1_3' % k])
+        #     bi_embeddings = tf.multiply(aug_embeddings, side_embeddings)
+        #     bi_embeddings = tf.matmul(bi_embeddings, self.weights['W_%d_2_3' % k])
+        #     aug_embeddings = tf.nn.leaky_relu(sum_embeddings+bi_embeddings)
+        #     norm_embeddings = tf.math.l2_normalize(aug_embeddings, axis=1)
+        #     all_aug_embeddings += [norm_embeddings]
 
         # averaging the view-specific embeddings
         self.friend_view_embeddings = tf.reduce_sum(all_social_embeddings, axis=0)
@@ -200,7 +242,7 @@ class SEPT(SocialRecommender, DeepRecommender):
         aug_emb = tf.nn.embedding_lookup(self.aug_user_embeddings, tf.unique(self.u_idx)[0])
         aug_emb = tf.nn.l2_normalize(aug_emb, axis=1)
         pos_emb = tf.nn.embedding_lookup(aug_emb, positive)
-        emb2 = tf.reshape(emb, [-1, 1, self.embed_size])
+        emb2 = tf.reshape(emb, [-1, 1, self.emb_size])
         emb2 = tf.tile(emb2, [1, self.instance_cnt, 1])
         pos = score(emb2, pos_emb)
         ttl_score = tf.matmul(emb, aug_emb, transpose_a=False, transpose_b=True)
@@ -240,8 +282,8 @@ class SEPT(SocialRecommender, DeepRecommender):
             #joint learning
             if iteration > self.maxIter / 3:
                 sub_mat = {}
-                sub_mat['adj_indices_sub1'], sub_mat['adj_values_sub1'], sub_mat[
-                    'adj_shape_sub1'] = self._convert_csr_to_sparse_tensor_inputs(
+                sub_mat['adj_indices_sub'], sub_mat['adj_values_sub'], sub_mat[
+                    'adj_shape_sub'] = self._convert_csr_to_sparse_tensor_inputs(
                     self.get_adj_mat(is_subgraph=True))
                 for n, batch in enumerate(self.next_batch_pairwise()):
                     user_idx, i_idx, j_idx = batch
@@ -249,9 +291,9 @@ class SEPT(SocialRecommender, DeepRecommender):
                                  self.v_idx: i_idx,
                                  self.neg_idx: j_idx}
                     feed_dict.update({
-                        self.sub_mat['adj_values_sub1']: sub_mat['adj_values_sub1'],
-                        self.sub_mat['adj_indices_sub1']: sub_mat['adj_indices_sub1'],
-                        self.sub_mat['adj_shape_sub1']: sub_mat['adj_shape_sub1'],
+                        self.sub_mat['adj_values_sub']: sub_mat['adj_values_sub'],
+                        self.sub_mat['adj_indices_sub']: sub_mat['adj_indices_sub'],
+                        self.sub_mat['adj_shape_sub']: sub_mat['adj_shape_sub'],
                     })
                     _, l1, l3, = self.sess.run([v2_op, rec_loss, self.neighbor_dis_loss],feed_dict=feed_dict)
                     print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3)

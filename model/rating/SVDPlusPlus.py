@@ -21,7 +21,7 @@ class SVDPlusPlus(IterativeRecommender):
         super(SVDPlusPlus, self).initModel()
         self.Bu = np.random.rand(self.data.trainingSize()[0])  # biased value of user
         self.Bi = np.random.rand(self.data.trainingSize()[1])  # biased value of item
-        self.Y = np.random.rand(self.data.trainingSize()[1], self.embed_size)
+        self.Y = np.random.rand(self.data.trainingSize()[1], self.emb_size)
 
     def buildModel(self):
         iteration = 0

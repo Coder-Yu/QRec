@@ -28,7 +28,7 @@ class SocialMF(SocialRecommender):
                     fPred = 0
                     denom = 0
                     u = self.data.user[user]
-                    relationLoss = np.zeros(self.embed_size)
+                    relationLoss = np.zeros(self.emb_size)
                     followees = self.social.getFollowees(user)
                     for followee in followees:
                         weight= followees[followee]

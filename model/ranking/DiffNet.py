@@ -52,7 +52,7 @@ class DiffNet(SocialRecommender,DeepRecommender):
         initializer = tf.contrib.layers.xavier_initializer()
         for k in range(self.n_layers):
             self.weights['weights%d' % k] = tf.Variable(
-                initializer([2*self.embed_size, self.embed_size]), name='weights%d' % k)
+                initializer([2 * self.emb_size, self.emb_size]), name='weights%d' % k)
 
         user_embeddings = self.user_embeddings
         for k in range(self.n_layers):

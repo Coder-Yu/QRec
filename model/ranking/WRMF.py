@@ -38,7 +38,7 @@ class WRMF(IterativeRecommender):
                     self.loss+=pow(error,2)
                 #sparse matrix
                 C_u = coo_matrix((val,(pos,pos)),shape=(self.num_items,self.num_items))
-                A = (YtY + np.dot(self.Y.T,C_u.dot(self.Y))+self.regU*np.eye(self.embed_size))
+                A = (YtY + np.dot(self.Y.T,C_u.dot(self.Y)) + self.regU * np.eye(self.emb_size))
                 self.X[uid] = np.dot(np.linalg.inv(A),(self.Y.T*H).dot(P_u))
 
             XtX = self.X.T.dot(self.X)
@@ -57,7 +57,7 @@ class WRMF(IterativeRecommender):
                     P_i[uid] = 1
                 # sparse matrix
                 C_i = coo_matrix((val, (pos, pos)),shape=(self.num_users,self.num_users))
-                A = (XtX + np.dot(self.X.T,C_i.dot(self.X))+self.regU*np.eye(self.embed_size))
+                A = (XtX + np.dot(self.X.T,C_i.dot(self.X)) + self.regU * np.eye(self.emb_size))
                 self.Y[iid]=np.dot(np.linalg.inv(A), (self.X.T*H).dot(P_i))
 
             #self.loss += (self.X * self.X).sum() + (self.Y * self.Y).sum()

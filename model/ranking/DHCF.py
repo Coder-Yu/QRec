@@ -57,7 +57,7 @@ class DHCF(DeepRecommender):
         self.n_layer = 2
         self.weights={}
         for i in range(self.n_layer):
-            self.weights['layer_%d' %(i+1)] = tf.Variable(initializer([self.embed_size, self.embed_size]), name='JU_%d' %(i+1))
+            self.weights['layer_%d' %(i+1)] = tf.Variable(initializer([self.emb_size, self.emb_size]), name='JU_%d' % (i + 1))
 
         user_embeddings = self.user_embeddings
         item_embeddings = self.item_embeddings
