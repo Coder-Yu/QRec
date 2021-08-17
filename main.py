@@ -28,13 +28,14 @@ if __name__ == '__main__':
     print('Self-Supervised Recommenders:')
     print('q1. SGL           q2. SEPT')
 
-    print('Baselines:')
+    print('Basic Methods:')
     print('b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand')
 
     print('='*80)
     num = input('please enter the number of the model you want to run:')
     import time
     s = time.time()
+    #Register your model here and add the conf file into the config directory
     models = {'1':'UserKNN','2':'ItemKNN','3':'BasicMF','4':'SlopeOne','5':'SVD','6':'PMF',
                  '7':'SVD++','8':'EE','9':'BPR','10':'WRMF','11':'ExpoMF',
                  's1':'RSTE','s2':'SoRec','s3':'SoReg','s4':'SocialMF','s5':'SBPR','s6':'SREE',

@@ -11,7 +11,10 @@ import random
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 #Suggested Maxium Iteration LastFM: 120, Douban-Book: 30, Yelp: 30.
 #Read the paper for the values of other parameters.
-
+'''
+We have transplated QRec from py2 to py3. But we found that, with py3, SEPT achieves higher NDCG
+but lower (slightly) Prec and Recall compared with the results reported in the paper.
+'''
 class SEPT(SocialRecommender, DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
         DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
