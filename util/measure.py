@@ -38,8 +38,8 @@ class Measure(object):
             indicators.append('Recall:' + str(recall) + '\n')
             F1 = Measure.F1(prec, recall)
             indicators.append('F1:' + str(F1) + '\n')
-            MAP = Measure.MAP(origin, predicted, n)
-            indicators.append('MAP:' + str(MAP) + '\n')
+            #MAP = Measure.MAP(origin, predicted, n)
+            #indicators.append('MAP:' + str(MAP) + '\n')
             NDCG = Measure.NDCG(origin, predicted, n)
             indicators.append('NDCG:' + str(NDCG) + '\n')
             # AUC = Measure.AUC(origin,res,rawRes)
@@ -53,18 +53,18 @@ class Measure(object):
         prec = sum([hits[user] for user in hits])
         return prec / (len(hits) * N)
 
-    @staticmethod
-    def MAP(origin, res, N):
-        sum_prec = 0
-        for user in res:
-            hits = 0
-            precision = 0
-            for n, item in enumerate(res[user]):
-                if item[0] in origin[user]:
-                    hits += 1
-                    precision += hits / (n + 1.0)
-            sum_prec += precision / min(len(origin[user]), N)
-        return sum_prec / len(res)
+    # @staticmethod
+    # def MAP(origin, res, N):
+    #     sum_prec = 0
+    #     for user in res:
+    #         hits = 0
+    #         precision = 0
+    #         for n, item in enumerate(res[user]):
+    #             if item[0] in origin[user]:
+    #                 hits += 1
+    #                 precision += hits / (n + 1.0)
+    #         sum_prec += precision / min(len(origin[user]), N)
+    #     return sum_prec / len(res)
 
     @staticmethod
     def NDCG(origin,res,N):
