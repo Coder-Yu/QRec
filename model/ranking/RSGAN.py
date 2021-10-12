@@ -348,7 +348,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
                 print('pretraining:', i + 1, 'batch',num,'generator loss:', loss)
 
         print('Training GAN...')
-        for i in range(self.maxIter):
+        for i in range(self.maxEpoch):
             for num,batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 profiles = np.zeros((len(user_idx),self.num_users))

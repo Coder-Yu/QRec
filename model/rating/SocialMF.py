@@ -9,8 +9,8 @@ class SocialMF(SocialRecommender):
         super(SocialMF, self).readConfiguration()
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -42,8 +42,8 @@ class SocialMF(SocialRecommender):
                     # update latent vectors
                     self.P[u] -= self.lRate * self.regS * relationLoss
             self.loss+=self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 
     def next_batch(self):
@@ -81,12 +81,12 @@ class SocialMF(SocialRecommender):
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-            for iteration in range(self.maxIter):
+            for epoch in range(self.maxEpoch):
                 for n, batch in enumerate(self.next_batch()):
                     user_idx, i_idx,ratings = batch
                     _, l = sess.run([train, loss],
                                     feed_dict={self.u_idx: user_idx, self.v_idx: i_idx,self.r:ratings})
-                    print('iteration:', iteration, 'loss:', l)
+                    print('epoch:', epoch, 'loss:', l)
             self.P, self.Q = sess.run([self.U, self.V])
             import pickle
             f = open('user_embeddings', 'wb')

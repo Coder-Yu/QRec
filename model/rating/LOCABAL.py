@@ -44,8 +44,8 @@ class LOCABAL(SocialRecommender):
                 self.S[u1][u2] = qmath.cosine_sp(uvec1,uvec2)
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, r = entry
@@ -79,5 +79,5 @@ class LOCABAL(SocialRecommender):
                     self.P[u]+=self.lRate*self.alpha*error*(self.H.dot(q))
                     self.P[k]+=self.lRate*self.alpha*error*(p.T.dot(self.H))
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()+self.regS*(self.H*self.H).sum()
-            iteration += 1
-            self.isConverged(iteration)
+            epoch += 1
+            self.isConverged(epoch)

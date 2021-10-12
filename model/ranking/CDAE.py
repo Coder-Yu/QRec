@@ -85,7 +85,7 @@ class CDAE(DeepRecommender):
         self.sess.run(init)
 
 
-        for epoch in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             mask = np.random.binomial(1, self.corruption_level,(self.batch_size, self.num_items))
             batch_xs,users,positive,negative = self.next_batch()
             _, loss= self.sess.run([optimizer, self.loss], feed_dict={self.X: batch_xs,self.mask_corruption:mask,

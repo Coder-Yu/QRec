@@ -43,8 +43,8 @@ class ExpoMF(IterativeRecommender):
         print('training...')
         n_users = self.X.shape[0]
         XT = self.X.T.tocsr()  # pre-compute this
-        for i in range(self.maxIter):
-            print('ITERATION #%d' % i)
+        for i in range(self.maxEpoch):
+            print('epoch #%d' % i)
             self._update_factors(self.X, XT)
             self._update_expo(self.X, n_users)
 

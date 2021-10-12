@@ -4,8 +4,7 @@ from random import choice
 from util.qmath import sigmoid
 from math import log
 from collections import defaultdict
-from random import shuffle
-#import tensorflow as tf
+import tensorflow as tf
 class BPR(IterativeRecommender):
 
     # BPR：Bayesian Personalized Ranking from Implicit Feedback
@@ -25,9 +24,9 @@ class BPR(IterativeRecommender):
                 if self.data.trainSet_u[user][item] >= 1:
                     self.PositiveSet[user][item] = 1
         print('training...')
-        iteration = 0
+        epoch = 0
         itemList = list(self.data.item.keys())
-        while iteration < self.maxIter:
+        while epoch < self.maxEpoch:
             self.loss = 0
             for user in self.PositiveSet:
                 u = self.data.user[user]
@@ -39,8 +38,8 @@ class BPR(IterativeRecommender):
                     j = self.data.item[item_j]
                     self.optimization(u,i,j)
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 
     def optimization(self,u,i,j):
@@ -89,11 +88,11 @@ class BPR(IterativeRecommender):
         with tf.Session(config=config) as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-            for iteration in range(self.maxIter):
-                for n,batch in enumerate(self.next_batch()):
+            for epoch in range(self.maxEpoch):
+                for iteration,batch in enumerate(self.next_batch()):
                     user_idx, i_idx, j_idx = batch
                     _, l = sess.run([train, loss], feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx,self.v_idx: i_idx})
-                    print('training:', iteration + 1, 'batch', n, 'loss:', l)
+                    print('training:', epoch + 1, 'batch', iteration, 'loss:', l)
             self.P,self.Q = sess.run([self.U,self.V])
 
     def predictForRanking(self, u):

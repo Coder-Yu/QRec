@@ -8,7 +8,7 @@ from util import config
 from math import sqrt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-# Maximum Iteration Setting: LastFM 120 Douban 30 Yelp 30
+# Maximum Epoch Setting: LastFM 120 Douban 30 Yelp 30
 
 class MHCN(SocialRecommender,DeepRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
@@ -216,13 +216,13 @@ class MHCN(SocialRecommender,DeepRecommender):
         train_op = opt.minimize(total_loss)
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        # Suggested Maximum Iteration Setting: LastFM 120 Douban 30 Yelp 30
-        for iteration in range(self.maxIter):
+        # Suggested Maximum epoch Setting: LastFM 120 Douban 30 Yelp 30
+        for epoch in range(self.maxEpoch):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 _, l1 = self.sess.run([train_op, rec_loss],
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
-                print(self.foldInfo,'training:', iteration + 1, 'batch', n, 'rec loss:', l1)#,'ss_loss',l2
+                print(self.foldInfo,'training:', epoch + 1, 'batch', n, 'rec loss:', l1)#,'ss_loss',l2
 
             self.U, self.V = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
 

@@ -92,7 +92,7 @@ class DMF(DeepRecommender):
         self.sess.run(init)
 
         total_batch = int(len(self.data.trainingData)/ self.batch_size)
-        for epoch in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             shuffle(self.data.trainingData)
             for i in range(total_batch):
                 users,items,ratings,u_idx,v_idx = self.next_batch(i)

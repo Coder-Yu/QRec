@@ -229,8 +229,8 @@ class CUNE_BPR(IterativeRecommender):
 
         #Training get top-k friends
         print('Generating user embedding...')
-        # iteration = 1
-        # while iteration <= self.epoch:
+        # epoch = 1
+        # while epoch <= self.epoch:
         #     loss = 0
         #     #slide windows randomly
         #
@@ -252,8 +252,8 @@ class CUNE_BPR(IterativeRecommender):
         #                         self.HTree.vector[prefix] += self.lRate*(1-sigmoid(w.dot(x)))*x
         #                         self.HTree.vector[centerCode] += self.lRate*(1-sigmoid(w.dot(x)))*w
         #                         loss += -log(sigmoid(w.dot(x)),2)
-        #     print 'iteration:', iteration, 'loss:', loss
-        #     iteration+=1
+        #     print 'epoch:', epoch, 'loss:', loss
+        #     epoch+=1
         model = w2v.Word2Vec(self.walks, size=self.walkDim, window=5, min_count=0, iter=3)
         print('User embedding generated.')
 
@@ -292,8 +292,8 @@ class CUNE_BPR(IterativeRecommender):
 
 
         print('Training...')
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             itemList = list(self.data.item.keys())
             for user in self.PositiveSet:
@@ -342,8 +342,8 @@ class CUNE_BPR(IterativeRecommender):
                             self.loss += -log(sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j])))
 
                 self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 
     def predictForRanking(self, u):

@@ -150,9 +150,9 @@ For more details, we refer you to the [handbook of QRec](https://www.showdoc.com
     <td>Set the number of latent factors</td>
   </tr>
   <tr>
-    <td scope="row">num.max.iter</td>
+    <td scope="row">num.max.epoch</td>
     <td>100/200/number</td>
-    <td>Set the maximum number of iterations for iterative recommendation algorithms. </td>
+    <td>Set the maximum number of epoch for iterative recommendation algorithms. </td>
   </tr>
   <tr>
     <td scope="row">learnRate</td>

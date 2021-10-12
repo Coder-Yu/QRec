@@ -89,8 +89,8 @@ class CoFactor(IterativeRecommender):
         self.G = np.random.rand(self.num_items, self.emb_size) / 10  # context embedding
 
         print('training...')
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             YtY = self.Y.T.dot(self.Y)
             for user in self.data.user:
@@ -158,8 +158,8 @@ class CoFactor(IterativeRecommender):
                     self.w[iid] = update_w/len(self.SPPMI[item])
                     self.c[iid] = update_c/len(self.SPPMI[item])
 
-            iteration += 1
-            print('iteration:', iteration, 'loss:', self.loss)
+            epoch += 1
+            print('epoch:', epoch, 'loss:', self.loss)
 
     def predictForRanking(self,u):
         'invoked to rank all the items for the user'

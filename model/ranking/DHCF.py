@@ -113,12 +113,12 @@ class DHCF(DeepRecommender):
         train = opt.minimize(loss)
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        for iteration in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 _, l = self.sess.run([train, loss],
                                 feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isTraining:1})
-                print('training:', iteration + 1, 'batch', n, 'loss:', l)
+                print('training:', epoch + 1, 'batch', n, 'loss:', l)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

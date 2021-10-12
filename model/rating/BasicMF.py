@@ -7,8 +7,8 @@ class BasicMF(IterativeRecommender):
         super(BasicMF, self).__init__(conf,trainingSet,testSet,fold)
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -21,8 +21,8 @@ class BasicMF(IterativeRecommender):
                 #update latent vectors
                 self.P[u] += self.lRate*error*q
                 self.Q[i] += self.lRate*error*p
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 
     def buildModel_tf(self):
@@ -36,14 +36,14 @@ class BasicMF(IterativeRecommender):
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-            for step in range(self.maxIter):
+            for step in range(self.maxEpoch):
                 batch_size = self.batch_size
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
                 user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
                 item_idx = [self.data.item[self.data.trainingData[idx][1]] for idx in batch_idx]
                 rating = [self.data.trainingData[idx][2] for idx in batch_idx]
                 sess.run(self.train, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx})
-                print('iteration:', step, 'loss:', sess.run(self.total_loss,
+                print('epoch:', step, 'loss:', sess.run(self.total_loss,
                                                             feed_dict={self.r: rating, self.u_idx: user_idx,
                                                                        self.v_idx: item_idx}))
             self.P = sess.run(self.U)

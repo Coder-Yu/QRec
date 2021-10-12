@@ -119,7 +119,7 @@ class IRGAN(DeepRecommender):
         #     _ = self.sess.run(self.discriminator.d_updates,
         #                       feed_dict={self.discriminator.u: input_user, self.discriminator.i: input_item,
         #                                  self.discriminator.label: input_label})
-        for epoch in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             print('Update discriminator...')
             for d_epoch in range(1):
                 user_set,item_set,labels = self.get_data(self.generator)

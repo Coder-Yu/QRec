@@ -11,8 +11,8 @@ class SVD(IterativeRecommender):
         self.Bi = np.random.rand(self.data.trainingSize()[1])/5  # bias value of item
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -31,8 +31,8 @@ class SVD(IterativeRecommender):
                 self.Bi[i] += self.lRate*(error-self.regB*bi)
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()\
                +self.regB*((self.Bu*self.Bu).sum()+(self.Bi*self.Bi).sum())
-            iteration += 1
-            self.isConverged(iteration)
+            epoch += 1
+            self.isConverged(epoch)
 
     def buildModel_tf(self):
         super(SVD, self).buildModel_tf()
@@ -56,7 +56,7 @@ class SVD(IterativeRecommender):
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-            for step in range(self.maxIter):
+            for step in range(self.maxEpoch):
                 batch_size = self.batch_size
                 batch_idx = np.random.randint(self.train_size, size=batch_size)
                 user_idx = [self.data.user[self.data.trainingData[idx][0]] for idx in batch_idx]
@@ -66,7 +66,7 @@ class SVD(IterativeRecommender):
                 sess.run(train_U, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean})
                 sess.run(train_V, feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx, global_mean: g_mean})
 
-                print('iteration:', step, 'loss:', sess.run(self.total_loss,
+                print('epoch:', step, 'loss:', sess.run(self.total_loss,
                                                             feed_dict={self.r: rating, self.u_idx: user_idx, self.v_idx: item_idx,global_mean:g_mean}))
             self.P = sess.run(self.U)
             self.Q = sess.run(self.V)

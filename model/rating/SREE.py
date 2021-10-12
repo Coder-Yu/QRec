@@ -25,8 +25,8 @@ class SREE(SocialRecommender):
         # self.Y = np.random.rand(self.data.trainingSize()[1], self.Dim)/10
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -59,8 +59,8 @@ class SREE(SocialRecommender):
                             self.P[u] -= self.lRate * self.alpha*weight*(p-z)
                             self.loss += self.alpha*weight*(p-z).dot(p-z)
 
-            iteration += 1
-            self.isConverged(iteration)
+            epoch += 1
+            self.isConverged(epoch)
 
     def predictForRating(self, u, i):
         if self.data.containsUser(u) and self.data.containsItem(i):

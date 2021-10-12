@@ -23,8 +23,8 @@ class SoRec(SocialRecommender ):
         print('=' * 80)
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             #ratings
             for entry in self.data.trainingData:
@@ -60,7 +60,7 @@ class SoRec(SocialRecommender ):
                     self.Z[v] += self.lRate * (self.regS * euv * p - self.regZ * z)
 
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() + self.regZ*(self.Z*self.Z).sum()
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 

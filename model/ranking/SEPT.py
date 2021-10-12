@@ -9,7 +9,7 @@ from util import config
 import random
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-#Suggested Maxium Iteration LastFM: 120, Douban-Book: 30, Yelp: 30.
+#Suggested Maxium epoch LastFM: 120, Douban-Book: 30, Yelp: 30.
 #Read the paper for the values of other parameters.
 '''
 We have transplated QRec from py2 to py3. But we found that, with py3, SEPT achieves higher NDCG
@@ -281,9 +281,9 @@ class SEPT(SocialRecommender, DeepRecommender):
         v2_op = v2_opt.minimize(loss)
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        for iteration in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             #joint learning
-            if iteration > self.maxIter / 3:
+            if epoch > self.maxEpoch / 3:
                 sub_mat = {}
                 sub_mat['adj_indices_sub'], sub_mat['adj_values_sub'], sub_mat[
                     'adj_shape_sub'] = self._convert_csr_to_sparse_tensor_inputs(
@@ -299,7 +299,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                         self.sub_mat['adj_shape_sub']: sub_mat['adj_shape_sub'],
                     })
                     _, l1, l3, = self.sess.run([v2_op, rec_loss, self.neighbor_dis_loss],feed_dict=feed_dict)
-                    print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3)
+                    print(self.foldInfo, 'training:', epoch + 1, 'batch', n, 'rec loss:', l1, 'con_loss:', self.ss_rate*l3)
             else:
                 #initialization with only recommendation task
                 for n, batch in enumerate(self.next_batch_pairwise()):
@@ -309,7 +309,7 @@ class SEPT(SocialRecommender, DeepRecommender):
                                  self.neg_idx: j_idx}
                     _, l1 = self.sess.run([v1_op, rec_loss],
                                           feed_dict=feed_dict)
-                    print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'rec loss:', l1)
+                    print(self.foldInfo, 'training:', epoch + 1, 'batch', n, 'rec loss:', l1)
             self.U, self.V = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
 
     def predictForRanking(self, u):

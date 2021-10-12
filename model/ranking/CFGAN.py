@@ -117,14 +117,14 @@ class CFGAN(DeepRecommender):
         self.sess.run(init)
         print('pretraining...')
         print('training...')
-        for epoch in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             G_loss = 0
             C_u, mask, N_zr = self.next_batch()
             _, D_loss = self.sess.run([self.D_solver, self.D_loss], feed_dict={self.C: C_u,self.mask:mask,self.N_zr:N_zr})
             for i in range(3):
                 _, G_loss = self.sess.run([self.G_solver, self.G_loss], feed_dict={self.C: C_u,self.mask:mask,self.N_zr:N_zr})
             #C_u, mask, N_u = self.next_batch()
-            print('iteration:', epoch, 'D_loss:', D_loss, 'G_loss', G_loss)
+            print('epoch:', epoch, 'D_loss:', D_loss, 'G_loss', G_loss)
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

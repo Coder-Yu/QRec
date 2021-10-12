@@ -79,8 +79,8 @@ class TBPR(SocialRecommender):
                     self.positiveSet[user][item] = 1
 
         print('Training...')
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.theta_derivative=0
             self.theta_count = 0
             if self.theta>self.weights.max():
@@ -173,8 +173,8 @@ class TBPR(SocialRecommender):
                             self.strongTies[u1][u2] = self.strength[u1][u2]
                         else:
                             self.weakTies[u1][u2] = self.strength[u1][u2]
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 
     def predictForRanking(self, u):

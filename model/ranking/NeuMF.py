@@ -78,26 +78,26 @@ class NeuMF(DeepRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         print('pretraining... (GMF)')
-        for iteration in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             for num,batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss,y_mf = self.sess.run([self.mf_optimizer, self.mf_loss,self.y_mf],
                                    feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-                print('iteration:', iteration, 'batch:', num, 'loss:', loss)
+                print('epoch:', epoch, 'batch:', num, 'loss:', loss)
         print('pretraining... (MLP)')
-        for iteration in range(self.maxIter//2):
+        for epoch in range(self.maxEpoch // 2):
             for num, batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss, y_mlp = self.sess.run([self.mlp_optimizer, self.mlp_loss, self.y_mlp],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-                print('iteration:', iteration, 'batch:', num, 'loss:', loss)
+                print('epoch:', epoch, 'batch:', num, 'loss:', loss)
         print('training... (NeuMF)')
-        for iteration in range(self.maxIter//5):
+        for epoch in range(self.maxEpoch // 5):
             for num, batch in enumerate(self.next_batch_pointwise()):
                 user_idx, item_idx, r = batch
                 _, loss, y_neu = self.sess.run([self.neu_optimizer, self.neu_loss, self.y_neu],
                                           feed_dict={self.u_idx: user_idx, self.i_idx: item_idx, self.r: r})
-                print('iteration:', iteration, 'batch:', num, 'loss:', loss)
+                print('epoch:', epoch, 'batch:', num, 'loss:', loss)
 
     def predict_mlp(self,uid):
         user_idx = [uid]*self.num_items

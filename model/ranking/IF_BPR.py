@@ -315,8 +315,8 @@ class IF_BPR(SocialRecommender):
         self.computeSimilarity()
 
         print('Decomposing...')
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             self.updateSets()
             itemList = list(self.data.item.keys())
@@ -377,10 +377,10 @@ class IF_BPR(SocialRecommender):
                         self.P[u] -= self.alpha*self.lRate*(self.P[u]-self.P[f])
 
             self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                  break
-            print(self.foldInfo,'iteration:',iteration)
+            print(self.foldInfo,'epoch:',epoch)
 
 
 

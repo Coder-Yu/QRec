@@ -103,20 +103,20 @@ class APR(DeepRecommender):
             sess.run(init)
             # pretraining
             print('pretraining...')
-            for iteration in range(self.maxIter//2):
-                for n, batch in enumerate(self.next_batch_pairwise()):
+            for epoch in range(self.maxEpoch // 2):
+                for iteration, batch in enumerate(self.next_batch_pairwise()):
                     user_idx, i_idx, j_idx = batch
                     _,loss = sess.run([self.train,self.total_loss],feed_dict={self.u_idx: user_idx, self.v_idx: i_idx, self.neg_idx:j_idx})
 
             # start adversarial training
             print('adversarial training...')
-            for iteration in range(self.maxIter // 2):
-                for n, batch in enumerate(self.next_batch_pairwise()):
+            for epoch in range(self.maxEpoch // 2):
+                for iteration, batch in enumerate(self.next_batch_pairwise()):
                     user_idx, i_idx, j_idx = batch
                     sess.run([self.update_U, self.update_V],
                              feed_dict={self.u_idx: user_idx, self.v_idx: j_idx, self.neg_idx: j_idx})
                     _,loss = sess.run([self.train_adv,self.loss_adv],feed_dict={self.u_idx: user_idx, self.v_idx: i_idx, self.neg_idx:j_idx})
-                    print(self.foldInfo, 'training:', iteration + 1, 'batch', n, 'loss:', loss)
+                    print(self.foldInfo, 'training:', epoch + 1, 'batch', iteration, 'loss:', loss)
                 self.P = sess.run(self.user_embeddings)
                 self.Q = sess.run(self.item_embeddings)
 

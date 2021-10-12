@@ -16,8 +16,8 @@ class WRMF(IterativeRecommender):
 
     def buildModel(self):
         print('training...')
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             YtY = self.Y.T.dot(self.Y)
             for user in self.data.user:
@@ -61,9 +61,9 @@ class WRMF(IterativeRecommender):
                 self.Y[iid]=np.dot(np.linalg.inv(A), (self.X.T*H).dot(P_i))
 
             #self.loss += (self.X * self.X).sum() + (self.Y * self.Y).sum()
-            iteration += 1
-            print('iteration:',iteration,'loss:',self.loss)
-            if self.isConverged(iteration):
+            epoch += 1
+            print('epoch:',epoch,'loss:',self.loss)
+            if self.isConverged(epoch):
                 break
 
     def predictForRanking(self,u):

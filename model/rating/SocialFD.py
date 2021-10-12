@@ -22,8 +22,8 @@ class SocialFD(SocialRecommender):
         self.beta = float(eps['-beta'])
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 u, i, r = entry
@@ -84,9 +84,9 @@ class SocialFD(SocialRecommender):
                         delta = R.dot(np.array([x - self.P[uf]]).T).T[0]
                         self.P[u] -= self.lRate * self.eta*self.beta * delta
                         self.H -= self.lRate * self.eta*self.beta * derivative_s
-            iteration += 1
+            epoch += 1
             self.loss+=self.regU*self.Bu.dot(self.Bu)+self.regI*self.Bi.dot(self.Bi)
-            if self.isConverged(iteration):
+            if self.isConverged(epoch):
                 break
 
     def predictForRating(self, u, i):

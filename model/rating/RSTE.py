@@ -20,8 +20,8 @@ class RSTE(SocialRecommender):
         super(RSTE, self).initModel()
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -35,8 +35,8 @@ class RSTE(SocialRecommender):
                 self.P[u] += self.lRate * (self.alpha*error * q - self.regU * p)
                 self.Q[i] += self.lRate * (self.alpha*error * p - self.regI * q)
             self.loss+= self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
-            iteration += 1
-            self.isConverged(iteration)
+            epoch += 1
+            self.isConverged(epoch)
 
     def predictForRating(self, u, i):
         if self.data.containsUser(u) and self.data.containsItem(i):   

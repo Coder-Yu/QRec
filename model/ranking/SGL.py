@@ -87,7 +87,7 @@ class SGL(DeepRecommender):
         self.neg_item_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
         self.u_embedding = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
         self.v_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
-        self.test = tf.reduce_sum(tf.multiply(self.u_embedding,self.main_item_embeddings),1)
+
 
     def _convert_sp_mat_to_sp_tensor(self, X):
         coo = X.tocoo().astype(np.float32)
@@ -194,8 +194,8 @@ class SGL(DeepRecommender):
         ttl_score_item = tf.reduce_sum(tf.exp(ttl_score_item / self.ssl_temp), axis=1)
 
         # ssl_loss = -tf.reduce_mean(tf.log(pos_score / ttl_score))
-        ssl_loss_user = -tf.reduce_sum(tf.log(pos_score_user / ttl_score_user)+1e-8)
-        ssl_loss_item = -tf.reduce_sum(tf.log(pos_score_item / ttl_score_item)+1e-8)
+        ssl_loss_user = -tf.reduce_sum(tf.log(pos_score_user / ttl_score_user))
+        ssl_loss_item = -tf.reduce_sum(tf.log(pos_score_item / ttl_score_item))
         ssl_loss = self.ssl_reg*(ssl_loss_user + ssl_loss_item)
         return ssl_loss
 
@@ -242,7 +242,7 @@ class SGL(DeepRecommender):
 
         init = tf.global_variables_initializer()
         self.sess.run(init)
-        for iteration in range(self.maxIter):
+        for epoch in range(self.maxEpoch):
             sub_mat = {}
             if self.aug_type in [0, 1]:
                 sub_mat['adj_indices_sub1'], sub_mat['adj_values_sub1'], sub_mat[
@@ -287,12 +287,13 @@ class SGL(DeepRecommender):
                         })
 
                 _, l,rec_l,ssl_l = self.sess.run([train, total_loss, rec_loss, ssl_loss],feed_dict=feed_dict)
-                print('training:', iteration + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
+                print('training:', epoch + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
+            self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
         if self.data.containsUser(u):
             u = self.data.getUserId(u)
-            return self.sess.run(self.test,feed_dict={self.u_idx:u})
+            return self.V.dot(self.U[u])
         else:
             return [self.data.globalMean] * self.num_items

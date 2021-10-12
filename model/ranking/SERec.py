@@ -58,9 +58,9 @@ class SERec(SocialRecommender):
         n_users = X.shape[0]
         XT = X.T.tocsr()  # pre-compute this
         self.vad_ndcg = -np.inf
-        for i in range(self.maxIter):
+        for i in range(self.maxEpoch):
 
-            print('ITERATION #%d' % i)
+            print('epoch #%d' % i)
             self._update_factors(X, XT)
             print(self.mu)
             self._update_expo(X, n_users)

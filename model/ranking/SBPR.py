@@ -31,8 +31,8 @@ class SBPR(SocialRecommender):
     def buildModel(self):
         self.b = np.random.random(self.num_items)
         print('Training...')
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             itemList = list(self.data.item.keys())
             for user in self.PositiveSet:
@@ -73,8 +73,8 @@ class SBPR(SocialRecommender):
                         self.Q[j] -= self.lRate * (1 - s) * self.P[u]
                         self.loss += -log(s)
                 self.loss += self.regU * (self.P * self.P).sum() + self.regI * (self.Q * self.Q).sum()+self.b.dot(self.b)
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break
 
 
@@ -128,12 +128,12 @@ class SBPR(SocialRecommender):
         with tf.Session(config=config) as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
-            for iteration in range(self.maxIter):
+            for epoch in range(self.maxEpoch):
                 for n, batch in enumerate(self.next_batch()):
                     user_idx, i_idx, s_idx,j_idx,weights = batch
                     _, l = sess.run([train, loss],
                                     feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.social_idx:s_idx,self.weights:weights})
-                    print('training:', iteration + 1, 'batch', n, 'loss:', l)
+                    print('training:', epoch + 1, 'batch', n, 'loss:', l)
             self.P, self.Q = sess.run([self.U, self.V])
 
     def predictForRanking(self, u):

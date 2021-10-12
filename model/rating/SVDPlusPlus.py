@@ -24,8 +24,8 @@ class SVDPlusPlus(IterativeRecommender):
         self.Y = np.random.rand(self.data.trainingSize()[1], self.emb_size)
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -63,8 +63,8 @@ class SVDPlusPlus(IterativeRecommender):
 
             self.loss+=self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum() \
                + self.regY*(self.Y*self.Y).sum() + self.regB*((self.Bu*self.Bu).sum()+(self.Bi*self.Bi).sum())
-            iteration += 1
-            self.isConverged(iteration)
+            epoch += 1
+            self.isConverged(epoch)
 
 
     def predictForRating(self, u, i):

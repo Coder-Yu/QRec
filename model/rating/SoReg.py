@@ -36,8 +36,8 @@ class SoReg(SocialRecommender):
         return (qmath.pearson_sp(self.data.sRow(u), self.data.sRow(v))+self.social.weight(u,v))/2.0
 
     def buildModel(self):
-        iteration = 0
-        while iteration < self.maxIter:
+        epoch = 0
+        while epoch < self.maxEpoch:
             self.loss = 0
             for entry in self.data.trainingData:
                 user, item, rating = entry
@@ -72,6 +72,6 @@ class SoReg(SocialRecommender):
                 self.P[uid] += self.lRate * (- self.alpha * (simSumf1+simSumf2))
 
             self.loss += self.regU*(self.P*self.P).sum() + self.regI*(self.Q*self.Q).sum()
-            iteration += 1
-            if self.isConverged(iteration):
+            epoch += 1
+            if self.isConverged(epoch):
                 break

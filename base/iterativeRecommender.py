@@ -14,7 +14,7 @@ class IterativeRecommender(Recommender):
         # set the reduced dimension
         self.emb_size = int(self.config['num.factors'])
         # set maximum iteration
-        self.maxIter = int(self.config['num.max.iter'])
+        self.maxEpoch = int(self.config['num.max.epoch'])
         # set learning rate
         learningRate = config.LineConfig(self.config['learnRate'])
         self.lRate = float(learningRate['-init'])
@@ -28,7 +28,7 @@ class IterativeRecommender(Recommender):
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
         print('Embedding Dimension:', self.emb_size)
-        print('Maximum Iteration:',self.maxIter)
+        print('Maximum Iteration:', self.maxEpoch)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)
 
@@ -170,7 +170,6 @@ class IterativeRecommender(Recommender):
         bp += 'Precision'+':'+str(self.bestPerformance[1]['Precision'])+' | '
         bp += 'Recall' + ':' + str(self.bestPerformance[1]['Recall']) + ' | '
         bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
-        bp += 'MAP' + ':' + str(self.bestPerformance[1]['MAP']) + ' | '
         bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
         print('*Best Performance* ')
         print('iteration:',self.bestPerformance[0],bp)
