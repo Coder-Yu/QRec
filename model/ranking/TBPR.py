@@ -38,8 +38,8 @@ class TBPR(SocialRecommender):
                     self.strongTies[u1][u2]=self.strength[u1][u2]
                 else:
                     self.weakTies[u1][u2]=self.strength[u1][u2]
-        self.t_s = self.weights[len(self.weights)/2+1:].sum()/(len(self.weights[len(self.weights)/2+1:])+0.0)
-        self.t_w = self.weights[0:len(self.weights)/2].sum()/(len(self.weights[0:len(self.weights)/2])+0.0)
+        self.t_s = self.weights[len(self.weights)//2+1:].sum()/(len(self.weights[len(self.weights)//2+1:])+0.0)
+        self.t_w = self.weights[0:len(self.weights)//2].sum()/(len(self.weights[0:len(self.weights)//2])+0.0)
 
     def optimization(self,u,i,j):
         s = sigmoid(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))
