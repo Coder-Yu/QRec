@@ -158,20 +158,15 @@ class Recommender(object):
         userCount = len(self.data.testSet_u)
         #rawRes = {}
         for i, user in enumerate(self.data.testSet_u):
-            itemSet = {}
             line = user + ':'
-            predictedItems = self.predictForRanking(user)
+            candidates = self.predictForRanking(user)
             # predictedItems = denormalize(predictedItems, self.data.rScale[-1], self.data.rScale[0])
-            for id, rating in enumerate(predictedItems):
-                # if not self.data.rating(user, self.data.id2item[id]):
-                # prediction = self.checkRatingBoundary(prediction)
-                # pred = self.checkRatingBoundary(prediction)
-                #####################################
-                itemSet[self.data.id2item[id]] = rating
             ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
-                del itemSet[item]
-            recList[user] = find_k_largest(N,itemSet)
+                candidates[self.data.item[item]] = 0
+            ids,scores = find_k_largest(N,candidates)
+            item_names = [self.data.id2item[iid] for iid in ids]
+            recList[user] = list(zip(item_names,scores))
             if i % 100 == 0:
                 print(self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount))
             for item in recList[user]:

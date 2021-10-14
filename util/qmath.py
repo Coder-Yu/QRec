@@ -1,5 +1,6 @@
 from numpy.linalg import norm
 from math import sqrt,exp
+from numba import jit
 
 def l1(x):
     return norm(x,ord=1)
@@ -129,36 +130,34 @@ def sigmoid(val):
 def denormalize(vec,maxVal,minVal):
     return minVal+(vec-0.01)*(maxVal-minVal)
 
-def find_k_largest(K,itemSet):
-    Nrecommendations = []
-    for item in itemSet:
-        if len(Nrecommendations) < K:
-            Nrecommendations.append((item, itemSet[item]))
-        else:
-            break
-    Nrecommendations.sort(key=lambda d: d[1], reverse=True)
-    recommendations = [item[1] for item in Nrecommendations]
-    resNames = [item[0] for item in Nrecommendations]
+@jit(nopython=True)
+def find_k_largest(K,candidates):
+    n_candidates = []
+    for iid,score in enumerate(candidates[:K]):
+        n_candidates.append((iid, score))
+    n_candidates.sort(key=lambda d: d[1], reverse=True)
+    k_largest_scores = [item[1] for item in n_candidates]
+    ids = [item[0] for item in n_candidates]
     # find the N biggest scores
-    for item in itemSet:
+    for iid,score in enumerate(candidates):
         ind = K
         l = 0
         r = K - 1
-        if recommendations[r] < itemSet[item]:
+        if k_largest_scores[r] < score:
             while r >= l:
                 mid = int((r - l) / 2) + l
-                if recommendations[mid] >= itemSet[item]:
+                if k_largest_scores[mid] >= score:
                     l = mid + 1
-                elif recommendations[mid] < itemSet[item]:
+                elif k_largest_scores[mid] < score:
                     r = mid - 1
                 if r < l:
                     ind = r
                     break
         # move the items backwards
         if ind < K - 2:
-            recommendations[ind + 2:] = recommendations[ind + 1:-1]
-            resNames[ind + 2:] = resNames[ind + 1:-1]
+            k_largest_scores[ind + 2:] = k_largest_scores[ind + 1:-1]
+            ids[ind + 2:] = ids[ind + 1:-1]
         if ind < K - 1:
-            recommendations[ind + 1] = itemSet[item]
-            resNames[ind + 1] = item
-    return list(zip(resNames, recommendations))
+            k_largest_scores[ind + 1] = score
+            ids[ind + 1] = iid
+    return ids,k_largest_scores

@@ -113,29 +113,27 @@ class IterativeRecommender(Recommender):
         return self.measure
 
     def ranking_performance(self,iteration):
-        #for quick evaluation, we only rank 2000 items
-        #results of 1000 users would be evaluated
+        #for a quick evaluation during training, we rank all items for only 2000 users
         N = 10
         recList = {}
         testSample = {}
         for user in self.data.testSet_u:
-            if len(testSample) == 1000:
+            if len(testSample) == 2000:
                 break
             if user not in self.data.trainSet_u:
                 continue
             testSample[user] = self.data.testSet_u[user]
 
         for user in testSample:
-            itemSet = {}
-            predictedItems = self.predictForRanking(user)
-            for id, rating in enumerate(predictedItems[:2000]):
-                itemSet[self.data.id2item[id]] = rating
+            candidates = self.predictForRanking(user)
+            # predictedItems = denormalize(predictedItems, self.data.rScale[-1], self.data.rScale[0])
             ratedList, ratingList = self.data.userRated(user)
             for item in ratedList:
-                if item in itemSet:
-                    del itemSet[item]
-            recList[user] = find_k_largest(N,itemSet)
-        measure = Measure.rankingMeasure(testSample, recList, [10])
+                candidates[self.data.item[item]] = 0
+            ids, scores = find_k_largest(N, candidates)
+            item_names = [self.data.id2item[iid] for iid in ids]
+            recList[user] = list(zip(item_names, scores))
+        measure = Measure.rankingMeasure(testSample, recList, [20])
         if len(self.bestPerformance)>0:
             count = 0
             performance = {}

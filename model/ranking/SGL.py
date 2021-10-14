@@ -84,9 +84,9 @@ class SGL(DeepRecommender):
         self.main_user_embeddings, self.main_item_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
 
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
-        self.neg_item_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
-        self.u_embedding = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
-        self.v_embedding = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
+        self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
+        self.batch_user_emb = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
+        self.batch_pos_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
 
 
     def _convert_sp_mat_to_sp_tensor(self, X):
@@ -228,11 +228,11 @@ class SGL(DeepRecommender):
 
     def buildModel(self):
         #main task: recommendation
-        y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
-            - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
-        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.u_embedding) +
-                                                                    tf.nn.l2_loss(self.v_embedding) +
-                                                                    tf.nn.l2_loss(self.neg_item_embedding))
+        y = tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_pos_item_emb), 1) \
+            - tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_neg_item_emb), 1)
+        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.batch_user_emb) +
+                                                                    tf.nn.l2_loss(self.batch_pos_item_emb) +
+                                                                    tf.nn.l2_loss(self.batch_neg_item_emb))
         #SSL task: contrastive learning
         ssl_loss = self.calc_ssl_loss_v3()
         total_loss = rec_loss+ssl_loss
@@ -289,6 +289,18 @@ class SGL(DeepRecommender):
                 _, l,rec_l,ssl_l = self.sess.run([train, total_loss, rec_loss, ssl_loss],feed_dict=feed_dict)
                 print('training:', epoch + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
             self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
+            self.ranking_performance(epoch)
+        # self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
+
+        self.U, self.V = self.bestU, self.bestV
+        import pickle
+        ue = open('user_sgl.emb','wb')
+        pickle.dump(self.U,ue)
+        ie = open('item_sgl.emb','wb')
+        pickle.dump(self.V,ie)
+
+    def saveModel(self):
+        self.bestU, self.bestV = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

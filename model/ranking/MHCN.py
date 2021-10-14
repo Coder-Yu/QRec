@@ -175,9 +175,9 @@ class MHCN(SocialRecommender,DeepRecommender):
         self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,2), H_j)
         self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,3), H_p)
         #embedding look-up
-        self.neg_item_embedding = tf.nn.embedding_lookup(self.final_item_embeddings, self.neg_idx)
-        self.u_embedding = tf.nn.embedding_lookup(self.final_user_embeddings, self.u_idx)
-        self.v_embedding = tf.nn.embedding_lookup(self.final_item_embeddings, self.v_idx)
+        self.batch_neg_item_emb = tf.nn.embedding_lookup(self.final_item_embeddings, self.neg_idx)
+        self.batch_pos_user_emb = tf.nn.embedding_lookup(self.final_user_embeddings, self.u_idx)
+        self.batch_pos_item_emb = tf.nn.embedding_lookup(self.final_item_embeddings, self.v_idx)
 
     def hierarchical_self_supervision(self,em,adj):
         def row_shuffle(embedding):
@@ -204,8 +204,8 @@ class MHCN(SocialRecommender,DeepRecommender):
         return global_loss+local_loss
 
     def buildModel(self):
-        y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
-            - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
+        y = tf.reduce_sum(tf.multiply(self.batch_pos_user_emb, self.batch_pos_item_emb), 1) \
+            - tf.reduce_sum(tf.multiply(self.batch_pos_user_emb, self.batch_neg_item_emb), 1)
         reg_loss = 0
         for key in self.weights:
             reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])

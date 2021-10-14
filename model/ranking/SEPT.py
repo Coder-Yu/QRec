@@ -213,9 +213,9 @@ class SEPT(SocialRecommender, DeepRecommender):
         aug_embeddings = tf.reduce_sum(all_aug_embeddings, axis=0)
         self.aug_user_embeddings, self.aug_item_embeddings = tf.split(aug_embeddings, [self.num_users, self.num_items], 0)
         # embedding look-up
-        self.u_embedding = tf.nn.embedding_lookup(self.rec_user_embeddings, self.u_idx)
-        self.pos_item_embedding = tf.nn.embedding_lookup(self.rec_item_embeddings, self.v_idx)
-        self.neg_item_embedding = tf.nn.embedding_lookup(self.rec_item_embeddings, self.neg_idx)
+        self.batch_user_emb = tf.nn.embedding_lookup(self.rec_user_embeddings, self.u_idx)
+        self.batch_pos_item_emb = tf.nn.embedding_lookup(self.rec_item_embeddings, self.v_idx)
+        self.batch_neg_item_emb = tf.nn.embedding_lookup(self.rec_item_embeddings, self.neg_idx)
 
     def label_prediction(self, emb):
         emb = tf.nn.embedding_lookup(emb, tf.unique(self.u_idx)[0])
@@ -256,8 +256,8 @@ class SEPT(SocialRecommender, DeepRecommender):
 
     def buildModel(self):
         # training the recommendation model
-        y = tf.reduce_sum(tf.multiply(self.u_embedding, self.pos_item_embedding), 1) \
-            - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
+        y = tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_pos_item_emb), 1) \
+            - tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_neg_item_emb), 1)
         rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (
                     tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
         # self-supervision prediction

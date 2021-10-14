@@ -21,8 +21,8 @@ class DeepRecommender(IterativeRecommender):
         self.r = tf.placeholder(tf.float32, name="rating")
         self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.emb_size], stddev=0.005), name='U')
         self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.emb_size], stddev=0.005), name='V')
-        self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx)
-        self.v_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.v_idx)
+        self.batch_user_emb = tf.nn.embedding_lookup(self.user_embeddings, self.u_idx)
+        self.batch_pos_item_emb = tf.nn.embedding_lookup(self.item_embeddings, self.v_idx)
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         self.sess = tf.Session(config=config)
