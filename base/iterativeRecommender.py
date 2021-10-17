@@ -13,7 +13,7 @@ class IterativeRecommender(Recommender):
         super(IterativeRecommender, self).readConfiguration()
         # set the reduced dimension
         self.emb_size = int(self.config['num.factors'])
-        # set maximum iteration
+        # set maximum epoch
         self.maxEpoch = int(self.config['num.max.epoch'])
         # set learning rate
         learningRate = config.LineConfig(self.config['learnRate'])
@@ -28,7 +28,7 @@ class IterativeRecommender(Recommender):
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
         print('Embedding Dimension:', self.emb_size)
-        print('Maximum Iteration:', self.maxEpoch)
+        print('Maximum Epoch:', self.maxEpoch)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)
 
@@ -85,12 +85,12 @@ class IterativeRecommender(Recommender):
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
-            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
+            print('%s %s Epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
                   %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate))
             #measure = self.ranking_performance(iter)
         else:
             measure = self.rating_performance()
-            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
+            print('%s %s Epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
                   % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
         #check if converged
         cond = abs(deltaLoss) < 1e-3
@@ -112,16 +112,12 @@ class IterativeRecommender(Recommender):
         self.measure = Measure.ratingMeasure(res)
         return self.measure
 
-    def ranking_performance(self,iteration):
+    def ranking_performance(self,epoch):
         #for a quick evaluation during training, we rank all items for only 2000 users
-        N = 10
+        N = 20
         recList = {}
         testSample = {}
         for user in self.data.testSet_u:
-            if len(testSample) == 2000:
-                break
-            if user not in self.data.trainSet_u:
-                continue
             testSample[user] = self.data.testSet_u[user]
 
         for user in testSample:
@@ -147,10 +143,10 @@ class IterativeRecommender(Recommender):
                     count -=1
             if count<0:
                 self.bestPerformance[1]=performance
-                self.bestPerformance[0]=iteration
+                self.bestPerformance[0]=epoch
                 self.saveModel()
         else:
-            self.bestPerformance.append(iteration)
+            self.bestPerformance.append(epoch)
             performance = {}
             for m in measure[1:]:
                 k,v = m.strip().split(':')
@@ -161,7 +157,7 @@ class IterativeRecommender(Recommender):
         print('Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)')
         measure = [m.strip() for m in measure[1:]]
         print('*Current Performance*')
-        print('iteration:',iteration,' | '.join(measure))
+        print('Epoch:',str(epoch)+',',' | '.join(measure))
         bp = ''
         # for k in self.bestPerformance[1]:
         #     bp+=k+':'+str(self.bestPerformance[1][k])+' | '
@@ -170,7 +166,7 @@ class IterativeRecommender(Recommender):
         bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
         bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
         print('*Best Performance* ')
-        print('iteration:',self.bestPerformance[0],bp)
+        print('Epoch:',str(self.bestPerformance[0])+',',bp)
         print('-'*120)
         return measure
 
