@@ -242,6 +242,7 @@ class SGL(DeepRecommender):
 
         init = tf.global_variables_initializer()
         self.sess.run(init)
+        loss_record = []
         for epoch in range(self.maxEpoch):
             sub_mat = {}
             if self.aug_type in [0, 1]:
@@ -253,14 +254,14 @@ class SGL(DeepRecommender):
                     'adj_shape_sub2'] = self._convert_csr_to_sparse_tensor_inputs(
                     self._create_adj_mat(is_subgraph=True, aug_type=self.aug_type))
             else:
-                for k in range(1, self.n_layers + 1):
+                for k in range(self.n_layers):
                     sub_mat['adj_indices_sub1%d' % k], sub_mat['adj_values_sub1%d' % k], sub_mat[
                         'adj_shape_sub1%d' % k] = self._convert_csr_to_sparse_tensor_inputs(
                         self._create_adj_mat(is_subgraph=True, aug_type=self.aug_type))
                     sub_mat['adj_indices_sub2%d' % k], sub_mat['adj_values_sub2%d' % k], sub_mat[
                         'adj_shape_sub2%d' % k] = self._convert_csr_to_sparse_tensor_inputs(
                         self._create_adj_mat(is_subgraph=True, aug_type=self.aug_type))
-
+            batch_loss = []
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 feed_dict = {self.u_idx: user_idx,
@@ -288,19 +289,9 @@ class SGL(DeepRecommender):
 
                 _, l,rec_l,ssl_l = self.sess.run([train, total_loss, rec_loss, ssl_loss],feed_dict=feed_dict)
                 print('training:', epoch + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
+                batch_loss.append(rec_l)
+            loss_record.append(sum(batch_loss)/len(batch_loss))
             self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
-            self.ranking_performance(epoch)
-        # self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
-
-        self.U, self.V = self.bestU, self.bestV
-        import pickle
-        ue = open('user_sgl.emb','wb')
-        pickle.dump(self.U,ue)
-        ie = open('item_sgl.emb','wb')
-        pickle.dump(self.V,ie)
-
-    def saveModel(self):
-        self.bestU, self.bestV = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

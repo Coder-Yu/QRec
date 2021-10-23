@@ -112,19 +112,12 @@ class IterativeRecommender(Recommender):
         self.measure = Measure.ratingMeasure(res)
         return self.measure
 
-    def ranking_performance(self,iteration):
+    def ranking_performance(self,epoch):
         #for a quick evaluation during training, we rank all items for only 2000 users
-        N = 10
+        N = 20
         recList = {}
         testSample = {}
         for user in self.data.testSet_u:
-            if len(testSample) == 2000:
-                break
-            if user not in self.data.trainSet_u:
-                continue
-            testSample[user] = self.data.testSet_u[user]
-
-        for user in testSample:
             candidates = self.predictForRanking(user)
             # predictedItems = denormalize(predictedItems, self.data.rScale[-1], self.data.rScale[0])
             ratedList, ratingList = self.data.userRated(user)
@@ -147,10 +140,10 @@ class IterativeRecommender(Recommender):
                     count -=1
             if count<0:
                 self.bestPerformance[1]=performance
-                self.bestPerformance[0]=iteration
+                self.bestPerformance[0]=epoch
                 self.saveModel()
         else:
-            self.bestPerformance.append(iteration)
+            self.bestPerformance.append(epoch)
             performance = {}
             for m in measure[1:]:
                 k,v = m.strip().split(':')
@@ -161,7 +154,7 @@ class IterativeRecommender(Recommender):
         print('Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)')
         measure = [m.strip() for m in measure[1:]]
         print('*Current Performance*')
-        print('iteration:',iteration,' | '.join(measure))
+        print('Epoch:',str(epoch)+',',' | '.join(measure))
         bp = ''
         # for k in self.bestPerformance[1]:
         #     bp+=k+':'+str(self.bestPerformance[1][k])+' | '
@@ -170,7 +163,7 @@ class IterativeRecommender(Recommender):
         bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
         bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
         print('*Best Performance* ')
-        print('iteration:',self.bestPerformance[0],bp)
+        print('Epoch:',str(self.bestPerformance[0])+',',bp)
         print('-'*120)
         return measure
 
