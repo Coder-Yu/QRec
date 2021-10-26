@@ -13,7 +13,7 @@ class IterativeRecommender(Recommender):
         super(IterativeRecommender, self).readConfiguration()
         # set the reduced dimension
         self.emb_size = int(self.config['num.factors'])
-        # set maximum epoch
+        # set maximum iteration
         self.maxEpoch = int(self.config['num.max.epoch'])
         # set learning rate
         learningRate = config.LineConfig(self.config['learnRate'])
@@ -28,7 +28,7 @@ class IterativeRecommender(Recommender):
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
         print('Embedding Dimension:', self.emb_size)
-        print('Maximum Epoch:', self.maxEpoch)
+        print('Maximum Iteration:', self.maxEpoch)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)
 
@@ -85,12 +85,12 @@ class IterativeRecommender(Recommender):
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
-            print('%s %s Epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
+            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
                   %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate))
             #measure = self.ranking_performance(iter)
         else:
             measure = self.rating_performance()
-            print('%s %s Epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
+            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
                   % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
         #check if converged
         cond = abs(deltaLoss) < 1e-3
@@ -118,9 +118,6 @@ class IterativeRecommender(Recommender):
         recList = {}
         testSample = {}
         for user in self.data.testSet_u:
-            testSample[user] = self.data.testSet_u[user]
-
-        for user in testSample:
             candidates = self.predictForRanking(user)
             # predictedItems = denormalize(predictedItems, self.data.rScale[-1], self.data.rScale[0])
             ratedList, ratingList = self.data.userRated(user)
