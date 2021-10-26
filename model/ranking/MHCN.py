@@ -1,4 +1,4 @@
-from base.deepRecommender import DeepRecommender
+from base.graphRecommender import GraphRecommender
 from base.socialRecommender import SocialRecommender
 import tensorflow as tf
 from scipy.sparse import coo_matrix
@@ -10,9 +10,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 # Maximum Epoch Setting: LastFM 120 Douban 30 Yelp 30
 
-class MHCN(SocialRecommender,DeepRecommender):
+class MHCN(SocialRecommender,GraphRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
-        DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
+        GraphRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
 
     def readConfiguration(self):

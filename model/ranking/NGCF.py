@@ -1,10 +1,6 @@
-#coding:utf8
-from base.deepRecommender import DeepRecommender
-from random import choice
+from base.graphRecommender import GraphRecommender
 import tensorflow as tf
-import numpy as np
-from math import sqrt
-class NGCF(DeepRecommender):
+class NGCF(GraphRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(NGCF, self).__init__(conf,trainingSet,testSet,fold)
@@ -14,16 +10,12 @@ class NGCF(DeepRecommender):
         self.isTraining = tf.placeholder(tf.int32)
         self.isTraining = tf.cast(self.isTraining, tf.bool)
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
-        indices = [[self.data.user[item[0]],self.num_users+self.data.item[item[1]]] for item in self.data.trainingData]
-        indices += [[self.num_users+self.data.item[item[1]],self.data.user[item[0]]] for item in self.data.trainingData]
-        values = [float(item[2])/sqrt(len(self.data.trainSet_u[item[0]]))/sqrt(len(self.data.trainSet_i[item[1]])) for item in self.data.trainingData]*2
-        norm_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users+self.num_items,self.num_users+self.num_items])
+        norm_adj = self.create_joint_sparse_adj_tensor()
         self.weights = dict()
         initializer = tf.contrib.layers.xavier_initializer()
         weight_size = [self.emb_size, self.emb_size, self.emb_size] #can be changed
         weight_size_list = [self.emb_size] + weight_size
-        self.n_layers = 3
-
+        self.n_layers = 2
         #initialize parameters
         for k in range(self.n_layers):
             self.weights['W_%d_1' % k] = tf.Variable(

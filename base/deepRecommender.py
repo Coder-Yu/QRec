@@ -8,7 +8,6 @@ class DeepRecommender(IterativeRecommender):
 
     def readConfiguration(self):
         super(DeepRecommender, self).readConfiguration()
-        # set the reduced dimension
         self.batch_size = int(self.config['batch_size'])
 
     def printAlgorConfig(self):

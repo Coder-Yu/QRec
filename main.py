@@ -53,4 +53,4 @@ if __name__ == '__main__':
     recSys = QRec(conf)
     recSys.execute()
     e = time.time()
-    print("Run time: %f s" % (e - s))
+    print("Running time: %f s" % (e - s))

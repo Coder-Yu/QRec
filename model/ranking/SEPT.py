@@ -1,4 +1,4 @@
-from base.deepRecommender import DeepRecommender
+from base.graphRecommender import GraphRecommender
 from base.socialRecommender import SocialRecommender
 import tensorflow as tf
 from scipy.sparse import coo_matrix, eye
@@ -15,9 +15,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 We have transplated QRec from py2 to py3. But we found that, with py3, SEPT achieves higher NDCG
 but lower (slightly) Prec and Recall compared with the results reported in the paper.
 '''
-class SEPT(SocialRecommender, DeepRecommender):
+class SEPT(SocialRecommender, GraphRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
-        DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
+        GraphRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
 
     def readConfiguration(self):
@@ -131,8 +131,7 @@ class SEPT(SocialRecommender, DeepRecommender):
         self.user_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.emb_size], stddev=0.005), name='U') / 2
         self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.emb_size], stddev=0.005), name='V') / 2
         # initialize adjacency matrices
-        ui_mat = self.get_adj_mat()
-        ui_mat = self._convert_sp_mat_to_sp_tensor(ui_mat)
+        ui_mat = self.create_joint_sparse_adj_tensor()
         friend_view_embeddings = self.user_embeddings
         sharing_view_embeddings = self.user_embeddings
         all_social_embeddings = [friend_view_embeddings]

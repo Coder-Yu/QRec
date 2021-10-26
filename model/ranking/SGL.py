@@ -1,4 +1,4 @@
-from base.deepRecommender import DeepRecommender
+from base.graphRecommender import GraphRecommender
 import tensorflow as tf
 from util import config
 import numpy as np
@@ -6,7 +6,7 @@ import scipy.sparse as sp
 import random
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-class SGL(DeepRecommender):
+class SGL(GraphRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(SGL, self).__init__(conf,trainingSet,testSet,fold)
 
@@ -17,6 +17,7 @@ class SGL(DeepRecommender):
         self.drop_rate = float(args['-droprate'])
         self.aug_type = int(args['-augtype'])
         self.ssl_temp = float(args['-temp'])
+        self.n_layers = int(args['-n_layer'])
 
     def initModel(self):
         super(SGL, self).initModel()
@@ -28,7 +29,6 @@ class SGL(DeepRecommender):
         all_s1_embeddings = [s1_embeddings]
         all_s2_embeddings = [s2_embeddings]
         all_embeddings = [ego_embeddings]
-        self.n_layers = 2
         #variable initialization
         self._create_variable()
         for k in range(0, self.n_layers):
@@ -54,8 +54,6 @@ class SGL(DeepRecommender):
         #s1 - view
         for k in range(self.n_layers):
             s1_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat_1%d' % k],s1_embeddings)
-            # normalize the distribution of embeddings.
-            #norm_embeddings = tf.math.l2_normalize(s1_embeddings, axis=1)
             all_s1_embeddings += [s1_embeddings]
         all_s1_embeddings = tf.stack(all_s1_embeddings, 1)
         all_s1_embeddings = tf.reduce_mean(all_s1_embeddings, axis=1, keepdims=False)
@@ -64,25 +62,17 @@ class SGL(DeepRecommender):
         #s2 - view
         for k in range(self.n_layers):
             s2_embeddings = tf.sparse_tensor_dense_matmul(self.sub_mat['sub_mat_2%d' % k],s2_embeddings)
-            # normalize the distribution of embeddings.
-            #norm_embeddings = tf.math.l2_normalize(s2_embeddings, axis=1)
             all_s2_embeddings += [s2_embeddings]
         all_s2_embeddings = tf.stack(all_s2_embeddings, 1)
         all_s2_embeddings = tf.reduce_mean(all_s2_embeddings, axis=1, keepdims=False)
         self.s2_user_embeddings, self.s2_item_embeddings = tf.split(all_s2_embeddings, [self.num_users, self.num_items], 0)
-
-
         #recommendation view
         for k in range(self.n_layers):
             ego_embeddings = tf.sparse_tensor_dense_matmul(norm_adj,ego_embeddings)
-            # normalize the distribution of embeddings.
-            #norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
             all_embeddings += [ego_embeddings]
         all_embeddings = tf.stack(all_embeddings, 1)
         all_embeddings = tf.reduce_mean(all_embeddings, axis=1, keepdims=False)
-
         self.main_user_embeddings, self.main_item_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
-
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
         self.batch_user_emb = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
@@ -173,7 +163,6 @@ class SGL(DeepRecommender):
         normalize_user_emb1 = tf.nn.l2_normalize(user_emb1, 1)
         normalize_user_emb2 = tf.nn.l2_normalize(user_emb2, 1)
 
-
         item_emb1 = tf.nn.embedding_lookup(self.s1_item_embeddings, tf.unique(self.v_idx)[0])
         item_emb2 = tf.nn.embedding_lookup(self.s2_item_embeddings, tf.unique(self.v_idx)[0])
         normalize_item_emb1 = tf.nn.l2_normalize(item_emb1, 1)
@@ -242,6 +231,7 @@ class SGL(DeepRecommender):
 
         init = tf.global_variables_initializer()
         self.sess.run(init)
+        import time
         for epoch in range(self.maxEpoch):
             sub_mat = {}
             if self.aug_type in [0, 1]:
@@ -253,14 +243,14 @@ class SGL(DeepRecommender):
                     'adj_shape_sub2'] = self._convert_csr_to_sparse_tensor_inputs(
                     self._create_adj_mat(is_subgraph=True, aug_type=self.aug_type))
             else:
-                for k in range(1, self.n_layers + 1):
+                for k in range(self.n_layers):
                     sub_mat['adj_indices_sub1%d' % k], sub_mat['adj_values_sub1%d' % k], sub_mat[
                         'adj_shape_sub1%d' % k] = self._convert_csr_to_sparse_tensor_inputs(
                         self._create_adj_mat(is_subgraph=True, aug_type=self.aug_type))
                     sub_mat['adj_indices_sub2%d' % k], sub_mat['adj_values_sub2%d' % k], sub_mat[
                         'adj_shape_sub2%d' % k] = self._convert_csr_to_sparse_tensor_inputs(
                         self._create_adj_mat(is_subgraph=True, aug_type=self.aug_type))
-
+            s = time.time()
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 feed_dict = {self.u_idx: user_idx,
@@ -288,19 +278,9 @@ class SGL(DeepRecommender):
 
                 _, l,rec_l,ssl_l = self.sess.run([train, total_loss, rec_loss, ssl_loss],feed_dict=feed_dict)
                 print('training:', epoch + 1, 'batch', n, 'rec_loss:', rec_l, 'ssl_loss',ssl_l)
+            e = time.time()
+            print("Epoch run time: %f s" % (e - s))
             self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
-            self.ranking_performance(epoch)
-        # self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
-
-        self.U, self.V = self.bestU, self.bestV
-        import pickle
-        ue = open('user_sgl.emb','wb')
-        pickle.dump(self.U,ue)
-        ie = open('item_sgl.emb','wb')
-        pickle.dump(self.V,ie)
-
-    def saveModel(self):
-        self.bestU, self.bestV = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'
