@@ -13,7 +13,7 @@ class IterativeRecommender(Recommender):
         super(IterativeRecommender, self).readConfiguration()
         # set the reduced dimension
         self.emb_size = int(self.config['num.factors'])
-        # set maximum iteration
+        # set maximum epoch
         self.maxEpoch = int(self.config['num.max.epoch'])
         # set learning rate
         learningRate = config.LineConfig(self.config['learnRate'])
@@ -28,7 +28,7 @@ class IterativeRecommender(Recommender):
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
         print('Embedding Dimension:', self.emb_size)
-        print('Maximum Iteration:', self.maxEpoch)
+        print('Maximum epoch:', self.maxEpoch)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)
 
@@ -52,8 +52,8 @@ class IterativeRecommender(Recommender):
         self.user_embedding = tf.nn.embedding_lookup(self.U, self.u_idx)
         self.item_embedding = tf.nn.embedding_lookup(self.V, self.v_idx)
 
-    def updateLearningRate(self,iter):
-        if iter > 1:
+    def updateLearningRate(self,epoch):
+        if epoch > 1:
             if abs(self.lastLoss) > abs(self.loss):
                 self.lRate *= 1.05
             else:
@@ -78,25 +78,24 @@ class IterativeRecommender(Recommender):
         else:
             return [self.data.globalMean]*self.num_items
 
-    def isConverged(self,iter):
+    def isConverged(self,epoch):
         from math import isnan
         if isnan(self.loss):
             print('Loss = NaN or Infinity: current settings does not fit the recommender! Change the settings and try again!')
             exit(-1)
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
-            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
-                  %(self.algorName,self.foldInfo,iter,self.loss,deltaLoss,self.lRate))
-            #measure = self.ranking_performance(iter)
+            print('%s %s epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
+                  %(self.algorName,self.foldInfo,epoch,self.loss,deltaLoss,self.lRate))
         else:
             measure = self.rating_performance()
-            print('%s %s iteration %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
-                  % (self.algorName, self.foldInfo, iter, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
+            print('%s %s epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
+                  % (self.algorName, self.foldInfo, epoch, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond
         if not converged:
-            self.updateLearningRate(iter)
+            self.updateLearningRate(epoch)
         self.lastLoss = self.loss
         shuffle(self.data.trainingData)
         return converged
