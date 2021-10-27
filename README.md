@@ -466,7 +466,7 @@ on Generative Adversarial Networks, CIKM'18.
     <td>Trust</td>
     </tr>
     <tr>
-    <td><a href="https://www.dropbox.com/sh/h97ymblxt80txq5/AABfSLXcTu0Beib4r8P5I5sNa?dl=0" target="_blank"><b>Amazon-Book</b></a> [6]</td>
+    <td><a href="https://www.dropbox.com/sh/20l0xdjuw0b3lo8/AABBZbRg9hHiN42EHqBSvLpta?dl=0" target="_blank"><b>Amazon-Book</b></a> [6]</td>
     <td>52,463</td>
     <td>91,599</td>
     <td width="6%">2,984,108</td>
