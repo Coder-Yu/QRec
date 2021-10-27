@@ -37,3 +37,25 @@ class GraphRecommender(DeepRecommender):
         indices = np.array(list(zip(row,col)))
         adj_tensor = tf.SparseTensor(indices=indices, values=norm_adj.data, dense_shape=norm_adj.shape)
         return adj_tensor
+
+    def create_sparse_rating_matrix(self):
+        '''
+        return a sparse adjacency matrix with the shape (user number, item number)
+        '''
+        row, col, entries = [], [], []
+        for pair in self.data.trainingData:
+            row += [self.data.user[pair[0]]]
+            col += [self.data.item[pair[1]]]
+            entries += [1.0/len(self.data.trainSet_u[pair[0]])]
+        ratingMat = sp.coo_matrix((entries, (row, col)), shape=(self.num_users,self.num_items),dtype=np.float32)
+        return ratingMat
+
+    def create_sparse_adj_tensor(self):
+        '''
+        return a sparse tensor with the shape (user number, item number)
+        '''
+        ratingMat = self.create_sparse_rating_matrix()
+        row,col = ratingMat.nonzero()
+        indices = np.array(list(zip(row,col)))
+        adj_tensor = tf.SparseTensor(indices=indices, values=ratingMat.data, dense_shape=ratingMat.shape)
+        return adj_tensor

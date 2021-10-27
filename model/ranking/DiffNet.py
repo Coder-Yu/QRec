@@ -2,11 +2,10 @@ from base.graphRecommender import GraphRecommender
 from base.socialRecommender import SocialRecommender
 import tensorflow as tf
 from scipy.sparse import coo_matrix
-from math import sqrt
 import numpy as np
 import os
 from util import config
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 #For general comparison. We do not include the user/item features extracted from text/images
 
@@ -29,23 +28,12 @@ class DiffNet(SocialRecommender,GraphRecommender):
         AdjacencyMatrix = coo_matrix((entries, (row, col)), shape=(self.num_users,self.num_users),dtype=np.float32)
         return AdjacencyMatrix
 
-    def buildSparseRatingMatrix(self):
-        row, col, entries = [], [], []
-        for pair in self.data.trainingData:
-            row += [self.data.user[pair[0]]]
-            col += [self.data.item[pair[1]]]
-            entries += [1.0/len(self.data.trainSet_u[pair[0]])]
-        ratingMatrix = coo_matrix((entries, (row, col)), shape=(self.num_users,self.num_items),dtype=np.float32)
-        return ratingMatrix
-
     def initModel(self):
         super(DiffNet, self).initModel()
         S = self.buildSparseRelationMatrix()
-        A = self.buildSparseRatingMatrix()
         indices = np.mat([S.row, S.col]).transpose()
         self.S = tf.SparseTensor(indices, S.data.astype(np.float32), S.shape)
-        indices = np.mat([A.row, A.col]).transpose()
-        self.A = tf.SparseTensor(indices, A.data.astype(np.float32), A.shape)
+        self.A = self.create_sparse_adj_tensor()
 
     def buildModel(self):
         self.weights = {}

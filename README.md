@@ -464,7 +464,18 @@ on Generative Adversarial Networks, CIKM'18.
     <td width="4%">19,539</td>
     <td width="5%">864,157</td>
     <td>Trust</td>
-    </tr> 
+    </tr>
+    <tr>
+    <td><a href="https://www.dropbox.com/sh/h97ymblxt80txq5/AABfSLXcTu0Beib4r8P5I5sNa?dl=0" target="_blank"><b>Amazon-Book</b></a> [6]</td>
+    <td>52,463</td>
+    <td>91,599</td>
+    <td width="6%">2,984,108</td>
+    <td width="10%">implicit</td>
+    <td>0.11%</td>
+    <td width="4%">-</td>
+    <td width="5%">-</td>
+    <td>-</td>
+    </tr>  
   </table>
 </div>
 
@@ -475,6 +486,7 @@ on Generative Adversarial Networks, CIKM'18.
 <p>[3]. G. Zhao, X. Qian, and X. Xie, “User-service rating prediction by exploring social users’ rating behaviors,” IEEE Transactions on Multimedia, vol. 18, no. 3, pp. 496–506, 2016.</p>
 <p>[4]. Iván Cantador, Peter Brusilovsky, and Tsvi Kuflik. 2011. 2nd Workshop on Information Heterogeneity and Fusion in Recom- mender Systems (HetRec 2011). In Proceedings of the 5th ACM conference on Recommender systems (RecSys 2011). ACM, New York, NY, USA</p>
 <p>[5]. Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW'21.</p>
+<p>[6]. He et al. LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation, SIGIR'20.</p>
 <h2>Acknowledgment</h2>
 <p>This project is supported by the Responsible Big Data Intelligence Lab (RBDI) at the school of ITEE, University of Queensland, and Chongqing University.</p>
 
