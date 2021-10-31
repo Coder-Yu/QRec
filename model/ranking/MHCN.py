@@ -3,6 +3,7 @@ from base.socialRecommender import SocialRecommender
 import tensorflow as tf
 from scipy.sparse import coo_matrix
 import numpy as np
+from util.loss import bpr_loss
 import os
 from util import config
 from math import sqrt
@@ -176,7 +177,7 @@ class MHCN(SocialRecommender,GraphRecommender):
         self.ss_loss += self.hierarchical_self_supervision(self_supervised_gating(self.final_user_embeddings,3), H_p)
         #embedding look-up
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.final_item_embeddings, self.neg_idx)
-        self.batch_pos_user_emb = tf.nn.embedding_lookup(self.final_user_embeddings, self.u_idx)
+        self.batch_user_emb = tf.nn.embedding_lookup(self.final_user_embeddings, self.u_idx)
         self.batch_pos_item_emb = tf.nn.embedding_lookup(self.final_item_embeddings, self.v_idx)
 
     def hierarchical_self_supervision(self,em,adj):
@@ -204,13 +205,11 @@ class MHCN(SocialRecommender,GraphRecommender):
         return global_loss+local_loss
 
     def buildModel(self):
-        y = tf.reduce_sum(tf.multiply(self.batch_pos_user_emb, self.batch_pos_item_emb), 1) \
-            - tf.reduce_sum(tf.multiply(self.batch_pos_user_emb, self.batch_neg_item_emb), 1)
+        rec_loss = bpr_loss(self.batch_user_emb, self.batch_pos_item_emb, self.batch_neg_item_emb)
         reg_loss = 0
         for key in self.weights:
             reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
-        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + \
-                   self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
+        reg_loss += self.regU * (tf.nn.l2_loss(self.batch_user_emb) + tf.nn.l2_loss(self.batch_pos_item_emb)+ tf.nn.l2_loss(self.batch_neg_item_emb))
         total_loss = rec_loss+reg_loss + self.ss_rate*self.ss_loss
         opt = tf.train.AdamOptimizer(self.lRate)
         train_op = opt.minimize(total_loss)

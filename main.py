@@ -29,7 +29,7 @@ if __name__ == '__main__':
     print('g4. DHCF          g5. DiffNet')
 
     print('Self-Supervised Recommenders:')
-    print('q1. SGL           q2. SEPT         q3. BUIR'          'q4. MHCN')
+    print('q1. SGL           q2. SEPT         q3. BUIR          q4. MHCN')
 
     print('Basic Methods:')
     print('b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand')

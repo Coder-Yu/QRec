@@ -6,6 +6,7 @@ import scipy.sparse as sp
 import numpy as np
 import os
 from util import config
+from util.loss import bpr_loss
 import random
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -255,10 +256,8 @@ class SEPT(SocialRecommender, GraphRecommender):
 
     def buildModel(self):
         # training the recommendation model
-        y = tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_pos_item_emb), 1) \
-            - tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_neg_item_emb), 1)
-        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (
-                    tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
+        rec_loss = bpr_loss(self.batch_user_emb, self.batch_pos_item_emb, self.batch_neg_item_emb)
+        rec_loss += self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
         # self-supervision prediction
         social_prediction = self.label_prediction(self.friend_view_embeddings)
         sharing_prediction = self.label_prediction(self.sharing_view_embeddings)

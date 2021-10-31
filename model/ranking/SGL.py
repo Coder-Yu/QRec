@@ -1,6 +1,7 @@
 from base.graphRecommender import GraphRecommender
 import tensorflow as tf
 from util import config
+from util.loss import bpr_loss
 import numpy as np
 import scipy.sparse as sp
 import random
@@ -217,11 +218,8 @@ class SGL(GraphRecommender):
 
     def buildModel(self):
         #main task: recommendation
-        y = tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_pos_item_emb), 1) \
-            - tf.reduce_sum(tf.multiply(self.batch_user_emb, self.batch_neg_item_emb), 1)
-        rec_loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.batch_user_emb) +
-                                                                    tf.nn.l2_loss(self.batch_pos_item_emb) +
-                                                                    tf.nn.l2_loss(self.batch_neg_item_emb))
+        rec_loss = bpr_loss(self.batch_user_emb,self.batch_pos_item_emb,self.batch_neg_item_emb)
+        rec_loss +=  self.regU * (tf.nn.l2_loss(self.batch_user_emb) + tf.nn.l2_loss(self.batch_pos_item_emb) + tf.nn.l2_loss(self.batch_neg_item_emb))
         #SSL task: contrastive learning
         ssl_loss = self.calc_ssl_loss_v3()
         total_loss = rec_loss+ssl_loss

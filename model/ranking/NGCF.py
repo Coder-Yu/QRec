@@ -1,5 +1,6 @@
 from base.graphRecommender import GraphRecommender
 import tensorflow as tf
+from util.loss import bpr_loss
 class NGCF(GraphRecommender):
 
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
@@ -41,24 +42,23 @@ class NGCF(GraphRecommender):
         all_embeddings = tf.concat(all_embeddings, 1)
         self.multi_user_embeddings, self.multi_item_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
-        self.neg_item_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.neg_idx)
-        self.u_embedding = tf.nn.embedding_lookup(self.multi_user_embeddings, self.u_idx)
-        self.v_embedding = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
-        self.test = tf.reduce_sum(tf.multiply(self.u_embedding,self.multi_item_embeddings),1)
+        self.batch_neg_item_emb = tf.nn.embedding_lookup(self.multi_item_embeddings, self.neg_idx)
+        self.batch_user_emb = tf.nn.embedding_lookup(self.multi_user_embeddings, self.u_idx)
+        self.batch_pos_item_emb = tf.nn.embedding_lookup(self.multi_item_embeddings, self.v_idx)
+        self.test = tf.reduce_sum(tf.multiply(self.batch_user_emb,self.multi_item_embeddings),1)
 
     def buildModel(self):
-        y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
-            - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
-        loss = -tf.reduce_sum(tf.log(tf.sigmoid(y))) + self.regU * (tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.v_embedding) +
-                                                                    tf.nn.l2_loss(self.neg_item_embedding))
+        rec_loss = bpr_loss(self.batch_user_emb, self.batch_pos_item_emb, self.batch_neg_item_emb)
+        rec_loss += self.regU * (tf.nn.l2_loss(self.batch_user_emb) + tf.nn.l2_loss(self.batch_pos_item_emb) + tf.nn.l2_loss(
+                self.batch_neg_item_emb))
         opt = tf.train.AdamOptimizer(self.lRate)
-        train = opt.minimize(loss)
+        train = opt.minimize(rec_loss)
         init = tf.global_variables_initializer()
         self.sess.run(init)
         for epoch in range(self.maxEpoch):
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
-                _, l = self.sess.run([train, loss],
+                _, l = self.sess.run([train, rec_loss],
                                 feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx,self.isTraining:1})
                 print('training:', epoch + 1, 'batch', n, 'loss:', l)
 
