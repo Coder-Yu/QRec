@@ -28,7 +28,7 @@ class IterativeRecommender(Recommender):
     def printAlgorConfig(self):
         super(IterativeRecommender, self).printAlgorConfig()
         print('Embedding Dimension:', self.emb_size)
-        print('Maximum epoch:', self.maxEpoch)
+        print('Maximum Epoch:', self.maxEpoch)
         print('Regularization parameter: regU %.3f, regI %.3f, regB %.3f' %(self.regU,self.regI,self.regB))
         print('='*80)
 
@@ -86,11 +86,11 @@ class IterativeRecommender(Recommender):
         deltaLoss = (self.lastLoss-self.loss)
         if self.ranking.isMainOn():
             print('%s %s epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f' \
-                  %(self.algorName,self.foldInfo,epoch,self.loss,deltaLoss,self.lRate))
+                  % (self.modelName, self.foldInfo, epoch, self.loss, deltaLoss, self.lRate))
         else:
             measure = self.rating_performance()
             print('%s %s epoch %d: loss = %.4f, delta_loss = %.5f learning_Rate = %.5f %5s %5s' \
-                  % (self.algorName, self.foldInfo, epoch, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
+                  % (self.modelName, self.foldInfo, epoch, self.loss, deltaLoss, self.lRate, measure[0].strip()[:11], measure[1].strip()[:12]))
         #check if converged
         cond = abs(deltaLoss) < 1e-3
         converged = cond

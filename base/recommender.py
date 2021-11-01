@@ -25,40 +25,25 @@ class Recommender(object):
         self.evalSettings = OptionConf(self.config['evaluation.setup'])
         self.measure = []
         self.recOutput = []
-        if self.evalSettings.contains('-cold'):
-            #evaluation on cold-start users
-            threshold = int(self.evalSettings['-cold'])
-            removedUser = {}
-            for user in self.data.testSet_u:
-                if user in self.data.trainSet_u and len(self.data.trainSet_u[user])>threshold:
-                    removedUser[user]=1
-            for user in removedUser:
-                del self.data.testSet_u[user]
-            testData = []
-            for item in self.data.testData:
-                if item[0] not in removedUser:
-                    testData.append(item)
-            self.data.testData = testData
-
         self.num_users, self.num_items, self.train_size = self.data.trainingSize()
 
     def initializing_log(self):
         currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-        self.log = Log(self.algorName,self.algorName+self.foldInfo+' '+currentTime)
+        self.log = Log(self.modelName, self.modelName + self.foldInfo + ' ' + currentTime)
         #save configuration
         self.log.add('### model configuration ###')
         for k in self.config.config:
             self.log.add(k+'='+self.config[k])
 
     def readConfiguration(self):
-        self.algorName = self.config['model.name']
+        self.modelName = self.config['model.name']
         self.output = OptionConf(self.config['output.setup'])
         self.isOutput = self.output.isMainOn()
         self.ranking = OptionConf(self.config['item.ranking'])
 
     def printAlgorConfig(self):
         "show model's configuration"
-        print('Algorithm:',self.config['model.name'])
+        print('Model:',self.config['model.name'])
         print('Ratings dataset:',abspath(self.config['ratings']))
         if OptionConf(self.config['evaluation.setup']).contains('-testSet'):
             print('Test set:', abspath(OptionConf(self.config['evaluation.setup'])['-testSet']))
@@ -79,7 +64,7 @@ class Recommender(object):
         pass
 
     def buildModel(self):
-        'build the model (for model-based algorithms )'
+        'build the model (for model-based Models )'
         pass
 
     def buildModel_tf(self):
@@ -137,18 +122,16 @@ class Recommender(object):
         FileIO.writeFile(outDir, fileName, self.measure)
         self.log.add('###Evaluation Results###')
         self.log.add(self.measure)
-        print('The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure)))
+        print('The result of %s %s:\n%s' % (self.modelName, self.foldInfo, ''.join(self.measure)))
 
     def evalRanking(self):
         if self.ranking.contains('-topN'):
             top = self.ranking['-topN'].split(',')
             top = [int(num) for num in top]
-            N = int(top[-1])
-            if N > 100 or N < 0:
-                print('N can not be larger than 100! It has been reassigned with 10')
+            N = max(top)
+            if N > 100 or N < 1:
+                print('N can not be larger than 100! It has been reassigned to 10')
                 N = 10
-            if N > len(self.data.item):
-                N = len(self.data.item)
         else:
             print('No correct evaluation metric is specified!')
             exit(-1)
@@ -168,7 +151,7 @@ class Recommender(object):
             item_names = [self.data.id2item[iid] for iid in ids]
             recList[user] = list(zip(item_names,scores))
             if i % 100 == 0:
-                print(self.algorName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount))
+                print(self.modelName, self.foldInfo, 'progress:' + str(i) + '/' + str(userCount))
             for item in recList[user]:
                 line += ' (' + item[0] + ',' + str(item[1]) + ')'
                 if item[0] in self.data.testSet_u[user]:
@@ -193,7 +176,7 @@ class Recommender(object):
         self.log.add('###Evaluation Results###')
         self.log.add(self.measure)
         FileIO.writeFile(outDir, fileName, self.measure)
-        print('The result of %s %s:\n%s' % (self.algorName, self.foldInfo, ''.join(self.measure)))
+        print('The result of %s %s:\n%s' % (self.modelName, self.foldInfo, ''.join(self.measure)))
 
     def execute(self):
         self.readConfiguration()

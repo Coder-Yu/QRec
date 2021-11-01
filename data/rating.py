@@ -25,6 +25,9 @@ class Rating(object):
         self.__computeItemMean()
         self.__computeUserMean()
         self.__globalAverage()
+        if self.evalSettings.contains('-cold'):
+            #evaluation on cold-start users
+            self.__cold_start_test()
 
 
     def __generateSet(self):
@@ -63,6 +66,20 @@ class Rating(object):
                 self.testSet_u[userName][itemName] = rating
                 self.testSet_i[itemName][userName] = rating
 
+    def __cold_start_test(self):
+        #evaluation on cold-start users
+        threshold = int(self.evalSettings['-cold'])
+        removedUser = {}
+        for user in self.testSet_u:
+            if user in self.trainSet_u and len(self.trainSet_u[user])>threshold:
+                removedUser[user]=1
+        for user in removedUser:
+            del self.testSet_u[user]
+        testData = []
+        for item in self.testData:
+            if item[0] not in removedUser:
+                testData.append(item)
+        self.testData = testData
 
     def __globalAverage(self):
         total = sum(self.userMeans.values())
