@@ -8,7 +8,7 @@ class SVDPlusPlus(IterativeRecommender):
 
     def readConfiguration(self):
         super(SVDPlusPlus, self).readConfiguration()
-        regY = config.LineConfig(self.config['SVDPlusPlus'])
+        regY = config.OptionConf(self.config['SVDPlusPlus'])
         self.regY = float( regY['-y'])
 
     def printAlgorConfig(self):

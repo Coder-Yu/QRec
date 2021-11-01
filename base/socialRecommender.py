@@ -42,7 +42,7 @@ class SocialRecommender(IterativeRecommender):
 
     def readConfiguration(self):
         super(SocialRecommender, self).readConfiguration()
-        regular = config.LineConfig(self.config['reg.lambda'])
+        regular = config.OptionConf(self.config['reg.lambda'])
         self.regS = float(regular['-s'])
 
     def printAlgorConfig(self):

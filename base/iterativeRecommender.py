@@ -16,13 +16,13 @@ class IterativeRecommender(Recommender):
         # set maximum epoch
         self.maxEpoch = int(self.config['num.max.epoch'])
         # set learning rate
-        learningRate = config.LineConfig(self.config['learnRate'])
+        learningRate = config.OptionConf(self.config['learnRate'])
         self.lRate = float(learningRate['-init'])
         self.maxLRate = float(learningRate['-max'])
         if self.evalSettings.contains('-tf'):
             self.batch_size = int(self.config['batch_size'])
         # regularization parameter
-        regular = config.LineConfig(self.config['reg.lambda'])
+        regular = config.OptionConf(self.config['reg.lambda'])
         self.regU,self.regI,self.regB= float(regular['-u']),float(regular['-i']),float(regular['-b'])
 
     def printAlgorConfig(self):

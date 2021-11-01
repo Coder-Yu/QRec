@@ -9,7 +9,7 @@ class SoRec(SocialRecommender ):
 
     def readConfiguration(self):
         super(SoRec, self).readConfiguration()
-        regZ = config.LineConfig(self.config['SoRec'])
+        regZ = config.OptionConf(self.config['SoRec'])
         self.regZ = float( regZ['-z'])
 
     def initModel(self):

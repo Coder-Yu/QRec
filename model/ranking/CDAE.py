@@ -44,7 +44,7 @@ class CDAE(DeepRecommender):
 
     def readConfiguration(self):
         super(CDAE, self).readConfiguration()
-        args = config.LineConfig(self.config['CDAE'])
+        args = config.OptionConf(self.config['CDAE'])
         self.corruption_level = float(args['-co'])
         self.n_hidden = int(args['-nh'])
 

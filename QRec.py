@@ -1,4 +1,4 @@
-from util.config import LineConfig
+from util.config import OptionConf
 from util.dataSplit import *
 from multiprocessing import Process,Manager
 from util.io import FileIO
@@ -11,9 +11,9 @@ class QRec(object):
         self.relation = []
         self.measure = []
         self.config =config
-        self.ratingConfig = LineConfig(config['ratings.setup'])
+        self.ratingConfig = OptionConf(config['ratings.setup'])
         if self.config.contains('evaluation.setup'):
-            self.evaluation = LineConfig(config['evaluation.setup'])
+            self.evaluation = OptionConf(config['evaluation.setup'])
             binarized = False
             bottom = 0
             if self.evaluation.contains('-b'):
@@ -42,7 +42,7 @@ class QRec(object):
             exit(-1)
 
         if config.contains('social'):
-            self.socialConfig = LineConfig(self.config['social.setup'])
+            self.socialConfig = OptionConf(self.config['social.setup'])
             self.relation = FileIO.loadRelationship(config,self.config['social'])
         print('Reading data and preprocessing...')
 
@@ -101,7 +101,7 @@ class QRec(object):
                 res.append(measure + ':' + str(total / k) + '\n')
             #output result
             currentTime = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
-            outDir = LineConfig(self.config['output.setup'])['-dir']
+            outDir = OptionConf(self.config['output.setup'])['-dir']
             fileName = self.config['model.name'] +'@'+currentTime+'-'+str(k)+'-fold-cv' + '.txt'
             FileIO.writeFile(outDir,fileName,res)
             print('The result of %d-fold cross validation:\n%s' %(k,''.join(res)))

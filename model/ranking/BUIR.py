@@ -16,7 +16,7 @@ class BUIR(DeepRecommender):
 
     def readConfiguration(self):
         super(BUIR, self).readConfiguration()
-        args = config.LineConfig(self.config['BUIR'])
+        args = config.OptionConf(self.config['BUIR'])
         self.n_layers = int(args['-n_layer'])
         self.tau = float(args['-tau'])
         self.drop_rate = float(args['-drop_rate'])

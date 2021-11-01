@@ -136,7 +136,7 @@ class CUNE_BPR(IterativeRecommender):
 
     def readConfiguration(self):
         super(CUNE_BPR, self).readConfiguration()
-        options = config.LineConfig(self.config['CUNE-BPR'])
+        options = config.OptionConf(self.config['CUNE-BPR'])
         self.walkCount = int(options['-T'])
         self.walkLength = int(options['-L'])
         self.walkDim = int(options['-l'])

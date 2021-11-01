@@ -18,7 +18,7 @@ class MHCN(SocialRecommender,GraphRecommender):
 
     def readConfiguration(self):
         super(MHCN, self).readConfiguration()
-        args = config.LineConfig(self.config['MHCN'])
+        args = config.OptionConf(self.config['MHCN'])
         self.n_layers = int(args['-n_layer'])
         self.ss_rate = float(args['-ss_rate'])
 

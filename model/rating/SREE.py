@@ -14,7 +14,7 @@ class SREE(SocialRecommender):
 
     def readConfiguration(self):
         super(SREE, self).readConfiguration()
-        par = config.LineConfig(self.config['SREE'])
+        par = config.OptionConf(self.config['SREE'])
         self.alpha = float(par['-alpha'])
 
     def initModel(self):

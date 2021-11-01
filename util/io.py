@@ -1,7 +1,7 @@
 import os.path
 from os import makedirs,remove
 from re import compile,findall,split
-from .config import LineConfig
+from .config import OptionConf
 class FileIO(object):
     def __init__(self):
         pass
@@ -31,7 +31,7 @@ class FileIO(object):
     def loadDataSet(conf, file, bTest=False,binarized = False, threshold = 3.0):
         trainingData = []
         testData = []
-        ratingConfig = LineConfig(conf['ratings.setup'])
+        ratingConfig = OptionConf(conf['ratings.setup'])
         if not bTest:
             print('loading training data...')
         else:
@@ -86,7 +86,7 @@ class FileIO(object):
 
     @staticmethod
     def loadRelationship(conf, filePath):
-        socialConfig = LineConfig(conf['social.setup'])
+        socialConfig = OptionConf(conf['social.setup'])
         relation = []
         print('loading social data...')
         with open(filePath) as f:

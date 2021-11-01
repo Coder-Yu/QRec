@@ -1,5 +1,5 @@
 from QRec import QRec
-from util.config import Config
+from util.config import ModelConf
 
 if __name__ == '__main__':
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                  'q1':'SGL', 'q2':'SEPT', 'q3':'BUIR', 'q4':'MHCN',
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
     try:
-        conf = Config('./config/'+models[num]+'.conf')
+        conf = ModelConf('./config/' + models[num] + '.conf')
     except KeyError:
         print('wrong num!')
         exit(-1)

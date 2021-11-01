@@ -24,7 +24,7 @@ class ESRF(SocialRecommender,DeepRecommender):
 
     def readConfiguration(self):
         super(ESRF, self).readConfiguration()
-        args = config.LineConfig(self.config['ESRF'])
+        args = config.OptionConf(self.config['ESRF'])
         self.K = int(args['-K']) #controling the magnitude of adversarial learning
         self.beta = float(args['-beta']) #the number of alternative neighbors
         self.n_layers_D = int(args['-n_layer']) #the number of layers of the recommendation module (discriminator)

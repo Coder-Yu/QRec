@@ -7,7 +7,7 @@ class RSTE(SocialRecommender):
 
     def readConfiguration(self):
         super(RSTE, self).readConfiguration()
-        alpha = config.LineConfig(self.config['RSTE'])
+        alpha = config.OptionConf(self.config['RSTE'])
         self.alpha = float(alpha['-alpha'])
 
     def printAlgorConfig(self):

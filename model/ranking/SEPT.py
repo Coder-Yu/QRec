@@ -23,7 +23,7 @@ class SEPT(SocialRecommender, GraphRecommender):
 
     def readConfiguration(self):
         super(SEPT, self).readConfiguration()
-        args = config.LineConfig(self.config['SEPT'])
+        args = config.OptionConf(self.config['SEPT'])
         self.n_layers = int(args['-n_layer'])
         self.ss_rate = float(args['-ss_rate'])
         self.drop_rate = float(args['-drop_rate'])

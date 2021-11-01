@@ -9,7 +9,7 @@ class SoReg(SocialRecommender):
 
     def readConfiguration(self):
         super(SoReg, self).readConfiguration()
-        alpha = config.LineConfig(self.config['SoReg'])
+        alpha = config.OptionConf(self.config['SoReg'])
         self.alpha = float(alpha['-alpha'])
 
     def printAlgorConfig(self):

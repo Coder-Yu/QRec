@@ -13,7 +13,7 @@ class SGL(GraphRecommender):
 
     def readConfiguration(self):
         super(SGL, self).readConfiguration()
-        args = config.LineConfig(self.config['SGL'])
+        args = config.OptionConf(self.config['SGL'])
         self.ssl_reg = float(args['-lambda'])
         self.drop_rate = float(args['-droprate'])
         self.aug_type = int(args['-augtype'])

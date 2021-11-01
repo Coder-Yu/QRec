@@ -1,12 +1,12 @@
 import numpy as np
-from util.config import Config,LineConfig
+from util.config import ModelConf,OptionConf
 import random
 from collections import defaultdict
 class Rating(object):
     'data access control'
     def __init__(self,config,trainingSet, testSet):
         self.config = config
-        self.evalSettings = LineConfig(self.config['evaluation.setup'])
+        self.evalSettings = OptionConf(self.config['evaluation.setup'])
         self.user = {} #map user names to id
         self.item = {} #map item names to id
         self.id2user = {}

@@ -16,7 +16,7 @@ class SocialFD(SocialRecommender):
 
     def readConfiguration(self):
         super(SocialFD, self).readConfiguration()
-        eps = config.LineConfig(self.config['SocialFD'])
+        eps = config.OptionConf(self.config['SocialFD'])
         self.alpha = float(eps['-alpha'])
         self.eta = float(eps['-eta'])
         self.beta = float(eps['-beta'])

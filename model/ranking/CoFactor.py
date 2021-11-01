@@ -12,7 +12,7 @@ class CoFactor(IterativeRecommender):
 
     def readConfiguration(self):
         super(CoFactor, self).readConfiguration()
-        extraSettings = config.LineConfig(self.config['CoFactor'])
+        extraSettings = config.OptionConf(self.config['CoFactor'])
         self.negCount = int(extraSettings['-k']) #the number of negative samples
         if self.negCount < 1:
             self.negCount = 1

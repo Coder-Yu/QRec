@@ -15,7 +15,7 @@ class IF_BPR(SocialRecommender):
 
     def readConfiguration(self):
         super(IF_BPR, self).readConfiguration()
-        options = config.LineConfig(self.config['IF_BPR'])
+        options = config.OptionConf(self.config['IF_BPR'])
         self.walkLength = int(options['-L'])
         self.walkDim = int(options['-l'])
         self.winSize = int(options['-w'])

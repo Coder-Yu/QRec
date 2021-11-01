@@ -11,7 +11,7 @@ class LOCABAL(SocialRecommender):
 
     def readConfiguration(self):
         super(LOCABAL, self).readConfiguration()
-        alpha = config.LineConfig(self.config['LOCABAL'])
+        alpha = config.OptionConf(self.config['LOCABAL'])
         self.alpha = float(alpha['-alpha'])
 
     def printAlgorConfig(self):

@@ -4,7 +4,7 @@
 # (at your option) any later version.
 from data.rating import Rating
 from util.io import FileIO
-from util.config import LineConfig
+from util.config import OptionConf
 from util.log import Log
 from os.path import abspath
 from time import strftime,localtime,time
@@ -22,7 +22,7 @@ class Recommender(object):
         self.isOutput = True
         self.data = Rating(self.config, trainingSet, testSet)
         self.foldInfo = fold
-        self.evalSettings = LineConfig(self.config['evaluation.setup'])
+        self.evalSettings = OptionConf(self.config['evaluation.setup'])
         self.measure = []
         self.recOutput = []
         if self.evalSettings.contains('-cold'):
@@ -52,16 +52,16 @@ class Recommender(object):
 
     def readConfiguration(self):
         self.algorName = self.config['model.name']
-        self.output = LineConfig(self.config['output.setup'])
+        self.output = OptionConf(self.config['output.setup'])
         self.isOutput = self.output.isMainOn()
-        self.ranking = LineConfig(self.config['item.ranking'])
+        self.ranking = OptionConf(self.config['item.ranking'])
 
     def printAlgorConfig(self):
         "show model's configuration"
         print('Algorithm:',self.config['model.name'])
         print('Ratings dataset:',abspath(self.config['ratings']))
-        if LineConfig(self.config['evaluation.setup']).contains('-testSet'):
-            print('Test set:',abspath(LineConfig(self.config['evaluation.setup'])['-testSet']))
+        if OptionConf(self.config['evaluation.setup']).contains('-testSet'):
+            print('Test set:', abspath(OptionConf(self.config['evaluation.setup'])['-testSet']))
         #print dataset statistics
         print('Training set size: (user count: %d, item count %d, record count: %d)' %(self.data.trainingSize()))
         print('Test set size: (user count: %d, item count %d, record count: %d)' %(self.data.testSize()))
@@ -69,7 +69,7 @@ class Recommender(object):
         #print specific parameters if applicable
         if self.config.contains(self.config['model.name']):
             parStr = ''
-            args = LineConfig(self.config[self.config['model.name']])
+            args = OptionConf(self.config[self.config['model.name']])
             for key in args.keys():
                 parStr+=key[1:]+':'+args[key]+'  '
             print('Specific parameters:',parStr)

@@ -1,5 +1,5 @@
 import os.path
-class Config(object):
+class ModelConf(object):
     def __init__(self,fileName):
         self.config = {}
         self.readConfiguration(fileName)
@@ -26,7 +26,7 @@ class Config(object):
                     except ValueError:
                         print('config file is not in the correct format! Error Line:%d'%(ind))
 
-class LineConfig(object):
+class OptionConf(object):
     def __init__(self,content):
         self.line = content.strip().split(' ')
         self.options = {}

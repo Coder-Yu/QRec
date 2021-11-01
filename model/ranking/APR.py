@@ -12,7 +12,7 @@ class APR(DeepRecommender):
 
     def readConfiguration(self):
         super(APR, self).readConfiguration()
-        args = config.LineConfig(self.config['APR'])
+        args = config.OptionConf(self.config['APR'])
         self.eps = float(args['-eps'])
         self.regAdv = float(args['-regA'])
         self.advEpoch = int(args['-advEpoch'])

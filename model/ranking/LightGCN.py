@@ -1,11 +1,11 @@
 from base.graphRecommender import GraphRecommender
 import tensorflow as tf
 from util.loss import bpr_loss
-from util.config import LineConfig
+from util.config import OptionConf
 class LightGCN(GraphRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(LightGCN, self).__init__(conf,trainingSet,testSet,fold)
-        args = LineConfig(self.config['LightGCN'])
+        args = OptionConf(self.config['LightGCN'])
         self.n_layers = int(args['-n_layer'])
 
     def initModel(self):

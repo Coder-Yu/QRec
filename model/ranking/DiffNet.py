@@ -16,7 +16,7 @@ class DiffNet(SocialRecommender,GraphRecommender):
 
     def readConfiguration(self):
         super(DiffNet, self).readConfiguration()
-        args = config.LineConfig(self.config['DiffNet'])
+        args = config.OptionConf(self.config['DiffNet'])
         self.n_layers = int(args['-n_layer']) #the number of layers of the recommendation module (discriminator)
 
     def buildSparseRelationMatrix(self):

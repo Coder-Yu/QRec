@@ -11,7 +11,7 @@ class TBPR(SocialRecommender):
 
     def readConfiguration(self):
         super(TBPR, self).readConfiguration()
-        options = config.LineConfig(self.config['TBPR'])
+        options = config.OptionConf(self.config['TBPR'])
         self.regT = float(options['-regT'])
 
     def initModel(self):
