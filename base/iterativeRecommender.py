@@ -171,7 +171,7 @@ class IterativeRecommender(Recommender):
         print('Quick Ranking Performance '+self.foldInfo+' (Top-20 Item Recommendation On 1000 sampled users)')
         measure = [m.strip() for m in measure[1:]]
         print('*Current Performance*')
-        print('Epoch:',str(epoch)+',',' | '.join(measure))
+        print('Epoch:',str(epoch+1)+',',' | '.join(measure))
         bp = ''
         # for k in self.bestPerformance[1]:
         #     bp+=k+':'+str(self.bestPerformance[1][k])+' | '
