@@ -8,6 +8,7 @@ class IterativeRecommender(Recommender):
     def __init__(self,conf,trainingSet,testSet,fold='[1]'):
         super(IterativeRecommender, self).__init__(conf,trainingSet,testSet,fold)
         self.bestPerformance = []
+        self.earlyStop = 0
 
     def readConfiguration(self):
         super(IterativeRecommender, self).readConfiguration()
@@ -112,10 +113,12 @@ class IterativeRecommender(Recommender):
         return self.measure
 
     def ranking_performance(self,epoch):
-        #for a quick evaluation during training, we rank all items for only 2000 users
-        N = 20
+        #evaluation during training
+        top = self.ranking['-topN'].split(',')
+        top = [int(num) for num in top]
+        N = max(top)
         recList = {}
-        testSample = {}
+        print('Evaluating...')
         for user in self.data.testSet_u:
             candidates = self.predictForRanking(user)
             # predictedItems = denormalize(predictedItems, self.data.rScale[-1], self.data.rScale[0])
@@ -125,7 +128,7 @@ class IterativeRecommender(Recommender):
             ids, scores = find_k_largest(N, candidates)
             item_names = [self.data.id2item[iid] for iid in ids]
             recList[user] = list(zip(item_names, scores))
-        measure = Measure.rankingMeasure(testSample, recList, [20])
+        measure = Measure.rankingMeasure(self.data.testSet_u, recList, [N])
         if len(self.bestPerformance)>0:
             count = 0
             performance = {}
@@ -139,10 +142,25 @@ class IterativeRecommender(Recommender):
                     count -=1
             if count<0:
                 self.bestPerformance[1]=performance
-                self.bestPerformance[0]=epoch
+                self.bestPerformance[0]=epoch+1
                 self.saveModel()
+                self.earlyStop=0
+            else:
+                #stop model learning if the performance has not increased for 5 successive epochs
+                self.earlyStop += 1
+                if self.earlyStop==5:
+                    print('Early Stop at epoch', epoch+1)
+                    bp = ''
+                    bp += 'Precision' + ':' + str(self.bestPerformance[1]['Precision']) + ' | '
+                    bp += 'Recall' + ':' + str(self.bestPerformance[1]['Recall']) + ' | '
+                    bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
+                    bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
+                    print('*Best Performance* ')
+                    print('Epoch:', str(self.bestPerformance[0]) + ',', bp)
+                    exit(0)
+
         else:
-            self.bestPerformance.append(epoch)
+            self.bestPerformance.append(epoch+1)
             performance = {}
             for m in measure[1:]:
                 k,v = m.strip().split(':')
@@ -150,7 +168,7 @@ class IterativeRecommender(Recommender):
                 self.bestPerformance.append(performance)
             self.saveModel()
         print('-'*120)
-        print('Quick Ranking Performance '+self.foldInfo+' (Top-10 Item Recommendation On 1000 sampled users)')
+        print('Quick Ranking Performance '+self.foldInfo+' (Top-20 Item Recommendation On 1000 sampled users)')
         measure = [m.strip() for m in measure[1:]]
         print('*Current Performance*')
         print('Epoch:',str(epoch)+',',' | '.join(measure))
