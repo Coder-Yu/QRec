@@ -9,7 +9,8 @@ from util import config
 from math import sqrt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-# Maximum Epoch Setting: LastFM 120 Douban 30 Yelp 30
+# Recommended Maximum Epoch Setting: LastFM 120 Douban 30 Yelp 30
+# A slight performance drop is observed when we transplanted the model from python2 to python3. The cause is unclear.
 
 class MHCN(SocialRecommender,GraphRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
