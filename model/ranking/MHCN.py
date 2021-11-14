@@ -210,7 +210,7 @@ class MHCN(SocialRecommender,GraphRecommender):
         reg_loss = 0
         for key in self.weights:
             reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
-        reg_loss += self.regU * (tf.nn.l2_loss(self.batch_user_emb) + tf.nn.l2_loss(self.batch_pos_item_emb)+ tf.nn.l2_loss(self.batch_neg_item_emb))
+        reg_loss += self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))
         total_loss = rec_loss+reg_loss + self.ss_rate*self.ss_loss
         opt = tf.train.AdamOptimizer(self.lRate)
         train_op = opt.minimize(total_loss)
@@ -223,8 +223,13 @@ class MHCN(SocialRecommender,GraphRecommender):
                 _, l1 = self.sess.run([train_op, rec_loss],
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
                 print(self.foldInfo,'training:', epoch + 1, 'batch', n, 'rec loss:', l1)#,'ss_loss',l2
-
             self.U, self.V = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
+            self.ranking_performance(epoch)
+    #self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
+        self.U,self.V = self.bestU,self.bestV
+
+    def saveModel(self):
+        self.bestU, self.bestV = self.sess.run([self.final_user_embeddings, self.final_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

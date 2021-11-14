@@ -144,20 +144,20 @@ class IterativeRecommender(Recommender):
                 self.bestPerformance[1]=performance
                 self.bestPerformance[0]=epoch+1
                 self.saveModel()
-                self.earlyStop=0
-            else:
-                #stop model learning if the performance has not increased for 5 successive epochs
-                self.earlyStop += 1
-                if self.earlyStop==5:
-                    print('Early Stop at epoch', epoch+1)
-                    bp = ''
-                    bp += 'Precision' + ':' + str(self.bestPerformance[1]['Precision']) + ' | '
-                    bp += 'Recall' + ':' + str(self.bestPerformance[1]['Recall']) + ' | '
-                    bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
-                    bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
-                    print('*Best Performance* ')
-                    print('Epoch:', str(self.bestPerformance[0]) + ',', bp)
-                    exit(0)
+            #     self.earlyStop=0
+            # else:
+            #     #stop model learning if the performance has not increased for 5 successive epochs
+            #     self.earlyStop += 1
+            #     if self.earlyStop==5:
+            #         print('Early Stop at epoch', epoch+1)
+            #         bp = ''
+            #         bp += 'Precision' + ':' + str(self.bestPerformance[1]['Precision']) + ' | '
+            #         bp += 'Recall' + ':' + str(self.bestPerformance[1]['Recall']) + ' | '
+            #         bp += 'F1' + ':' + str(self.bestPerformance[1]['F1']) + ' | '
+            #         bp += 'MDCG' + ':' + str(self.bestPerformance[1]['NDCG'])
+            #         print('*Best Performance* ')
+            #         print('Epoch:', str(self.bestPerformance[0]) + ',', bp)
+            #         exit(0)
 
         else:
             self.bestPerformance.append(epoch+1)
