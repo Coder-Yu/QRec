@@ -1,4 +1,4 @@
-from base.deepRecommender import DeepRecommender
+from base.graphRecommender import GraphRecommender
 from base.socialRecommender import SocialRecommender
 from random import choice
 import tensorflow as tf
@@ -16,9 +16,9 @@ def gumbel_softmax(logits, temperature=0.2):
     y = tf.log(logits + eps) + gumbel_noise
     return tf.nn.softmax(y / temperature)
 
-class ESRF(SocialRecommender,DeepRecommender):
+class ESRF(SocialRecommender,GraphRecommender):
     def __init__(self, conf, trainingSet=None, testSet=None, relation=None, fold='[1]'):
-        DeepRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
+        GraphRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, fold=fold)
         SocialRecommender.__init__(self, conf=conf, trainingSet=trainingSet, testSet=testSet, relation=relation,fold=fold)
         self.n_layers_G = 2 #the number of layers of the alternative neigbhor generation module (generator)
 
@@ -98,15 +98,16 @@ class ESRF(SocialRecommender,DeepRecommender):
             user_embeddings = tf.sparse_tensor_dense_matmul(self.A, user_embeddings)
             norm_embeddings = tf.math.l2_normalize(user_embeddings, axis=1)
             all_embeddings += [norm_embeddings]
-        user_embeddings = tf.nn.sigmoid(tf.matmul(tf.reduce_sum(all_embeddings, 0), projection_head))
+        user_embeddings = tf.reduce_mean(all_embeddings,axis=0)
+        #user_embeddings = tf.nn.sigmoid(tf.matmul(tf.reduce_sum(all_embeddings, 0), projection_head))
         # construct concrete selector layer
         self.g_weights['c_selector'] = tf.Variable(initializer([self.K,self.num_users]), name='c_selector')
         #to avoid oom, each time we just generate alternative negibhborhood for 100 users
         user_features = tf.matmul(user_embeddings[self.userSegment:self.userSegment+100],user_embeddings,transpose_b=True)
         def getAlternativeNeighborhood(embedding):
             alphaEmbeddings = tf.multiply(embedding, self.g_weights['c_selector'])
-            one_hot_vector = tf.reduce_sum(self.sampling(alphaEmbeddings), 0)
-            return one_hot_vector
+            multi_hot_vector = tf.reduce_sum(self.sampling(alphaEmbeddings), 0)
+            return multi_hot_vector
         self.alternativeNeighborhood = tf.vectorized_map(fn=lambda em:getAlternativeNeighborhood(em),elems=user_features)
         paddings = tf.zeros(shape=(self.num_users,self.num_users))
         self.alternativeNeighborhood = tf.concat([paddings[:self.userSegment],self.alternativeNeighborhood,paddings[self.userSegment+100:]],0)
@@ -146,21 +147,9 @@ class ESRF(SocialRecommender,DeepRecommender):
         self.sampledItems = tf.placeholder(tf.int32)
         self.d_weights = dict()
         ego_embeddings = tf.concat([self.user_embeddings, self.item_embeddings], axis=0)
-
-        indices = [[self.data.user[item[0]], self.num_users + self.data.item[item[1]]] for item in
-                   self.data.trainingData]
-        indices += [[self.num_users + self.data.item[item[1]], self.data.user[item[0]]] for item in
-                    self.data.trainingData]
-        values = [float(item[2]) / sqrt(len(self.data.trainSet_u[item[0]])) / sqrt(len(self.data.trainSet_i[item[1]]))
-                  for item in self.data.trainingData] * 2
-
-        norm_adj = tf.SparseTensor(indices=indices, values=values,
-                                   dense_shape=[self.num_users + self.num_items, self.num_users + self.num_items])
-
+        norm_adj = self.create_joint_sparse_adj_tensor()
         initializer = tf.contrib.layers.xavier_initializer()
-
         all_embeddings = [ego_embeddings]
-
         for k in range(self.n_layers_D):
             self.d_weights['attention_m1%d' % k] = tf.Variable(
                 initializer([self.emb_size, self.emb_size]), name='attention_m1%d' % k)
@@ -292,7 +281,7 @@ class ESRF(SocialRecommender,DeepRecommender):
                 self.sess.run([self.d_train,self.d_loss],
                                      feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx, self.userSegment:u_i,
                                                 self.isSocial:0,self.isAttentive:self.attentiveTraining,self.sampledItems:selectedItems})
-
+            print(self.foldInfo, 'training:', epoch + 1, 'finished.')
         print('normal training with social relations...')
         for epoch in range(self.maxEpoch // 3):
             selectedItems = self.sampleItems()
@@ -302,12 +291,7 @@ class ESRF(SocialRecommender,DeepRecommender):
                 self.sess.run([self.d_train, self.d_loss],
                               feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx, self.userSegment:u_i,
                                          self.isSocial: 1, self.isAttentive: self.attentiveTraining,  self.sampledItems: selectedItems})
-
-            u_i = np.random.randint(0, self.num_users)
-            self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
-                                           feed_dict={self.isSocial: 0, self.isAttentive: 0, self.userSegment:u_i,
-                                                      self.sampledItems: selectedItems})
-
+            print(self.foldInfo, 'training:', self.maxEpoch//3 + epoch + 1, 'finished.')
         #adversarial learning without attention
         print('adversarial training with social relations...')
         for epoch in range(self.maxEpoch // 3):
@@ -320,8 +304,9 @@ class ESRF(SocialRecommender,DeepRecommender):
             u_i = np.random.randint(0, self.num_users)
             self.U, self.V = self.sess.run([self.multi_user_embeddings, self.multi_item_embeddings],
                                            feed_dict={self.userSegment:u_i,self.isSocial: 0,self.isAttentive:0,self.sampledItems:selectedItems})
+            self.ranking_performance(epoch+2*self.maxEpoch//3)
+        self.U, self.V = self.bestU, self.bestV
 
-            #self.sess.run([self.r_train, self.r_loss])
         # self.attentiveTraining = 1
         # #adversarial learning with attention
         # for epoch in range(self.maxIter/2):
