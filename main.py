@@ -25,8 +25,7 @@ if __name__ == '__main__':
     print('d6. IRGAN         d7. RSGAN')
 
     print('GNNs-based Recommenders:')
-    print('g1. NGCF          g2. LightGCN        g3. ESRF')
-    print('g4. DHCF          g5. DiffNet')
+    print('g1. NGCF          g2. LightGCN        g3. ESRF        g4. DHCF          g5. DiffNet')
 
     print('Self-Supervised Recommenders:')
     print('q1. SGL           q2. SEPT            q3. BUIR          q4. MHCN')
