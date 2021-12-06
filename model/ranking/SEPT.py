@@ -309,6 +309,11 @@ class SEPT(SocialRecommender, GraphRecommender):
                                           feed_dict=feed_dict)
                     print(self.foldInfo, 'training:', epoch + 1, 'batch', n, 'rec loss:', l1)
             self.U, self.V = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
+            self.ranking_performance(epoch)
+        self.U,self.V = self.bestU,self.bestV
+
+    def saveModel(self):
+        self.bestU, self.bestV = self.sess.run([self.rec_user_embeddings, self.rec_item_embeddings])
 
     def predictForRanking(self, u):
         'invoked to rank all the items for the user'

@@ -168,7 +168,7 @@ class IterativeRecommender(Recommender):
                 self.bestPerformance.append(performance)
             self.saveModel()
         print('-'*120)
-        print('Quick Ranking Performance '+self.foldInfo+' (Top-20 Item Recommendation On 1000 sampled users)')
+        print('Quick Ranking Performance '+self.foldInfo+' (Top-20 Item Recommendation)')
         measure = [m.strip() for m in measure[1:]]
         print('*Current Performance*')
         print('Epoch:',str(epoch+1)+',',' | '.join(measure))
