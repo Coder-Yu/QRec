@@ -25,6 +25,8 @@ class GACL(GraphRecommender):
         return tf.split(all_embs, [self.num_users, self.num_items], 0)
 
     def perturbed_LightGCN_encoder(self,emb,adj,n_layers):
+        random_noise = tf.random.uniform(emb.shape)
+        emb += tf.multiply(tf.sign(emb),tf.nn.l2_normalize(random_noise, 1)) * self.eps
         all_embs = [emb]
         for k in range(n_layers):
             emb = tf.sparse_tensor_dense_matmul(adj, emb)
@@ -41,16 +43,12 @@ class GACL(GraphRecommender):
         self.item_embeddings = tf.Variable(initializer([self.num_items, self.emb_size]))
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
         ego_embeddings = tf.concat([self.user_embeddings,self.item_embeddings], axis=0)
-        random_noise = tf.random.uniform(ego_embeddings.shape)
-        n_ego_embeddings1 = ego_embeddings + tf.multiply(tf.sign(ego_embeddings),tf.nn.l2_normalize(random_noise, 1)) * self.eps
-        random_noise = tf.random.uniform(ego_embeddings.shape)
-        n_ego_embeddings2 = ego_embeddings + tf.multiply(tf.sign(ego_embeddings),tf.nn.l2_normalize(random_noise, 1)) * self.eps
         #adjaceny matrix
         self.norm_adj = self.create_joint_sparse_adj_tensor()
         #encoding
         self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
-        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(n_ego_embeddings1,self.norm_adj,self.n_layers)
-        self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(n_ego_embeddings2, self.norm_adj, self.n_layers)
+        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
+        self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers)
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
         self.batch_user_emb = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
         self.batch_pos_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
