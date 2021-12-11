@@ -63,11 +63,11 @@ class Recommender(object):
     def initModel(self):
         pass
 
-    def buildModel(self):
+    def trainModel(self):
         'build the model (for model-based Models )'
         pass
 
-    def buildModel_tf(self):
+    def trainModel_tf(self):
         'training model on tensorflow'
         pass
 
@@ -194,11 +194,11 @@ class Recommender(object):
             try:
                 if self.evalSettings.contains('-tf'):
                     import tensorflow
-                    self.buildModel_tf()
+                    self.trainModel_tf()
                 else:
-                    self.buildModel()
+                    self.trainModel()
             except ImportError:
-                self.buildModel()
+                self.trainModel()
         #rating prediction or item ranking
         print('Predicting %s...' %self.foldInfo)
         if self.ranking.isMainOn():

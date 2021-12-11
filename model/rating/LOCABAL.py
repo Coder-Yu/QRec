@@ -43,7 +43,7 @@ class LOCABAL(SocialRecommender):
                     self.S[u1] = {}
                 self.S[u1][u2] = qmath.cosine_sp(uvec1,uvec2)
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0

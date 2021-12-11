@@ -28,7 +28,7 @@ class SBPR(SocialRecommender):
                                 else:
                                     self.FPSet[user][item] += 1
 
-    def buildModel(self):
+    def trainModel(self):
         self.b = np.random.random(self.num_items)
         print('Training...')
         epoch = 0
@@ -108,8 +108,8 @@ class SBPR(SocialRecommender):
                 j_idx.append(self.data.item[neg_item])
             yield u_idx,i_idx,f_idx,j_idx,weights
 
-    def buildModel_tf(self):
-        super(SBPR, self).buildModel_tf()
+    def trainModel_tf(self):
+        super(SBPR, self).trainModel_tf()
         self.social_idx = tf.placeholder(tf.int32, name="social_holder")
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
         self.weights = tf.placeholder(tf.float32, name="weights")

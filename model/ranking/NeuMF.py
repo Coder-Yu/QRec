@@ -74,7 +74,7 @@ class NeuMF(DeepRecommender):
         ###it seems Adam is better than SGD here...
         self.neu_optimizer = tf.train.AdamOptimizer(self.lRate).minimize(self.neu_loss)
 
-    def buildModel(self):
+    def trainModel(self):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         print('pretraining... (GMF)')

@@ -6,7 +6,7 @@ class PMF(IterativeRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(PMF, self).__init__(conf,trainingSet,testSet,fold)
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0
@@ -27,8 +27,8 @@ class PMF(IterativeRecommender):
             if self.isConverged(epoch):
                 break
 
-    def buildModel_tf(self):
-        super(PMF, self).buildModel_tf()
+    def trainModel_tf(self):
+        super(PMF, self).trainModel_tf()
         import tensorflow as tf
         self.r_hat = tf.reduce_sum(tf.multiply(self.user_embedding, self.item_embedding), axis=1)
         self.loss = tf.nn.l2_loss(tf.subtract(self.r, self.r_hat))

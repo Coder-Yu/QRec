@@ -38,7 +38,7 @@ class IterativeRecommender(Recommender):
         self.Q = np.random.rand(len(self.data.item), self.emb_size) / 3  # latent item matrix
         self.loss, self.lastLoss = 0, 0
 
-    def buildModel_tf(self):
+    def trainModel_tf(self):
         # initialization
         import tensorflow as tf
         self.u_idx = tf.placeholder(tf.int32, [None], name="u_idx")

@@ -39,7 +39,7 @@ class ExpoMF(IterativeRecommender):
                 val.append(1)
         self.X = csr_matrix((np.array(val),(np.array(row),np.array(col))),(self.num_users,self.num_items))
 
-    def buildModel(self):
+    def trainModel(self):
         print('training...')
         n_users = self.X.shape[0]
         XT = self.X.T.tocsr()  # pre-compute this

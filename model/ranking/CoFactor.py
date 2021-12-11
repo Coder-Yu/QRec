@@ -81,7 +81,7 @@ class CoFactor(IterativeRecommender):
                 self.SPPMI[item1][item2] = self.SPPMI[item1][item2]/maxVal
 
 
-    def buildModel(self):
+    def trainModel(self):
         self.X=self.P*10 #Theta
         self.Y=self.Q*10 #Beta
         self.w = np.random.rand(self.num_items) / 10  # bias value of item

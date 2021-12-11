@@ -67,7 +67,7 @@ class CDAE(DeepRecommender):
         }
         self.mask_corruption = tf.placeholder(tf.float32, [None, self.num_items])
 
-    def buildModel(self):
+    def trainModel(self):
         self.corrupted_input = tf.multiply(self.mask_corruption,self.X)
         self.encoder_op = self.encoder(self.corrupted_input,self.U_embeding)
         self.decoder_op = self.decoder(self.encoder_op)

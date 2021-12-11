@@ -216,7 +216,7 @@ class SGL(GraphRecommender):
         ssl_loss = self.ssl_reg * ssl_loss
         return ssl_loss
 
-    def buildModel(self):
+    def trainModel(self):
         #main task: recommendation
         rec_loss = bpr_loss(self.batch_user_emb,self.batch_pos_item_emb,self.batch_neg_item_emb)
         rec_loss +=  self.regU * (tf.nn.l2_loss(self.batch_user_emb) + tf.nn.l2_loss(self.batch_pos_item_emb) + tf.nn.l2_loss(self.batch_neg_item_emb))

@@ -51,8 +51,8 @@ class DMF(DeepRecommender):
         self.input_u = tf.placeholder(tf.float, [None, n_input_u])
         self.input_i = tf.placeholder(tf.float, [None, n_input_i])
 
-    def buildModel(self):
-        super(DMF, self).buildModel_tf()
+    def trainModel(self):
+        super(DMF, self).trainModel_tf()
         initializer = tf.contrib.layers.xavier_initializer()
         #user net
         user_W1 = tf.Variable(initializer([self.num_items, self.n_hidden_u[0]],stddev=0.01))

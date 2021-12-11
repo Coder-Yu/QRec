@@ -21,7 +21,7 @@ class SocialFD(SocialRecommender):
         self.eta = float(eps['-eta'])
         self.beta = float(eps['-beta'])
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0

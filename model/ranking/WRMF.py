@@ -14,7 +14,7 @@ class WRMF(IterativeRecommender):
         self.X=self.P*10
         self.Y=self.Q*10
 
-    def buildModel(self):
+    def trainModel(self):
         print('training...')
         epoch = 0
         while epoch < self.maxEpoch:

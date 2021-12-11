@@ -8,7 +8,7 @@ class SocialMF(SocialRecommender):
     def readConfiguration(self):
         super(SocialMF, self).readConfiguration()
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0
@@ -66,8 +66,8 @@ class SocialMF(SocialRecommender):
                 u_idx.append(self.data.user[user])
             yield u_idx,i_idx,r
 
-    def buildModel_tf(self):
-        super(SocialMF, self).buildModel_tf()
+    def trainModel_tf(self):
+        super(SocialMF, self).trainModel_tf()
         indices = [[self.data.user[entry[0]], self.data.user[entry[1]]] for entry in self.social.relation]
         values = [float(entry[2]) / len(self.social.followees[entry[0]]) for entry in self.social.relation]
         social_adj = tf.SparseTensor(indices=indices, values=values, dense_shape=[self.num_users, self.num_users])

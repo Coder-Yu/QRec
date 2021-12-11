@@ -71,7 +71,7 @@ class TBPR(SocialRecommender):
         self.theta_derivative += self.regT * self.theta + ((1 - s)*(self.P[u].dot(self.Q[i]) - self.P[u].dot(self.Q[j]))*(self.t_w+self.t_s-2*self.theta))/(self.g_theta+1)**2
         self.theta_count+=1
 
-    def buildModel(self):
+    def trainModel(self):
         self.positiveSet = defaultdict(dict)
         for user in self.data.user:
             for item in self.data.trainSet_u[user]:

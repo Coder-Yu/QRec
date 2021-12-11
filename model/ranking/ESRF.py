@@ -255,7 +255,7 @@ class ESRF(SocialRecommender,GraphRecommender):
             selectedItems.append(item)
         return selectedItems
 
-    def buildModel(self):
+    def trainModel(self):
         A = self.buildMotifInducedAdjacencyMatrix()
         self.buildMotifGCN(A)
         self.buildRecGCN()

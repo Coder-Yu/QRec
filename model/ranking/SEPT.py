@@ -254,7 +254,7 @@ class SEPT(SocialRecommender, GraphRecommender):
         ssl_loss = -tf.reduce_sum(tf.log(pos_score / ttl_score))
         return ssl_loss
 
-    def buildModel(self):
+    def trainModel(self):
         # training the recommendation model
         rec_loss = bpr_loss(self.batch_user_emb, self.batch_pos_item_emb, self.batch_neg_item_emb)
         rec_loss += self.regU * (tf.nn.l2_loss(self.user_embeddings) + tf.nn.l2_loss(self.item_embeddings))

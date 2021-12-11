@@ -109,7 +109,7 @@ class IRGAN(DeepRecommender):
         self.generator = GEN(self.num_items, self.num_users, self.emb_size, lamda=self.regU, learning_rate=self.lRate)
         self.discriminator = DIS(self.num_items, self.num_users, self.emb_size, lamda=self.regU, learning_rate=self.lRate)
 
-    def buildModel(self):
+    def trainModel(self):
         # minimax training
         init = tf.global_variables_initializer()
         self.sess.run(init)

@@ -35,7 +35,7 @@ class SoReg(SocialRecommender):
     def sim(self,u,v):
         return (qmath.pearson_sp(self.data.sRow(u), self.data.sRow(v))+self.social.weight(u,v))/2.0
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0

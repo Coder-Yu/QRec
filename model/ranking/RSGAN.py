@@ -335,7 +335,7 @@ class RSGAN(SocialRecommender,DeepRecommender):
         self.computeSimilarity()
         self.build_graph()
 
-    def buildModel(self):
+    def trainModel(self):
         # minimax training
         init = tf.global_variables_initializer()
         self.sess.run(init)

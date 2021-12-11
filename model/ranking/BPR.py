@@ -16,7 +16,7 @@ class BPR(IterativeRecommender):
     def initModel(self):
         super(BPR, self).initModel()
 
-    def buildModel(self):
+    def trainModel(self):
         print('Preparing item sets...')
         self.PositiveSet = defaultdict(dict)
         for user in self.data.user:
@@ -74,8 +74,8 @@ class BPR(IterativeRecommender):
                 j_idx.append(self.data.item[neg_item])
             yield u_idx, i_idx, j_idx
 
-    def buildModel_tf(self):
-        super(BPR, self).buildModel_tf()
+    def trainModel_tf(self):
+        super(BPR, self).trainModel_tf()
         self.neg_idx = tf.placeholder(tf.int32, name="neg_holder")
         self.neg_item_embedding = tf.nn.embedding_lookup(self.V, self.neg_idx)
         y = tf.reduce_sum(tf.multiply(self.user_embedding,self.item_embedding),1)\

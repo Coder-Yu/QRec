@@ -49,7 +49,7 @@ class SERec(SocialRecommender):
                 val.append(1)
         self.T = csr_matrix((np.array(val), (np.array(row), np.array(col))), (self.num_users, self.num_users))
 
-    def buildModel(self):
+    def trainModel(self):
         print('training...')
         self._update(self.X)
 

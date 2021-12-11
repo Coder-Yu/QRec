@@ -23,7 +23,7 @@ class SVDPlusPlus(IterativeRecommender):
         self.Bi = np.random.rand(self.data.trainingSize()[1])  # biased value of item
         self.Y = np.random.rand(self.data.trainingSize()[1], self.emb_size)
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0

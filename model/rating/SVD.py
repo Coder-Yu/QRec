@@ -10,7 +10,7 @@ class SVD(IterativeRecommender):
         self.Bu = np.random.rand(self.data.trainingSize()[0])/5  # bias value of user
         self.Bi = np.random.rand(self.data.trainingSize()[1])/5  # bias value of item
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0
@@ -34,8 +34,8 @@ class SVD(IterativeRecommender):
             epoch += 1
             self.isConverged(epoch)
 
-    def buildModel_tf(self):
-        super(SVD, self).buildModel_tf()
+    def trainModel_tf(self):
+        super(SVD, self).trainModel_tf()
         import tensorflow as tf
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
         self.U_bias = tf.Variable(tf.truncated_normal(shape=[self.num_users], stddev=0.005), name='U_bias')

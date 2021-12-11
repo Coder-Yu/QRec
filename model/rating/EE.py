@@ -12,7 +12,7 @@ class EE(IterativeRecommender):
         # self.X = np.random.rand(self.data.trainingSize()[0], self.Dim)/10
         # self.Y = np.random.rand(self.data.trainingSize()[1], self.Dim)/10
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0
@@ -35,8 +35,8 @@ class EE(IterativeRecommender):
             epoch += 1
             self.isConverged(epoch)
 
-    def buildModel_tf(self):
-        super(EE, self).buildModel_tf()
+    def trainModel_tf(self):
+        super(EE, self).trainModel_tf()
         import tensorflow as tf
         global_mean = tf.placeholder(tf.float32, [None], name="mean")
         reg_lambda = tf.constant(self.regU, dtype=tf.float32)

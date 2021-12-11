@@ -112,7 +112,7 @@ class CFGAN(DeepRecommender):
         self.G_solver = tf.train.AdamOptimizer(self.lRate).minimize(self.G_loss, var_list=theta_G)
 
 
-    def buildModel(self):
+    def trainModel(self):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         print('pretraining...')

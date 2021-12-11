@@ -205,7 +205,7 @@ class MHCN(SocialRecommender,GraphRecommender):
         global_loss = tf.reduce_sum(-tf.log(tf.sigmoid(pos-neg1)))
         return global_loss+local_loss
 
-    def buildModel(self):
+    def trainModel(self):
         rec_loss = bpr_loss(self.batch_user_emb, self.batch_pos_item_emb, self.batch_neg_item_emb)
         reg_loss = 0
         for key in self.weights:

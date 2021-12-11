@@ -309,7 +309,7 @@ class IF_BPR(SocialRecommender):
                                         and item not in self.PS_Set[user]:
                                     self.NegSets[user][item] = friend
 
-    def buildModel(self):
+    def trainModel(self):
 
         self.randomWalks()
         self.computeSimilarity()

@@ -152,7 +152,7 @@ class CUNE_MF(IterativeRecommender):
         print('Dimension of user embedding', self.walkDim)
         print('='*80)
 
-    def buildModel(self):
+    def trainModel(self):
         print('Kind Note: This method will probably take much time.')
         #build C-U-NET
         print('Building collaborative user network...')

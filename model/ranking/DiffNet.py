@@ -35,7 +35,7 @@ class DiffNet(SocialRecommender,GraphRecommender):
         self.S = tf.SparseTensor(indices, S.data.astype(np.float32), S.shape)
         self.A = self.create_sparse_adj_tensor()
 
-    def buildModel(self):
+    def trainModel(self):
         self.weights = {}
         initializer = tf.contrib.layers.xavier_initializer()
         for k in range(self.n_layers):

@@ -124,7 +124,7 @@ class BUIR(DeepRecommender):
         #test
         self.pred = tf.reduce_sum(tf.multiply(self.q_u_embedding,self.on_item_embeddings),1)\
                     +tf.reduce_sum(tf.multiply(tf.nn.embedding_lookup(self.on_user_embeddings,self.u_idx),self.q_item_embeddings),1)
-    def buildModel(self):
+    def trainModel(self):
         # computing loss
         loss = 1-tf.reduce_sum(tf.multiply(tf.math.l2_normalize(self.q_u_embedding,axis=1),tf.math.l2_normalize(self.i_tar_embedding,axis=1)),1)
         loss +=1-tf.reduce_sum(tf.multiply(tf.math.l2_normalize(self.q_i_embedding,axis=1),tf.math.l2_normalize(self.u_tar_embedding,axis=1)),1)

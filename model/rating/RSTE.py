@@ -19,7 +19,7 @@ class RSTE(SocialRecommender):
     def initModel(self):
         super(RSTE, self).initModel()
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0

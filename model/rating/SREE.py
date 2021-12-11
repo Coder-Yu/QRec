@@ -24,7 +24,7 @@ class SREE(SocialRecommender):
         # self.X = np.random.rand(self.data.trainingSize()[0], self.Dim)/10
         # self.Y = np.random.rand(self.data.trainingSize()[1], self.Dim)/10
 
-    def buildModel(self):
+    def trainModel(self):
         epoch = 0
         while epoch < self.maxEpoch:
             self.loss = 0

@@ -101,7 +101,7 @@ class DHCF(DeepRecommender):
         self.v_embedding = tf.nn.embedding_lookup(item_embeddings, self.v_idx)
         self.test = tf.reduce_sum(tf.multiply(self.u_embedding,item_embeddings),1)
 
-    def buildModel(self):
+    def trainModel(self):
         y = tf.reduce_sum(tf.multiply(self.u_embedding, self.v_embedding), 1) \
             - tf.reduce_sum(tf.multiply(self.u_embedding, self.neg_item_embedding), 1)
         reg_loss = self.regU * (tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.v_embedding) +

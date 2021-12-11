@@ -97,7 +97,7 @@ class APR(DeepRecommender):
         return user_idx,item_idx,neg_item_idx
 
 
-    def buildModel(self):
+    def trainModel(self):
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             sess.run(init)
