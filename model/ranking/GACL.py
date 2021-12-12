@@ -31,7 +31,7 @@ class GACL(GraphRecommender):
         for k in range(n_layers):
             emb = tf.sparse_tensor_dense_matmul(adj, emb)
             random_noise = tf.random.uniform(emb.shape)
-            emb += tf.multiply(tf.sign(emb),tf.nn.l2_normalize(random_noise, 1)) * self.eps
+            #emb += tf.multiply(tf.sign(emb),tf.nn.l2_normalize(random_noise, 1)) * self.eps
             all_embs.append(emb)
         all_embs = tf.reduce_mean(all_embs, axis=0)
         return tf.split(all_embs, [self.num_users, self.num_items], 0)
@@ -46,9 +46,11 @@ class GACL(GraphRecommender):
         #adjaceny matrix
         self.norm_adj = self.create_joint_sparse_adj_tensor()
         #encoding
-        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
-        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
-        self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers)
+        self.layer1_user_embeddings, self.layer1_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,1)
+        ego_embeddings = tf.concat([self.layer1_user_embeddings,self.layer1_item_embeddings], axis=0)
+        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers-1)
+        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers-1)
+        self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers-1)
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
         self.batch_user_emb = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
         self.batch_pos_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
