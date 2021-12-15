@@ -17,7 +17,7 @@ class GACL(GraphRecommender):
         self.n_layers = int(args['-n_layer'])
 
     def LightGCN_encoder(self,emb,adj,n_layers):
-        all_embs = [emb]
+        all_embs = []
         for k in range(n_layers):
             emb = tf.sparse_tensor_dense_matmul(adj, emb)
             all_embs.append(emb)
@@ -25,13 +25,11 @@ class GACL(GraphRecommender):
         return tf.split(all_embs, [self.num_users, self.num_items], 0)
 
     def perturbed_LightGCN_encoder(self,emb,adj,n_layers):
-        random_noise = tf.random.uniform(emb.shape)
-        emb += tf.multiply(tf.sign(emb),tf.nn.l2_normalize(random_noise, 1)) * self.eps
-        all_embs = [emb]
+        all_embs = []
         for k in range(n_layers):
             emb = tf.sparse_tensor_dense_matmul(adj, emb)
             random_noise = tf.random.uniform(emb.shape)
-            #emb += tf.multiply(tf.sign(emb),tf.nn.l2_normalize(random_noise, 1)) * self.eps
+            emb += tf.multiply(tf.sign(emb),tf.nn.l2_normalize(random_noise, 1)) * self.eps
             all_embs.append(emb)
         all_embs = tf.reduce_mean(all_embs, axis=0)
         return tf.split(all_embs, [self.num_users, self.num_items], 0)
@@ -46,11 +44,9 @@ class GACL(GraphRecommender):
         #adjaceny matrix
         self.norm_adj = self.create_joint_sparse_adj_tensor()
         #encoding
-        self.layer1_user_embeddings, self.layer1_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,1)
-        ego_embeddings = tf.concat([self.layer1_user_embeddings,self.layer1_item_embeddings], axis=0)
-        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers-1)
-        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers-1)
-        self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers-1)
+        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
+        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
+        self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers)
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
         self.batch_user_emb = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
         self.batch_pos_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.v_idx)
@@ -102,14 +98,15 @@ class GACL(GraphRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         for epoch in range(self.maxEpoch):
+            batch_loss = []
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 _, l, rec_l, cl_l = self.sess.run([train, loss, rec_loss, self.cl_loss],
                                                    feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
                 print('training:', epoch + 1, 'batch', n, 'total_loss:',l, 'rec_loss:', rec_l,'cl_loss',cl_l)
+                batch_loss.append(rec_l)
             self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
             self.ranking_performance(epoch)
-        #self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
         self.U,self.V = self.bestU,self.bestV
 
     def predictForRanking(self, u):
