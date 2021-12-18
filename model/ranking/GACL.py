@@ -5,6 +5,8 @@ from util.loss import bpr_loss
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+#Recommended maximum epoch: Yelp2018:20, Amazon-Book:20
+
 class GACL(GraphRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(GACL, self).__init__(conf, trainingSet, testSet, fold)
@@ -44,8 +46,8 @@ class GACL(GraphRecommender):
         #adjaceny matrix
         self.norm_adj = self.create_joint_sparse_adj_tensor()
         #encoding
-        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
-        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
+        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj)
+        self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj, self.n_layers)
         self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers)
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
         self.batch_user_emb = tf.nn.embedding_lookup(self.main_user_embeddings, self.u_idx)
