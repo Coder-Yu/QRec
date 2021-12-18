@@ -96,8 +96,6 @@ class FileIO(object):
             relations = relations[1:]
         # order of the columns
         order = socialConfig['-columns'].strip().split()
-        if len(order) <= 2:
-            print('The social file is not in a correct format.')
         for lineNo, line in enumerate(relations):
             items = split(' |,|\t', line.strip())
             if len(order) < 2:
