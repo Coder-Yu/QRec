@@ -100,13 +100,11 @@ class GACL(GraphRecommender):
         init = tf.global_variables_initializer()
         self.sess.run(init)
         for epoch in range(self.maxEpoch):
-            batch_loss = []
             for n, batch in enumerate(self.next_batch_pairwise()):
                 user_idx, i_idx, j_idx = batch
                 _, l, rec_l, cl_l = self.sess.run([train, loss, rec_loss, self.cl_loss],
                                                    feed_dict={self.u_idx: user_idx, self.neg_idx: j_idx, self.v_idx: i_idx})
                 print('training:', epoch + 1, 'batch', n, 'total_loss:',l, 'rec_loss:', rec_l,'cl_loss',cl_l)
-                batch_loss.append(rec_l)
             self.U, self.V = self.sess.run([self.main_user_embeddings, self.main_item_embeddings])
             self.ranking_performance(epoch)
         self.U,self.V = self.bestU,self.bestV
