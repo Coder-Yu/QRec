@@ -46,7 +46,7 @@ class GACL(GraphRecommender):
         #adjaceny matrix
         self.norm_adj = self.create_joint_sparse_adj_tensor()
         #encoding
-        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj)
+        self.main_user_embeddings, self.main_item_embeddings = self.LightGCN_encoder(ego_embeddings,self.norm_adj,self.n_layers)
         self.perturbed_user_embeddings1, self.perturbed_item_embeddings1 = self.perturbed_LightGCN_encoder(ego_embeddings,self.norm_adj, self.n_layers)
         self.perturbed_user_embeddings2, self.perturbed_item_embeddings2 = self.perturbed_LightGCN_encoder(ego_embeddings, self.norm_adj, self.n_layers)
         self.batch_neg_item_emb = tf.nn.embedding_lookup(self.main_item_embeddings, self.neg_idx)
