@@ -1,4 +1,4 @@
-<img src="https://i.ibb.co/Bsn8CM5/logo.png" alt="logo" border="0"><br>
+<img src="https://raw.githubusercontent.com/Coder-Yu/QRec/master/logo.png" alt="logo" width="400" border="0"><br>
 <p float="left"><img src="https://img.shields.io/badge/python-v3.7+-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
 <h2>Introduction</h2>
 
