@@ -73,8 +73,8 @@ For more details, we refer you to the [handbook of QRec](https://www.showdoc.com
  <table class="table table-hover table-bordered">
   <tr>
     <th width="12%" scope="col"> Entry</th>
-    <th width="16%" class="conf" scope="col">Example</th>
-    <th width="72%" class="conf" scope="col">Description</th>
+    <th width="21%" class="conf" scope="col">Example</th>
+    <th width="67%" class="conf" scope="col">Description</th>
   </tr>
   <tr>
     <td>ratings</td>
@@ -100,13 +100,13 @@ For more details, we refer you to the [handbook of QRec](https://www.showdoc.com
   </tr>
   <tr>
     <td scope="row">mode.name</td>
-    <td>UserKNN/ItemKNN/SlopeOne/etc.</td>
+    <td>UserKNN</td>
     <td>name of the recommendation model. <br>
     </td>
   </tr>
   <tr>
     <td scope="row">evaluation.setup</td>
-    <td>-testSet ../dataset/testset.txt</td>
+    <td>-testSet ./dataset/test.txt </td>
     <td>Main option: -testSet, -ap, -cv (choose one of them) <br>
       -testSet path/to/test/file (need to specify the test set manually)<br>
       -ap ratio (ap means that the ratings are automatically partitioned into training set and test set, the number is the ratio of the test set. e.g. -ap 0.2)<br>
