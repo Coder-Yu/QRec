@@ -73,8 +73,8 @@ For more details, we refer you to the [handbook of QRec](https://www.showdoc.com
  <table class="table table-hover table-bordered">
   <tr>
     <th width="12%" scope="col"> Entry</th>
-    <th width="21%" class="conf" scope="col">Example</th>
-    <th width="67%" class="conf" scope="col">Description</th>
+    <th width="23%" class="conf" scope="col">Example</th>
+    <th width="65%" class="conf" scope="col">Description</th>
   </tr>
   <tr>
     <td>ratings</td>
