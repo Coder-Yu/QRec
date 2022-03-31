@@ -28,7 +28,7 @@ if __name__ == '__main__':
     print('g1. NGCF          g2. LightGCN        g3. ESRF        g4. DHCF            g5. DiffNet')
 
     print('Self-Supervised Recommenders:')
-    print('q1. SGL           q2. SEPT            q3. BUIR        q4. MHCN            q5. GACL')
+    print('q1. SGL           q2. SEPT            q3. BUIR        q4. MHCN            q5. SimGCL')
 
     print('Basic Methods:')
     print('b1. UserMean      b2. ItemMean      b3. MostPopular   b4. Rand')
@@ -45,7 +45,7 @@ if __name__ == '__main__':
                  'a2':'CUNE_MF','a3':'CUNE_BPR','a4':'IF_BPR',
                  'd1':'APR','d2':'CDAE','d3':'DMF','d4':'NeuMF','d5':'CFGAN','d6':'IRGAN','d7':'RSGAN',
                  'g1':'NGCF', 'g2':'LightGCN', 'g3':'ESRF', 'g4':'DHCF', 'g5':'DiffNet',
-                 'q1':'SGL', 'q2':'SEPT', 'q3':'BUIR', 'q4':'MHCN', 'q5':'GACL',
+                 'q1':'SGL', 'q2':'SEPT', 'q3':'BUIR', 'q4':'MHCN', 'q5':'SimGCL',
                  'b1':'UserMean','b2':'ItemMean','b3':'MostPopular','b4':'Rand'}
     try:
         conf = ModelConf('./config/' + models[num] + '.conf')

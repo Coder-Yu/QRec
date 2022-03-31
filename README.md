@@ -10,6 +10,7 @@
 
 <h2>What's New</h2>
 <p>
+31/03/2022 - SimGCL proposed in our SIGIR'22 paper has been added. <br>
 12/10/2021 - BUIR proposed in SIGIR'21 paper has been added. <br>
 30/07/2021 - We have transplanted QRec from py2 to py3. <br>
 07/06/2021 - SEPT proposed in our KDD'21 paper has been added. <br>
@@ -399,6 +400,11 @@ on Generative Adversarial Networks, CIKM'18.
           <tr>
     <td scope="row">BUIR</td>
         <td>Lee et al. Bootstrapping User and Item Representations for One-Class Collaborative Filtering, SIGIR'21.
+         </td>
+      </tr>
+     <tr>
+    <td scope="row">SimGCL</td>
+        <td>Yu et al. Are Graph Augmentations Necessary? Simple Graph Contrastive Learning for Recommendation, SIGIR'22.
          </td>
       </tr>
   </table>

@@ -5,15 +5,13 @@ from util.loss import bpr_loss
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-#Recommended maximum epoch: Yelp2018:20, Amazon-Book:20
-
-class GACL(GraphRecommender):
+class SimGCL(GraphRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
-        super(GACL, self).__init__(conf, trainingSet, testSet, fold)
+        super(SimGCL, self).__init__(conf, trainingSet, testSet, fold)
         self.performance = []
     def readConfiguration(self):
-        super(GACL, self).readConfiguration()
-        args = config.OptionConf(self.config['GACL'])
+        super(SimGCL, self).readConfiguration()
+        args = config.OptionConf(self.config['SimGCL'])
         self.cl_rate = float(args['-lambda'])
         self.eps = float(args['-eps'])
         self.n_layers = int(args['-n_layer'])
@@ -37,7 +35,7 @@ class GACL(GraphRecommender):
         return tf.split(all_embs, [self.num_users, self.num_items], 0)
 
     def initModel(self):
-        super(GACL, self).initModel()
+        super(SimGCL, self).initModel()
         initializer = tf.contrib.layers.xavier_initializer()
         self.user_embeddings = tf.Variable(initializer([self.num_users, self.emb_size]))
         self.item_embeddings = tf.Variable(initializer([self.num_items, self.emb_size]))
