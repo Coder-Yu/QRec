@@ -508,13 +508,12 @@ on Generative Adversarial Networks, CIKM'18.
 <p>This project is supported by the Responsible Big Data Intelligence Lab (RBDI) at the school of ITEE, University of Queensland, and Chongqing University.</p>
 
 If our project is helpful to you, please cite one of these papers.<br>
-@inproceedings{yu2018adaptive,<br>
-  title={Adaptive implicit friends identification over heterogeneous network for social recommendation},<br>
-  author={Yu, Junliang and Gao, Min and Li, Jundong and Yin, Hongzhi and Liu, Huan},<br>
-  booktitle={Proceedings of the 27th ACM International Conference on Information and Knowledge Management},<br>
-  pages={357--366},<br>
-  year={2018},<br>
-  organization={ACM}<br>
+@inproceedings{yu2021socially,
+  title={Socially-aware self-supervised tri-training for recommendation},
+  author={Yu, Junliang and Yin, Hongzhi and Gao, Min and Xia, Xin and Zhang, Xiangliang and Viet Hung, Nguyen Quoc},
+  booktitle={Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining},
+  pages={2084--2092},
+  year={2021}
 }
 <br>
 <br>
