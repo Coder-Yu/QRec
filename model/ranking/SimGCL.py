@@ -8,7 +8,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 class SimGCL(GraphRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(SimGCL, self).__init__(conf, trainingSet, testSet, fold)
-        self.performance = []
+
     def readConfiguration(self):
         super(SimGCL, self).readConfiguration()
         args = config.OptionConf(self.config['SimGCL'])
