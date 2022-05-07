@@ -5,6 +5,9 @@ from util.loss import bpr_loss
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+# Note: the pytorch implementation of SimGCL can be found at https://github.com/Coder-Yu/SELFRec
+
+
 class SimGCL(GraphRecommender):
     def __init__(self,conf,trainingSet=None,testSet=None,fold='[1]'):
         super(SimGCL, self).__init__(conf, trainingSet, testSet, fold)
