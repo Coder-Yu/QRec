@@ -1,5 +1,5 @@
 <img src="https://raw.githubusercontent.com/Coder-Yu/QRec/master/logo.png" alt="logo" width="400" border="0"><br>
-<p float="left"><img src="https://img.shields.io/badge/python-v3.7+-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14+-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
+<p float="left"><img src="https://img.shields.io/badge/python-v3.7-red"> <img src="https://img.shields.io/badge/tensorflow-v1.14-blue"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Coder-Yu/QRec"></p>
 <h2>Introduction</h2>
 
 **QRec** is a Python framework for recommender systems (Supported by Python 3.7.4 and Tensorflow 1.14+) in which a number of influential and newly state-of-the-art recommendation models are implemented. QRec has a lightweight architecture and provides user-friendly interfaces. It can facilitate model implementation and evaluation.
