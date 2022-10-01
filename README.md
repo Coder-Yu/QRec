@@ -7,6 +7,8 @@
 **Founder and principal contributor**: [@Coder-Yu ](https://github.com/Coder-Yu)<br>
 **Other contributors**: [@DouTong](https://github.com/DouTong) [@Niki666](https://github.com/Niki666) [@HuXiLiFeng](https://github.com/HuXiLiFeng) [@BigPowerZ](https://github.com/BigPowerZ) [@flyxu](https://github.com/flyxu)<br>
 **Supported by**: [@AIhongzhi](https://github.com/AIhongzhi) (<a href="https://sites.google.com/view/hongzhi-yin/home">A/Prof. Hongzhi Yin</a>, UQ), [@mingaoo](https://github.com/mingaoo) (<a href="http://www.cse.cqu.edu.cn/info/2096/3497.htm">A/Prof. Min Gao</a>, CQU) <br> 
+<br>
+**We also provide Pytorch implementations of some models in another library. Please click [here](https://github.com/Coder-Yu/SELFRec)**
 
 <h2>What's New</h2>
 <p>
