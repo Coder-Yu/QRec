@@ -139,7 +139,7 @@ def find_k_largest(K,candidates):
     k_largest_scores = [item[1] for item in n_candidates]
     ids = [item[0] for item in n_candidates]
     # find the N biggest scores
-    for iid,score in enumerate(candidates):
+    for iid,score in enumerate(candidates[K:]):
         ind = K
         l = 0
         r = K - 1
@@ -159,5 +159,5 @@ def find_k_largest(K,candidates):
             ids[ind + 2:] = ids[ind + 1:-1]
         if ind < K - 1:
             k_largest_scores[ind + 1] = score
-            ids[ind + 1] = iid
+            ids[ind + 1] = iid+K
     return ids,k_largest_scores
