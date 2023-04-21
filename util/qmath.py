@@ -1,6 +1,7 @@
 from numpy.linalg import norm
 from math import sqrt,exp
 from numba import jit
+import heapq
 
 def l1(x):
     return norm(x,ord=1)
