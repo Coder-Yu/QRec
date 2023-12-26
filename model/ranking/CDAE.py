@@ -35,7 +35,7 @@ class CDAE(DeepRecommender):
                 positive[n][iid]=1
             for i in range(self.negative_sp*len(ratedItems)):
                 ng = choice(itemList)
-                while ng in self.data.trainSet_u:
+                while ng in self.data.trainSet_u[user]:
                     ng = choice(itemList)
                 n_id = self.data.item[ng]
                 negative[n][n_id]=1
